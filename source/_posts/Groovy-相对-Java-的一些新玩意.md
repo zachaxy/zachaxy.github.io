@@ -9,7 +9,7 @@ tags: Groovy
 - 方法和类默认的修饰符都是 public
 - Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者
 - 静态方法中也可以使用 this 来引用当前的静态类 Class 对象。
-- 提供安全导航操作符 `.?` 来避免对象非空的判断
+- 提供安全导航操作符 `?.` 来避免对象非空的判断
   <!-- more -->
 # GDK 一瞥
 Java 平台的核心优势是其 Java 开发包(JDK)。Groovy 并没有抛开 Java 单独做一套新的类和库，而是在以后的 JDK 的各种类中添加便捷的方法，这些拓展成为[GDK](http://docs.groovy-lang.org/latest/html/groovy-jdk/overview-summary.html)。
@@ -62,7 +62,7 @@ def bar(a,b,c){
 一个简单的例子：
 ```groovy
 def bar(a,b=10){
-	println a + b
+	return a + b
 }
 
 assert bar(1,1) == 2
