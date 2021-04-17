@@ -430,7 +430,7 @@
 <li>方法和类默认的修饰符都是 public</li>
 <li>Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者</li>
 <li>静态方法中也可以使用 this 来引用当前的静态类 Class 对象。</li>
-<li>提供安全导航操作符 <code>.?</code> 来避免对象非空的判断
+<li>提供安全导航操作符 <code>?.</code> 来避免对象非空的判断
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2017/12/05/Groovy-相对-Java-的一些新玩意/#more" rel="contents">
@@ -1222,7 +1222,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,604
+                  1,682
                 </span>
               
 
@@ -1252,7 +1252,7 @@
             <h1 id="变量定义"><a href="#变量定义" class="headerlink" title="变量定义"></a>变量定义</h1><p>groovy 是动态类型的语言，也就是说不需要指定变量的类型，类型是可以值来推导的。</p>
 <ul>
 <li>不指定类型定义变量： <code>i = 10</code></li>
-<li>使用关键字`` def<code>，虽不是必须的，但是为了代码清晰，还是建议使用 def 关键字定义变量</code>def i = 10`</li>
+<li>使用关键字 <code>def</code>，虽不是必须的，但是为了代码清晰，还是建议使用 def 关键字定义变量 <code>def i = 10</code></li>
 </ul>
 <p>这里有个误区：def 关键字的出现时替代变量类型的占位符，如果你已经明确了变量的类型，就没必要使用 def，也就是说 <code>def int i = 10</code> 是没有必要的</p>
 <h1 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h1><ul>
@@ -1290,6 +1290,9 @@
 <p>闭包的默认参数：如果定义的闭包只有一个参数，那么可以在闭包内直接写方法体，使用 <code>$it</code> 来获取参数。</p>
 <p>如果要定义一个没有参数的闭包，那么闭包内， -&gt; 左侧为空，则代表该闭包没有参数</p>
 <p>Groovy 中的函数，可以用闭包作为参数；</p>
+<blockquote>
+<p>之前在看 groovy 的代码,或者写 groovy 的代码,调用外部定义的闭包,总是不清楚这个闭包到底要传入几个参数. 其实可以根据 IDE 的提示,如果是一个纯的大括号,那么必然是属于只有一个参数的闭包</p>
+</blockquote>
 <h1 id="集合类"><a href="#集合类" class="headerlink" title="集合类"></a>集合类</h1><p>groovy 中的集合包含两种：list 和 map，其使用也很简单</p>
 <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">list = [<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>]</span><br><span class="line">list &lt;&lt; <span class="number">3</span></span><br><span class="line">println list.size();</span><br><span class="line"></span><br><span class="line">map = [<span class="string">name:</span><span class="string">"zx"</span>,<span class="string">age:</span><span class="number">25</span>];</span><br><span class="line">map.merry = <span class="literal">false</span>	<span class="comment">// 向 map 添加键值对</span></span><br><span class="line">println map.size()  <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
 
@@ -1316,7 +1319,7 @@
 <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// eg：get(1)返回的结果是 null，此时如果调用 user.username 会产生空指针异常</span></span><br><span class="line"><span class="comment">//而是用 ?. 如果 user 为空,那么 username 也为 空，不会产生空指针异常</span></span><br><span class="line"><span class="keyword">def</span> user = User.get(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">def</span> username = user?.username</span><br></pre></td></tr></table></figure>
 
 <h1 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h1><p>groovy 提供了比 Java 更为便捷的方法来操作文件，其<a href="http://www.groovy-lang.org/gdk.html" target="_blank" rel="noopener">API 文档参考</a></p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">File file = <span class="keyword">new</span> File(<span class="string">"E:/hello.txt"</span>)</span><br><span class="line"><span class="comment">//按行读文件 </span></span><br><span class="line">file.eachLine &#123;  </span><br><span class="line">   line -&gt; println <span class="string">"line : $line"</span>; </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">//读取文件的整个内容，是用 text 熟悉</span></span><br><span class="line">println  file.text</span><br><span class="line"></span><br><span class="line"><span class="comment">//获取文件内同的大小，单位是字节</span></span><br><span class="line">println file.length()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 写入文件,内容为 hello world</span></span><br><span class="line">file.withWriter(<span class="string">'utf-8'</span>) &#123; </span><br><span class="line">	writer -&gt; writer.writeLine <span class="string">'Hello World'</span> </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//复制文件</span></span><br><span class="line"><span class="keyword">def</span> src = <span class="keyword">new</span> File(<span class="string">"E:/hello.txt"</span>)</span><br><span class="line"><span class="keyword">def</span> dst = <span class="keyword">new</span> File(<span class="string">"E:/hello1.txt"</span>)</span><br><span class="line">dst &lt;&lt; src.text</span><br><span class="line"></span><br><span class="line"><span class="comment">//递归显示目录及其子目录中的所有文件</span></span><br><span class="line">file.eachFileRecurse() &#123;</span><br><span class="line">	file -&gt; println file.getAbsolutePath()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">File file = <span class="keyword">new</span> File(<span class="string">"E:/hello.txt"</span>)</span><br><span class="line"><span class="comment">//按行读文件 </span></span><br><span class="line">file.eachLine &#123;  </span><br><span class="line">   line -&gt; println <span class="string">"line : $line"</span>; </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">//读取文件的整个内容，是用 text 属性</span></span><br><span class="line">println  file.text</span><br><span class="line"></span><br><span class="line"><span class="comment">//获取文件内同的大小，单位是字节</span></span><br><span class="line">println file.length()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 写入文件,内容为 hello world</span></span><br><span class="line">file.withWriter(<span class="string">'utf-8'</span>) &#123; </span><br><span class="line">	writer -&gt; writer.writeLine <span class="string">'Hello World'</span> </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//复制文件</span></span><br><span class="line"><span class="keyword">def</span> src = <span class="keyword">new</span> File(<span class="string">"E:/hello.txt"</span>)</span><br><span class="line"><span class="keyword">def</span> dst = <span class="keyword">new</span> File(<span class="string">"E:/hello1.txt"</span>)</span><br><span class="line">dst &lt;&lt; src.text</span><br><span class="line"></span><br><span class="line"><span class="comment">//递归显示目录及其子目录中的所有文件</span></span><br><span class="line">file.eachFileRecurse() &#123;</span><br><span class="line">	file -&gt; println file.getAbsolutePath()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="http://groovy-lang.org/documentation.html" target="_blank" rel="noopener">官方手册</a><br><a href="https://learnxinyminutes.com/docs/groovy/" target="_blank" rel="noopener">Learn groovy in Y minutes</a><br><a href="http://www.jianshu.com/p/ba55dc163dfd" target="_blank" rel="noopener">使用 Groovy 开发之新特性</a><br><a href="http://blog.csdn.net/dabaoonline/article/details/50477090" target="_blank" rel="noopener">日积月累–Groovy 语言规范之操作符</a><br><a href="http://www.jianshu.com/p/2c17a50ff7f1" target="_blank" rel="noopener">Groovy 学习之-运行时元编程</a><br><a href="https://www.ibm.com/developerworks/cn/education/java/j-groovy/j-groovy.html#N1036D" target="_blank" rel="noopener">精通 Groovy</a></p>
 
@@ -1474,7 +1477,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -1488,7 +1491,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">147.9k</span>
+    <span title="站点文章字数总计">148.1k</span>
   
 </div>
 

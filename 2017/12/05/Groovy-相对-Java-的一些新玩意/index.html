@@ -130,18 +130,18 @@
 
 
 
-<meta name="description" content="Groovy 是轻量级的 Java 方法，闭包中 return 语句是可选的，如果没有 return，则默认返回方法、闭包的最后一条语句的值 方法和类默认的修饰符都是 public Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者 静态方法中也可以使用 this 来引用当前的静态类 Class 对象。 提供安全导航操作符 .? 来避免对象非空的判断">
+<meta name="description" content="Groovy 是轻量级的 Java 方法，闭包中 return 语句是可选的，如果没有 return，则默认返回方法、闭包的最后一条语句的值 方法和类默认的修饰符都是 public Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者 静态方法中也可以使用 this 来引用当前的静态类 Class 对象。 提供安全导航操作符 ?. 来避免对象非空的判断">
 <meta name="keywords" content="Groovy">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Groovy 相对 Java 的一些新玩意">
 <meta property="og:url" content="https://zachaxy.github.io/2017/12/05/Groovy-相对-Java-的一些新玩意/index.html">
 <meta property="og:site_name" content="zachaxy">
-<meta property="og:description" content="Groovy 是轻量级的 Java 方法，闭包中 return 语句是可选的，如果没有 return，则默认返回方法、闭包的最后一条语句的值 方法和类默认的修饰符都是 public Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者 静态方法中也可以使用 this 来引用当前的静态类 Class 对象。 提供安全导航操作符 .? 来避免对象非空的判断">
+<meta property="og:description" content="Groovy 是轻量级的 Java 方法，闭包中 return 语句是可选的，如果没有 return，则默认返回方法、闭包的最后一条语句的值 方法和类默认的修饰符都是 public Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者 静态方法中也可以使用 this 来引用当前的静态类 Class 对象。 提供安全导航操作符 ?. 来避免对象非空的判断">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-09-01T11:13:24.294Z">
+<meta property="og:updated_time" content="2021-04-14T01:21:48.836Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Groovy 相对 Java 的一些新玩意">
-<meta name="twitter:description" content="Groovy 是轻量级的 Java 方法，闭包中 return 语句是可选的，如果没有 return，则默认返回方法、闭包的最后一条语句的值 方法和类默认的修饰符都是 public Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者 静态方法中也可以使用 this 来引用当前的静态类 Class 对象。 提供安全导航操作符 .? 来避免对象非空的判断">
+<meta name="twitter:description" content="Groovy 是轻量级的 Java 方法，闭包中 return 语句是可选的，如果没有 return，则默认返回方法、闭包的最后一条语句的值 方法和类默认的修饰符都是 public Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者 静态方法中也可以使用 this 来引用当前的静态类 Class 对象。 提供安全导航操作符 ?. 来避免对象非空的判断">
 
 
 
@@ -427,7 +427,7 @@
 <li>方法和类默认的修饰符都是 public</li>
 <li>Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者</li>
 <li>静态方法中也可以使用 this 来引用当前的静态类 Class 对象。</li>
-<li>提供安全导航操作符 <code>.?</code> 来避免对象非空的判断<a id="more"></a>
+<li>提供安全导航操作符 <code>?.</code> 来避免对象非空的判断<a id="more"></a>
 <h1 id="GDK-一瞥"><a href="#GDK-一瞥" class="headerlink" title="GDK 一瞥"></a>GDK 一瞥</h1>Java 平台的核心优势是其 Java 开发包(JDK)。Groovy 并没有抛开 Java 单独做一套新的类和库，而是在以后的 JDK 的各种类中添加便捷的方法，这些拓展成为<a href="http://docs.groovy-lang.org/latest/html/groovy-jdk/overview-summary.html" target="_blank" rel="noopener">GDK</a>。<br>其中有一些常用的类，均有不错的扩充</li>
 <li>String</li>
 <li>Integer</li>
@@ -456,7 +456,7 @@
 <li>按照该规则，可能将键值对全部收集之后，剩下的参数可能与方法定义的参数个数就不匹配了，因为我们在传参时，本想将第二个参数也传入键值对的 map 的，但是不可以。因此在方法定义和使用时应多注意。</li>
 </ol>
 <h2 id="规则二：可选形参"><a href="#规则二：可选形参" class="headerlink" title="规则二：可选形参"></a>规则二：可选形参</h2><p>一个简单的例子：</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> bar(a,b=<span class="number">10</span>)&#123;</span><br><span class="line">	println a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> bar(<span class="number">1</span>,<span class="number">1</span>) == <span class="number">2</span></span><br><span class="line"><span class="keyword">assert</span> bar(<span class="number">1</span>) == <span class="number">11</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> bar(a,b=<span class="number">10</span>)&#123;</span><br><span class="line">	<span class="keyword">return</span> a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> bar(<span class="number">1</span>,<span class="number">1</span>) == <span class="number">2</span></span><br><span class="line"><span class="keyword">assert</span> bar(<span class="number">1</span>) == <span class="number">11</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="规则三：变长参数"><a href="#规则三：变长参数" class="headerlink" title="规则三：变长参数"></a>规则三：变长参数</h2><p>groovy 中有两种形式支持方法的变长参数：</p>
 <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用 ... 这也是 Java 本身支持的一种形式</span></span><br><span class="line"><span class="keyword">def</span> bar(<span class="keyword">int</span> a,<span class="keyword">int</span> ... b)&#123;</span><br><span class="line">	println <span class="string">"$a and $b"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果形参的最后一个参数为数组，那么除了第一个参数被赋值给 a 之外，后面的实参均被当做变长参数的实参传入到 b 数组中</span></span><br><span class="line"><span class="keyword">def</span> bar(<span class="keyword">int</span> a,<span class="keyword">int</span> b[])&#123;</span><br><span class="line">	println <span class="string">"$a and $b"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -707,7 +707,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -721,7 +721,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">147.9k</span>
+    <span title="站点文章字数总计">148.1k</span>
   
 </div>
 
