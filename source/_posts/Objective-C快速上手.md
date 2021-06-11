@@ -1,7 +1,7 @@
 ---
 title: Objective-C快速上手
 date: 2017-06-05 15:28:42
-tags: iOS基础
+tags: 编程语言
 ---
 
 > 本文是 Objective-C 的快速上手文章，只要你之前有 Java 或者 C++ 的基础，相信入门 Objective-C ，只需要很短的时间。
