@@ -336,6 +336,519 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/09/手写JVM系列-4-分析class文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/09/手写JVM系列-4-分析class文件/" itemprop="url">手写JVM系列(4)-分析class文件</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-09T09:49:14+08:00">
+                2017-05-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,155
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>前面一节已经介绍了如何获取了字节文件的字节流,那么在获取到字节流之后,就要读取并解析字节码了,这一节会介绍 class 文件的结构.本节的代码均在<strong>classfile包</strong>下,源码<a href="https://github.com/zachaxy/JVM" target="_blank" rel="noopener">在这里</a></p>
+</blockquote>
+<h1 id="class文件的基本结构"><a href="#class文件的基本结构" class="headerlink" title="class文件的基本结构"></a>class文件的基本结构</h1><p>构成 class 文件的基本数据单位是字节，可以把整个 class 文件当成一个字节流来处理。稍大一些的数据由连续多个字节构成，这些数据在class文件中以<strong>大端（big-endian）方式存储</strong>。为了描述class文件格式，Java虚拟机规范定义了<code>u1</code>、<code>u2</code>和<code>u4</code>三种数据类型来表示1、2和4字节<strong>无符号整数</strong></p>
+<p>class文件中相同类型的多条数据一般按表（table）的形式存储（包括接下来要讲的常量池，属性表，接口索引集合，字段表集合，方法表集合）,表由表头和表项（item）构成，表头是 u2 或 u4 整数。假设表头是 n，后面就紧跟着 n 个表项数据。</p>
+<p>class文件的结构描述:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">  u4 magic;	<span class="comment">//魔数</span></span><br><span class="line">  u2 minor_version;	<span class="comment">//次版本号</span></span><br><span class="line">  u2 major_version;	<span class="comment">//主版本号</span></span><br><span class="line">  u2 constant_pool_count;	<span class="comment">//常量池大小</span></span><br><span class="line">  cp_info constant_pool[constant_pool_count-<span class="number">1</span>]; <span class="comment">//常量池</span></span><br><span class="line">  u2 access_flags;	<span class="comment">//类访问标志,表明class文件定义的是类还是接口，访问级别是public还是private，等</span></span><br><span class="line">  u2 this_class;	<span class="comment">//</span></span><br><span class="line">  u2 super_class;	<span class="comment">//</span></span><br><span class="line">  u2 interfaces_count;	<span class="comment">//本类实现的接口数量</span></span><br><span class="line">  u2 interfaces[interfaces_count];	<span class="comment">//实现的接口,存放在数组中</span></span><br><span class="line">  u2 fields_count;		<span class="comment">//本来中含有字段数</span></span><br><span class="line">  field_info fields[fields_count];	<span class="comment">//数组中存放这各个字段</span></span><br><span class="line">  u2 methods_count;		<span class="comment">//本类中含有的方法数</span></span><br><span class="line">  method_info methods[methods_count];	<span class="comment">//数组中存放着各个方法</span></span><br><span class="line">  u2 attributes_count;			<span class="comment">//本类中含有的属性数量;</span></span><br><span class="line">  attribute_info attributes[attributes_count];	<span class="comment">//数组中存放着各个属性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="解读-class-文件"><a href="#解读-class-文件" class="headerlink" title="解读 class 文件"></a>解读 class 文件</h1><p>接下来依次对 class 文件中的各个字段做一个介绍:</p>
+<h2 id="魔数"><a href="#魔数" class="headerlink" title="魔数"></a>魔数</h2><blockquote>
+<p>很多文件格式都会规定满足该格式的文件必须以某几个固定字节开头，这几个字节主要起标识作用，叫作魔数（magic number）。例如 PDF 文件以 4 字节“%PDF”（0x25、0x50、0x44、0x46）开头，ZIP 文件以 2 字节“PK”（0x50、0x4B）开头。class 文件的魔数是“0xCAFEBABE”。<br>开头的四字节,起标识作用.Java 虚拟机规范规定，如果加载的 class 文件不符合要求的格式，Java 虚拟机实现就抛出<code>java.lang.ClassFormatError</code>异常。</p>
+</blockquote>
+<p>校验魔数使用的方法:<code>ClassFile#readAndCheckMagic()</code></p>
+<h2 id="版本号"><a href="#版本号" class="headerlink" title="版本号"></a>版本号</h2><ul>
+<li>次版本号(m):2 字节</li>
+<li>主版本号(M):2 字节</li>
+</ul>
+<p>完整的版本号可以表示成“M.m”的形式。次版本号只在 J2SE 1.2 之前用过，从 1.2 开始基本上就没什么用了（都是 0）。主版本号在 J2SE 1.2 之前是 45，从 1.2 开始，每次有大的 Java 版本发布，都会加 1。 </p>
+<p>校验版本使用的方法:<code>ClassFile#readAndCheckVersion()</code></p>
+<h2 id="常量池"><a href="#常量池" class="headerlink" title="常量池"></a>常量池</h2><p>版本号之后是常量池，但是由于常量池比较复杂，所以放到<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-5-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B8%B8%E9%87%8F%E6%B1%A0/">手写JVM系列(5)-分析class文件-常量池</a>中介绍。</p>
+<h2 id="访问标志"><a href="#访问标志" class="headerlink" title="访问标志"></a>访问标志</h2><p>在常量池之后,紧接着是两字节的访问标志（access_flags），这个标示用来识别<strong>类或者接口</strong>的访问信息，两字节供 16 位，目前只定义了 8 位，没有用到的一律用 0 来填充，以备以后的拓展使用。</p>
+<table>
+<thead>
+<tr>
+<th align="left">标志名称</th>
+<th>标志值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">ACC_PUBLIC</td>
+<td>0x0001</td>
+<td>是否为 public 类型</td>
+</tr>
+<tr>
+<td align="left">ACC_FINAL</td>
+<td>0x0010</td>
+<td>是否被声明为 final，只有类可设置</td>
+</tr>
+<tr>
+<td align="left">ACC_SUPER</td>
+<td>0x0020</td>
+<td>是否允许使用 invokespecial 字节码指令的新语义，JDK1.0.2 之后编译出来的这个标志都必须为 1</td>
+</tr>
+<tr>
+<td align="left">ACC_INTERFACE</td>
+<td>0x0200</td>
+<td>标示这是一个接口</td>
+</tr>
+<tr>
+<td align="left">ACC_ABSTRACT</td>
+<td>0x0400</td>
+<td>是否为 abstract 类型，对于接口或者抽象类来说，此标志为真，其他类值为假</td>
+</tr>
+<tr>
+<td align="left">ACC_SYNTHETIC</td>
+<td>0x1000</td>
+<td>标志这个类并非由用户代码产生的</td>
+</tr>
+<tr>
+<td align="left">ACC_ANNOTATION</td>
+<td>0x2000</td>
+<td>标志这是一个注解</td>
+</tr>
+<tr>
+<td align="left">ACC_ENUM</td>
+<td>0x4000</td>
+<td>标志这是一个枚举</td>
+</tr>
+</tbody></table>
+<h2 id="类索引"><a href="#类索引" class="headerlink" title="类索引"></a>类索引</h2><p>访问标志之后是 u2 类型的类索引数据，用于确定这个类的全限定名。该 u2 类型的索引值指向常量池中一个类型为 CONSTANT_Class_info 的类描述符常量,再通过 CONSTANT_Class_info 类型的常量中的索引值,可以找到定义在 CONSTANT_Utf8_info 类型的常量中的全限定名字符串。</p>
+<p>类索引说白了就是一个指向常量池的索引值，那么直接用一个 int 值来表示即可。</p>
+<h2 id="父类索引"><a href="#父类索引" class="headerlink" title="父类索引"></a>父类索引</h2><p>类索引之后是 u2 类型的父类索引数据，用于确定这个类的父类的全限定名。由于 Java 语言不允许多继承，所以其父类索引只有一个。除了 java.lang.Obect 之外,所有的 Java 类都有父类，所以除了 java.lang.Obect 的父类索引为 0，其余都不为 0。</p>
+<p>该 u2 类型的索引值指向常量池中一个类型为 CONSTANT_Class_info 的类描述符常量,在通过 CONSTANT_Class_info 类型的常量中的索引值,可以找到定义在 CONSTANT_Utf8_info 类型的常量中的全限定名字符串。</p>
+<p>同理，父类索引也是直接用一个 int 值来表示。</p>
+<h2 id="接口索引集合"><a href="#接口索引集合" class="headerlink" title="接口索引集合"></a>接口索引集合</h2><p>父类索引之后是 u2 类型数据的接口索引集合。用来表述这个类实现了哪些接口。按照 implements 语句后面的接口顺序从前向后在接口索引集合中。</p>
+<p>入口的第一项是 u2 类型的接口计数器，表示接口索引表的大小，如果该类没有实现接口，则计数器为 0，后面的接口索引表不占用任何字节。</p>
+<p>因为有可能实现了多个接口，所以使用一个数组来盛放实习了接口在常量池中的索引值。</p>
+<h2 id="字段表集合"><a href="#字段表集合" class="headerlink" title="字段表集合"></a>字段表集合</h2><p>接口索引集合之后是字段表集合。虚拟机规范给出的字段结构定义如下，字段表用来描述类或接口中声明的变量。包括静态变量和非静态变量。：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">field_info &#123;</span><br><span class="line">  u2 access_flags;		<span class="comment">//字段的访问修饰符</span></span><br><span class="line">  u2 name_index;		<span class="comment">//常量池索引，代表字段的简单名称</span></span><br><span class="line">  u2 descriptor_index;	<span class="comment">//常量池索引，代表字段描述符</span></span><br><span class="line">  u2 attributes_count;	<span class="comment">//字段的额外附加属性数量</span></span><br><span class="line">  attribute_info attributes[attributes_count];	<span class="comment">//字段的额外的附加属性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>字段表中第一个字段 u2 是访问修饰符，这和前面讲的类访问符标志很相似，下表列举下字段的访问标志可选项：</p>
+<table>
+<thead>
+<tr>
+<th>标志名称</th>
+<th>标志值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACC_PUBLIC</td>
+<td>0x0001</td>
+<td>字段是否为 public</td>
+</tr>
+<tr>
+<td>ACC_PRIVATE</td>
+<td>0x0002</td>
+<td>字段是否为 private</td>
+</tr>
+<tr>
+<td>ACC_PROTECTED</td>
+<td>0x0004</td>
+<td>字段是否为 protected</td>
+</tr>
+<tr>
+<td>ACC_STATIC</td>
+<td>0x0008</td>
+<td>字段是否为 static</td>
+</tr>
+<tr>
+<td>ACC_FINAL</td>
+<td>0x0010</td>
+<td>字段是否为 final</td>
+</tr>
+<tr>
+<td>ACC_VOLATILE</td>
+<td>0x0040</td>
+<td>字段是否为 volatile</td>
+</tr>
+<tr>
+<td>ACC_TRANSIENT</td>
+<td>0x0080</td>
+<td>字段是否为 transient</td>
+</tr>
+<tr>
+<td>ACC_SYNTHETIC</td>
+<td>0x1000</td>
+<td>字段是否由编译器自动产生</td>
+</tr>
+<tr>
+<td>ACC_ENUM</td>
+<td>0x4000</td>
+<td>字段是否是 enum 类型</td>
+</tr>
+</tbody></table>
+<p>在实际情况中访问标志的使用时有限制的，比如 ACC_PUBLIC、ACC_PRIVATE 和 ACC_PROTECTED 三个标志只能选其一，ACC_FINAL 和 ACC_VOLATILE 只能选其一等，这些都是由 Java 本身的语言规范所决定的。</p>
+<p>随着 access_flags 标志后的两项索引值是 name_index 和 descriptor_index。他们都是对常量池的引用，分别代表着字段的名称和描述。</p>
+<p>字段的简单名称：不含类型的字段名称。 （eg：int  i,其简单名称为 i）</p>
+<p>字段的描述符：用来描述字段的数据类型。(eg: int i,其描述符为 I)</p>
+<p>​                                    描述符标识字符含义:</p>
+<p><img src="http://i.imgur.com/G01YtQJ.png" alt></p>
+<p>对于数组类型，每一维度将使用一个前置的“[”字符来描述。如定义一个<code>String[][]</code>类型的二维数组，其描述符为：<code>[[Ljava/lang/String;</code></p>
+<p>用描述符来描述方法时，按照先参数列表，后返回值的顺序描述，参数列表按照参数的严格顺序放在一组小括号“()”之内。</p>
+<p>在 descriptor_index 之后跟随着一个 u2 类型的数据 len，描述后面一个长度为 len 的属性表数组，这个数组用于存储一些额外的信息，字段都可以在属性表中描述零至多项的额外信息。当然这个属性数组中保存的并不是真正的属性，而是属性表的索引。关于属性表，将在<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-6-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B1%9E%E6%80%A7%E8%A1%A8/">手写JVM系列(6)-分析class文件-属性表</a>中单独介绍。</p>
+<p><strong>注：字段表集合中不会列出从超类或者父接口中继承而来的字段，但是有可能列出原来 Java 代码中不存在的字段，譬如在内部类中为了保持外部类的访问性，会自动添加一个指向外部类实例的字段。</strong></p>
+<h2 id="方法表集合"><a href="#方法表集合" class="headerlink" title="方法表集合"></a>方法表集合</h2><p>字段表之后是方法表集合，和字段表集合的描述几乎是一样的（因此我在代码中对方法表和字段表使用同一个类 MemberInfo 来表示的），其结构如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">field_info &#123;</span><br><span class="line">  u2 access_flags;		<span class="comment">//方法的访问修饰符</span></span><br><span class="line">  u2 name_index;		<span class="comment">//常量池索引，代表方法的简单名称</span></span><br><span class="line">  u2 descriptor_index;	<span class="comment">//常量池索引，代表方法描述符</span></span><br><span class="line">  u2 attributes_count;	<span class="comment">//方法的额外附加属性数量</span></span><br><span class="line">  attribute_info attributes[attributes_count];	<span class="comment">//方法的额外的附加属性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>方法表的第一个字段是访问修饰符，和字段表访问修饰符类似，不同的是：因为 volatile 和 transient 关键字不能修饰方法，所以方法表的访问标志中没有这这两项，但是添加了 synchronized，native，strictfp，abstract 等可用来修饰方法的关键字，具体如下：</p>
+<table>
+<thead>
+<tr>
+<th>标志名称</th>
+<th>标志值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACC_PUBLIC</td>
+<td>0x0001</td>
+<td>方法是否为 public</td>
+</tr>
+<tr>
+<td>ACC_PRIVATE</td>
+<td>0x0002</td>
+<td>方法是否为 private</td>
+</tr>
+<tr>
+<td>ACC_PROTECTED</td>
+<td>0x0004</td>
+<td>方法是否为 protected</td>
+</tr>
+<tr>
+<td>ACC_STATIC</td>
+<td>0x0008</td>
+<td>方法是否为 static</td>
+</tr>
+<tr>
+<td>ACC_FINAL</td>
+<td>0x0010</td>
+<td>方法是否为 final</td>
+</tr>
+<tr>
+<td>ACC_SYNCHRONIZED</td>
+<td>0x0020</td>
+<td>方法是否为 synchronized</td>
+</tr>
+<tr>
+<td>ACC_BRIDGE</td>
+<td>0x0040</td>
+<td>方法是否是由编译器产生的桥接方法</td>
+</tr>
+<tr>
+<td>ACC_VARARGS</td>
+<td>0x0080</td>
+<td>方法是否接受不定参数</td>
+</tr>
+<tr>
+<td>ACC_NAVIVE</td>
+<td>0x0100</td>
+<td>方法是否为 native</td>
+</tr>
+<tr>
+<td>ACC_ABSTRACT</td>
+<td>0x0400</td>
+<td>方法是否为 abstract</td>
+</tr>
+<tr>
+<td>ACC_STRICTFP</td>
+<td>0x0800</td>
+<td>方法是否为 strictfp</td>
+</tr>
+<tr>
+<td>ACC_SYNTHETIC</td>
+<td>0x1000</td>
+<td>方法是否由编译器自动产生</td>
+</tr>
+</tbody></table>
+<p>随着 access_flags 标志后的两项索引值是 name_index 和 descriptor_index。他们都是对常量池的引用，分别代表着方法的名称和描述。</p>
+<p>方法的简单名称：不含类型和返回值的方法名称。</p>
+<p>方法的描述符：描述方法的参数列表（数量，类型，顺序）和返回值。</p>
+<p>以  eg：int func (int i，String s) 为例子,其简单名称为 func，方法描述符为：可参照上面的描述符标识字符含义图。</p>
+<p>方法的简单名称：func</p>
+<p>方法的描述符：(ILjava/lang/String)I</p>
+<p>在 descriptor_index 之后跟随着一个 u2 类型的数据 len，描述后面一个长度为 len 的属性表数组，这个数组用于存储一些额外的信息，方法可以在属性表中描述零至多项的额外信息。和字段不同的是，字段只需要一个变量名和对应值就可以了，但是方法内部是包含代码的，这段代码在字节码中是如何表示的呢？答案是放在了方法属性表中的 Code 属性中，和字段表一样，方法表中的属性数组中并不保存真正的属性，而是保存的属性表的索引，关于属性表，将在<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-6-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B1%9E%E6%80%A7%E8%A1%A8/">手写JVM系列(6)-分析class文件-属性表</a>中单独介绍。</p>
+<p><strong>注意：如果父类方法在子类中没有被重写，方法表集合中就不会出现来自父类的信息。和字段表类似的是，方法表中可能会出现编译器会自动添加的方法，最典型的就是：类构造器<code>&lt;clinit&gt;</code>和实例构造器<code>&lt;init&gt;</code></strong></p>
+<p>关于方法的重载</p>
+<p> 重载一个方法，除了要与原方法具有相同的简单名称之外，还要求必须拥有一个与原方法不同的特征签名。特征签名就是一个方法中各个参数在常量池中的字段符号引用集合，而返回值不会包含在特征签名中。但是如果两个方法具有相同的名称和特征签名，只是返回值不同，那么也可以合法共存于同一个 Class 文件中的。但是编译器是会阻止这一行为的，如果两个方法仅仅是返回值不同，编译器会直接报错。所以只能通过字节注入的方式，实现返回值不同的两个方法。</p>
+<h2 id="属性表"><a href="#属性表" class="headerlink" title="属性表"></a>属性表</h2><p>方法表集合之后是属性表，但是由于属性表比较复杂，所以放到<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-6-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B1%9E%E6%80%A7%E8%A1%A8/">手写JVM系列(6)-分析class文件-属性表</a>中介绍。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/08/手写JVM系列-3-搜索class文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/08/手写JVM系列-3-搜索class文件/" itemprop="url">手写JVM系列(3)-搜索class文件</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-08T15:01:12+08:00">
+                2017-05-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,477
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>本节的目的是根据<code>-cp</code>命令指定的class路径以及后面的<code>ClassName</code>,找到对应的class文件,然后简单的打印出该 class 文件的字节码.完整源码<a href="https://github.com/zachaxy/JVM" target="_blank" rel="noopener">classpath包中</a></p>
+</blockquote>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/05/08/手写JVM系列-3-搜索class文件/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/07/手写JVM系列-2-参数解析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -948,322 +1461,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/04/26/字符串匹配-KMP算法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/04/26/字符串匹配-KMP算法/" itemprop="url">字符串匹配--KMP算法</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-26T09:21:26+08:00">
-                2017-04-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,611
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p><strong>Knuth-Morris-Pratt 字符串查找算法</strong>（常简称为“<strong>KMP算法</strong>”）可在一个主“文本字符串”<code>s</code>内查找一个“词”<code>m</code>的出现位置。此算法通过运用对这个词在不匹配时本身就包含足够的信息来确定下一个匹配将在哪里开始的发现，从而避免重新检查先前匹配的字符。</p>
-</blockquote>
-<h1 id="初始化变量"><a href="#初始化变量" class="headerlink" title="初始化变量"></a>初始化变量</h1><p>待查找的字符串:s<br>要匹配的字符串:m    </p>
-<h1 id="普通的做法"><a href="#普通的做法" class="headerlink" title="普通的做法"></a>普通的做法</h1><p>字符串匹配算法最常规的思路是在s中一个字符一个字符的与m中的第一个字符比较,匹配了说明找到了源头(i)这个i接下来很可能会与m完全匹配的,再比较各自接下来一个字符,如果匹配不上,说明上次找的i不是我们想要的源头,接着怎么办?从i+1开始,看i+1是否有可能是这个源头.</p>
-<h2 id="普通做法的缺点"><a href="#普通做法的缺点" class="headerlink" title="普通做法的缺点"></a>普通做法的缺点</h2><p>时间复杂度高,造成这个的原因是因为在匹配过程中,虽然没有完全匹配上.但是很可能已经匹配了一部分,已经匹配上了的这一小部分并没有被充分利用起来;</p>
-<h1 id="KMP算法"><a href="#KMP算法" class="headerlink" title="KMP算法"></a>KMP算法</h1><blockquote>
-<p>充分利用在匹配过程中,没有完全匹配上但是已经匹配上一部分的资源.</p>
-</blockquote>
-<h2 id="几个概念"><a href="#几个概念" class="headerlink" title="几个概念:"></a>几个概念:</h2><p>下面的概念都是针对一个字符串而言的,eg:一个字符串为abc</p>
-<p>前缀:a,ab,包含首字符,但不包含末字符的字符串;<br>后缀:c,bc,包含末字符,但不包含首字符的字符串;       </p>
-<h2 id="具体步骤"><a href="#具体步骤" class="headerlink" title="具体步骤"></a>具体步骤</h2><h3 id="构造辅助数组"><a href="#构造辅助数组" class="headerlink" title="构造辅助数组"></a>构造辅助数组</h3><ol>
-<li>拿到m字符串,生成一个与m等长的整型数组next[]</li>
-<li>初始化next[0] = -1,next[1] = 0</li>
-<li>从2开始遍历m,next[i]的值就是 字符串 m[0~i-1] 的相同的最长前缀和最长后缀的长度</li>
-</ol>
-<h3 id="匹配过程"><a href="#匹配过程" class="headerlink" title="匹配过程"></a>匹配过程</h3><ul>
-<li>开始匹配,定义两个游标,si和mi,初始均为0</li>
-<li>如果能匹配上,si++,mi++</li>
-<li>如果匹配不上,注意此时的隐含条件是mi之前的已经匹配上了,我们想下次移动的时候不是把m移动到上次匹配s的起止位置之后的一个字符处,而是看m[0~i-1]中的前缀和后缀是不是有一样的地方,这样就可以重复利用,这不就是next数组的作用吗?因此查看此时的next数组,将mi = next[mi];接下来当然从si和mi继续匹配,看能否匹配了</li>
-<li>如果next[mi] == -1,表明连m的第一个字符都匹配不上,那么只能si++;</li>
-</ul>
-<h3 id="源代码"><a href="#源代码" class="headerlink" title="源代码"></a>源代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: zhangxin</span></span><br><span class="line"><span class="comment"> * Time: 2016/12/16 0016.</span></span><br><span class="line"><span class="comment"> * Desc:KMP算法;</span></span><br><span class="line"><span class="comment"> * 核心是next[]数组的计算,以及在匹配过程中如何使用next,感性上的理解是需要移动数组的,但在实际的使用中时只需要修改si与mi即可;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">KMP</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getIndexOf</span><span class="params">(String s, String m)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (s == <span class="keyword">null</span> || m == <span class="keyword">null</span> || m.length() &lt; <span class="number">1</span> || s.length() &lt; m.length()) &#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">char</span>[] ss = s.toCharArray();</span><br><span class="line">        <span class="keyword">char</span>[] ms = m.toCharArray();</span><br><span class="line">        <span class="keyword">int</span> si = <span class="number">0</span>; <span class="comment">//str中当前i的位置;其实真正的游标是si,你想匹配字符串的时候,主标是s掌控的;</span></span><br><span class="line">        <span class="keyword">int</span> mi = <span class="number">0</span>;<span class="comment">//match中当前i的位置;</span></span><br><span class="line">        <span class="keyword">int</span>[] next = getNextArray(ms);</span><br><span class="line">        <span class="keyword">while</span> (si &lt; ss.length &amp;&amp; mi &lt; ms.length) &#123;</span><br><span class="line">            <span class="keyword">if</span> (ss[si] == ms[mi]) &#123;</span><br><span class="line">                <span class="comment">//当前字符能匹配上,si,mi都前移一位;</span></span><br><span class="line">                si++;</span><br><span class="line">                mi++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (next[mi] == -<span class="number">1</span>) &#123;</span><br><span class="line">                <span class="comment">//匹配不上,mi=0,第一个字符都匹配不上,si前移一位;</span></span><br><span class="line">                si++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">//前面还是有部分能匹配上的,mi=next[mi];si不变;</span></span><br><span class="line">                mi = next[mi];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> mi == ms.length ? si - mi : -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/***</span></span><br><span class="line"><span class="comment">     * 获取nextArr数组</span></span><br><span class="line"><span class="comment">     * nextArr[0] = -1;因为如果第一个字符都匹配不上,那么match整体后移1位;</span></span><br><span class="line"><span class="comment">     * nextArr[1] = 0;因为第一个字符没有前缀也没有后缀,肯定是0</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ms match字符串对应的字符数组</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span>[] getNextArray(<span class="keyword">char</span>[] ms) &#123;</span><br><span class="line">        <span class="keyword">if</span> (ms.length == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;-<span class="number">1</span>&#125;;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span>[] next = <span class="keyword">new</span> <span class="keyword">int</span>[ms.length];</span><br><span class="line">        next[<span class="number">0</span>] = -<span class="number">1</span>;</span><br><span class="line">        next[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> pos = <span class="number">2</span>; <span class="comment">//当前位置;</span></span><br><span class="line">        <span class="keyword">int</span> cn = <span class="number">0</span>; <span class="comment">//前缀开始匹配的位置;</span></span><br><span class="line">        <span class="keyword">while</span> (pos &lt; next.length) &#123;</span><br><span class="line">            <span class="keyword">if</span> (ms[pos - <span class="number">1</span>] == ms[cn]) &#123;</span><br><span class="line">                next[pos++] = ++cn;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cn &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">//遇到某个字符匹配不上了,那么直接下次不能再用之前的了,而是将cn置0</span></span><br><span class="line">                <span class="comment">// next先不设置,cn==0后,再去进入循环,从头匹配;也许能匹配的上;</span></span><br><span class="line">                <span class="comment">//cn = next[cn]; 不看这一句,删掉;</span></span><br><span class="line">                cn = <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                next[pos++] = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> next;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        String str = <span class="string">"abcabcababaccc"</span>;</span><br><span class="line">        String match = <span class="string">"ababa"</span>;</span><br><span class="line">        <span class="comment">/*str = "abxxxabwwab";</span></span><br><span class="line"><span class="comment">        match = "xab";*/</span></span><br><span class="line">        System.out.println(getIndexOf(str, match));</span><br><span class="line">        System.out.println(str.indexOf(match));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="next-数组深入分析"><a href="#next-数组深入分析" class="headerlink" title="next[]数组深入分析"></a>next[]数组深入分析</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">分析 match = &quot;ababa&quot;  =&gt; next[5]</span><br><span class="line">next[i]的含义:match[0~i-1]组成的字符串,最长前缀(不包含最后一个字符)和最长后缀(不包含第一个字符)匹配上的长度;</span><br><span class="line">初始化:</span><br><span class="line">next[0] = -1;显然match[0~0-1]无意义,令其等于-1,代表第一个字符都匹配不上,match直接右移一位</span><br><span class="line">next[1] = 0;显然match[0~1-1]就是match[0],只有一个字符,没有前缀也没有后缀;所以next[1]=0;</span><br><span class="line">接下来开始匹配了,match[2]这个位置前面已经有两个字符了,可能前两个字符相等,那么next[2]=1,不相等,next[2]=0</span><br><span class="line">可以发现的是,第一次匹配一定是match[i-1]和match[0]匹配;接下来如果再能匹配,因为match[i-1]和match[0]已匹配,match[i]和match[1]也能匹配了</span><br><span class="line"></span><br><span class="line">ababa的next数组;</span><br><span class="line">    0 1 2 3 4</span><br><span class="line">    a b a b a</span><br><span class="line">   -1 0 0 1 2</span><br><span class="line"></span><br><span class="line">接下来拿ababcccc与ababe来匹配,ababe的next数组为&#123;-1,0,0,1,2&#125;,和上面的ababa是一样的;</span><br><span class="line">一开始是可以匹配的,当si = mi = 4 时,匹配不上了,这个时候的隐含条件就是m中的[0~mi-1]是都能匹配上的</span><br><span class="line">这时候找next[mi],next[4]=2,说明mi之前的字符串中前两个和最后两个可以匹配上,所以下次比的时候,si = 4,mi = 2,从m[3]字符处开始匹配;</span><br></pre></td></tr></table></figure>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/04/13/Dijkstra算法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/04/13/Dijkstra算法/" itemprop="url">Dijkstra算法</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-13T15:12:38+08:00">
-                2017-04-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,254
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p>Dijkstra算法,给出一个邻接矩阵和一个起始点,返回这个其实点到邻接矩阵中各个点的最短距离</p>
-<p>使用了广度优先搜索解决非负权有向图的单源最短路径问题，算法最终得到一个最短路径树（一个节点到其他所有节点的最短路径）。<br>该算法常用于路由算法或者作为其他图算法的一个子模块。主要特点是以起始点为中心向外层层扩展，直到扩展到终点为止。</p>
-</blockquote>
-<hr>
-<p>基本用法:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Dijkstra</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> M = Integer.MAX_VALUE; <span class="comment">//此路不通</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//邻接矩阵,单向连接;</span></span><br><span class="line">        <span class="keyword">int</span>[][] weight = &#123;</span><br><span class="line">                &#123;<span class="number">0</span>, <span class="number">10</span>, M, <span class="number">30</span>, <span class="number">100</span>&#125;,</span><br><span class="line">                &#123;M, <span class="number">0</span>, <span class="number">50</span>, M, M&#125;,</span><br><span class="line">                &#123;M, M, <span class="number">0</span>, M, <span class="number">10</span>&#125;,</span><br><span class="line">                &#123;M, M, <span class="number">20</span>, <span class="number">0</span>, <span class="number">60</span>&#125;,</span><br><span class="line">                &#123;M, M, M, M, <span class="number">0</span>&#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置起始点,这里将0设置为起始点,接下来要做的动作是寻找整个图中所有点距离0最近的距离;</span></span><br><span class="line">        <span class="keyword">int</span> start = <span class="number">0</span>;</span><br><span class="line">        <span class="comment">//最短路径的数组,长度为0,保存了0到n个点的最短距离,当然第一个值是0到0的距离,距离为0;</span></span><br><span class="line">        <span class="keyword">int</span>[] shortPath = dijkstra(weight, start);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//打印0到各点最近的距离;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; shortPath.length; i++)</span><br><span class="line">            System.out.println(<span class="string">"从"</span> + start + <span class="string">"出发到"</span> + i + <span class="string">"的最短距离为："</span> + shortPath[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/***</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> weight 有向图的权重矩阵</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> start  一个起点编号start（从0编号，顶点存在数组中）</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 返回一个int[] 数组，表示从start到它的最短路径长度</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span>[] dijkstra(<span class="keyword">int</span>[][] weight, <span class="keyword">int</span> start) &#123;</span><br><span class="line">        <span class="keyword">int</span> n = weight.length;         <span class="comment">//顶点个数</span></span><br><span class="line">        <span class="keyword">int</span>[] shortPath = <span class="keyword">new</span> <span class="keyword">int</span>[n];  <span class="comment">//保存start到其他各点的最短路径,最后作为返回值被返回;</span></span><br><span class="line">        String[] path = <span class="keyword">new</span> String[n];  <span class="comment">//保存start到其他各点最短路径的字符串描述;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//初始化从start到各个节点的最优路径图</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            path[i] = start + <span class="string">"--&gt;"</span> + i;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//或者用一个boolean类型的数组表示,是否已经访问过;</span></span><br><span class="line">        <span class="keyword">int</span>[] visited = <span class="keyword">new</span> <span class="keyword">int</span>[n];   <span class="comment">//标记当前该顶点的最短路径是否已经求出,1表示已求出</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//初始化，第一个顶点已经求出</span></span><br><span class="line">        shortPath[start] = <span class="number">0</span>;</span><br><span class="line">        visited[start] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">//最外层循环,一共n个节点,要找到start节点到其他n-1个节点的最短距离,因此这里需要循环n-1次;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> count = <span class="number">1</span>; count &lt; n; count++) &#123;   <span class="comment">//要加入n-1个顶点</span></span><br><span class="line">            <span class="keyword">int</span> k = -<span class="number">1</span>;        <span class="comment">//选出一个距离初始顶点start最近的未标记顶点,暂时记为k;</span></span><br><span class="line">            <span class="keyword">int</span> dmin = Integer.MAX_VALUE;  <span class="comment">//临时距离;</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">//内循环找到一个距离start最近的点;</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (visited[i] == <span class="number">0</span> &amp;&amp; weight[start][i] &lt; dmin) &#123;</span><br><span class="line">                    dmin = weight[start][i];</span><br><span class="line">                    k = i;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//至此已经找到了一个距离start的最短点;</span></span><br><span class="line">            <span class="comment">//将新选出的顶点标记为已求出最短路径，且到start的最短路径就是dmin</span></span><br><span class="line">            shortPath[k] = dmin;</span><br><span class="line">            visited[k] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//以k为中间点，修正从start到未访问各点的距离</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">                <span class="comment">//start不能到i;但是start可以到k,k可以到i,</span></span><br><span class="line">                <span class="keyword">if</span> (visited[i] == <span class="number">0</span> &amp;&amp; weight[k][i] != M &amp;&amp; weight[start][k] + weight[k][i] &lt; weight[start][i]) &#123;</span><br><span class="line">                    weight[start][i] = weight[start][k] + weight[k][i];</span><br><span class="line">                    path[i] = path[k] + <span class="string">"--&gt;"</span> + i;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//打印最短路径们;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            System.out.println(<span class="string">"从"</span> + start + <span class="string">"出发到"</span> + i + <span class="string">"的最短路径为："</span> + path[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">"====================================="</span>);</span><br><span class="line">        <span class="keyword">return</span> shortPath;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>改进:基本用法中为了更好的展示,使用了邻接矩阵,这需要更大的内存空间,一个改进方法是使用邻接链表;</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">buildGraph</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    HashMap&lt;String, Vertex&gt; nodes = <span class="keyword">new</span> HashMap&lt;String, Vertex&gt;();</span><br><span class="line">    nodes.put(<span class="string">"a"</span>, <span class="keyword">new</span> Vertex(<span class="string">"a"</span>));</span><br><span class="line">    nodes.put(<span class="string">"b"</span>, <span class="keyword">new</span> Vertex(<span class="string">"b"</span>));</span><br><span class="line">    nodes.put(<span class="string">"c"</span>, <span class="keyword">new</span> Vertex(<span class="string">"c"</span>));</span><br><span class="line">    nodes.put(<span class="string">"d"</span>, <span class="keyword">new</span> Vertex(<span class="string">"d"</span>));</span><br><span class="line">    nodes.put(<span class="string">"e"</span>, <span class="keyword">new</span> Vertex(<span class="string">"e"</span>));</span><br><span class="line"></span><br><span class="line">    nodes.get(<span class="string">"a"</span>).map.put(nodes.get(<span class="string">"b"</span>), <span class="keyword">new</span> Edge(nodes.get(<span class="string">"a"</span>), nodes.get(<span class="string">"b"</span>), <span class="number">10</span>));</span><br><span class="line">    nodes.get(<span class="string">"a"</span>).map.put(nodes.get(<span class="string">"d"</span>), <span class="keyword">new</span> Edge(nodes.get(<span class="string">"a"</span>), nodes.get(<span class="string">"d"</span>), <span class="number">30</span>));</span><br><span class="line">    nodes.get(<span class="string">"a"</span>).map.put(nodes.get(<span class="string">"e"</span>), <span class="keyword">new</span> Edge(nodes.get(<span class="string">"a"</span>), nodes.get(<span class="string">"e"</span>), <span class="number">100</span>));</span><br><span class="line"></span><br><span class="line">    nodes.get(<span class="string">"b"</span>).map.put(nodes.get(<span class="string">"c"</span>), <span class="keyword">new</span> Edge(nodes.get(<span class="string">"b"</span>), nodes.get(<span class="string">"c"</span>), <span class="number">50</span>));</span><br><span class="line"></span><br><span class="line">    nodes.get(<span class="string">"c"</span>).map.put(nodes.get(<span class="string">"e"</span>), <span class="keyword">new</span> Edge(nodes.get(<span class="string">"c"</span>), nodes.get(<span class="string">"e"</span>), <span class="number">10</span>));</span><br><span class="line"></span><br><span class="line">    nodes.get(<span class="string">"d"</span>).map.put(nodes.get(<span class="string">"c"</span>), <span class="keyword">new</span> Edge(nodes.get(<span class="string">"d"</span>), nodes.get(<span class="string">"c"</span>), <span class="number">20</span>));</span><br><span class="line">    nodes.get(<span class="string">"d"</span>).map.put(nodes.get(<span class="string">"e"</span>), <span class="keyword">new</span> Edge(nodes.get(<span class="string">"d"</span>), nodes.get(<span class="string">"e"</span>), <span class="number">60</span>));</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//节点,没有什么特别之处,和一个String的类型一样;</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Vertex</span> </span>&#123;</span><br><span class="line">    String key;</span><br><span class="line">    HashMap&lt;Vertex, Edge&gt; map = <span class="keyword">new</span> HashMap&lt;Vertex, Edge&gt;();  <span class="comment">//key:以Vertex为end边的节点,当前节点到key的距离;</span></span><br><span class="line"></span><br><span class="line">    Vertex(String key) &#123;</span><br><span class="line">        <span class="keyword">this</span>.key = key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//边,包含了一个起始和一个终止节点,已经一个边的长度;</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Edge</span> </span>&#123;</span><br><span class="line">    Vertex start;</span><br><span class="line">    Vertex end;</span><br><span class="line">    <span class="keyword">int</span> Len;</span><br><span class="line">    <span class="keyword">boolean</span> used;</span><br><span class="line"></span><br><span class="line">    Edge(Vertex start, Vertex end, <span class="keyword">int</span> key) &#123;</span><br><span class="line">        <span class="keyword">this</span>.start = start;</span><br><span class="line">        <span class="keyword">this</span>.end = end;</span><br><span class="line">        <span class="keyword">this</span>.Len = key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/10/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/12/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/10/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/12/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1313,7 +1515,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-count">66</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1326,7 +1528,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1393,7 +1595,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">148.1k</span>
+    <span title="站点文章字数总计">148.9k</span>
   
 </div>
 

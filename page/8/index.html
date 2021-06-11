@@ -336,6 +336,370 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/28/Volley源码解析-线程切换/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/28/Volley源码解析-线程切换/" itemprop="url">Volley源码解析-线程切换</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-28T17:52:23+08:00">
+                2017-05-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,166
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="ResponseDelivery-接口"><a href="#ResponseDelivery-接口" class="headerlink" title="ResponseDelivery 接口"></a>ResponseDelivery 接口</h1><p>无论是执行网络请求还是从本地文件中读取缓存，都是放在子线程中去执行的，那么读取到响应之后，要做的工作就是把响应从子线程分发到 UI 线程，本节将学习 Volley 中是如何实现这一功能的。</p>
+<p>这里用到了一个接口：<strong>ResponseDelivery</strong>，其中定义了一些方法，用来将响应从子线程发送的 UI 线程。</p>
+<ul>
+<li><code>public void postResponse(Request&lt;?&gt; request, Response&lt;?&gt; response)</code>：将 response 发送到 UI 线程；</li>
+<li><code>public void postResponse(Request&lt;?&gt; request, Response&lt;?&gt; response, Runnable runnable)</code>：和上一个方法功能类似，只不过多加了一个 Runnable，其作用是在 response 被发送到 UI 线程之后，执行该 runnable</li>
+<li><code>public void postError(Request&lt;?&gt; request, VolleyError error)</code>：在网络请求过程中出现了错误，Volley 会将该错误封装成一个 VolleyError，调用该方法可以将该 VolleyError 发送的 UI 线程，由具体的业务处理不同的错误，显示不同的提示信息；</li>
+</ul>
+<h1 id="ExecutorDelivery-实现类"><a href="#ExecutorDelivery-实现类" class="headerlink" title="ExecutorDelivery 实现类"></a>ExecutorDelivery 实现类</h1><h2 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h2><p>而 ResponseDelivery 只有一个实现类——ExecutorDelivery，无论是在 NetworkDispatcher 中还是 CacheDispatcher 中得到了 response，都会调用该类的 postResponse 方法，将结果发送到 UI 线程，ExecutorDelivery 是何时被创建的呢？答案就是创建 RequestQueue 时，在 RequestQueue 的构造方法中。ExecutorDelivery 的创建方式是：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> ExecutorDelivery(<span class="keyword">new</span> Handler(Looper.getMainLooper()));</span><br></pre></td></tr></table></figure>
+
+<p>这里看到构造方法中传入了一个 Handler，并且传入的是 MainLooper，那么首先子线程向 UI 线程发送数据的机制肯定是通过 Handler 无疑了。</p>
+<h2 id="重要成员变量"><a href="#重要成员变量" class="headerlink" title="重要成员变量"></a>重要成员变量</h2><p>ExecutorDelivery 中还有一个很重要的成员变量<code>Executor mResponsePoster</code>这是一个线程池，其创建过程也是在构造方法中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ExecutorDelivery</span><span class="params">(<span class="keyword">final</span> Handler handler)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Make an Executor that just wraps the handler.</span></span><br><span class="line">    mResponsePoster = <span class="keyword">new</span> Executor() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Runnable command)</span> </span>&#123;</span><br><span class="line">            handler.post(command);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看出，ExecutorDelivery 中线程池 mResponsePoster 的作用就是在线程中调用 handler，发送 runnable，通过这种形式使得 runnable 在 UI 线程中执行。</p>
+<h2 id="内部类——Runnable-子类"><a href="#内部类——Runnable-子类" class="headerlink" title="内部类——Runnable 子类"></a>内部类——Runnable 子类</h2><p>上面提到线程池的内部是通过 handler，发送 runnable，通过这种形式使得 runnable 在 UI 线程中执行，那么这个 runnable 对象又是如何与 request 和 response 关联的呢？这就用到了 ExecutorDelivery 中的一个内部类 ResponseDeliveryRunnable</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ResponseDeliveryRunnable</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Request mRequest;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Response mResponse;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Runnable mRunnable;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ResponseDeliveryRunnable</span><span class="params">(Request request, Response response, Runnable runnable)</span> </span>&#123;</span><br><span class="line">        mRequest = request;</span><br><span class="line">        mResponse = response;</span><br><span class="line">        mRunnable = runnable;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// If this request has canceled, finish it and don't deliver.</span></span><br><span class="line">        <span class="keyword">if</span> (mRequest.isCanceled()) &#123;</span><br><span class="line">            mRequest.finish(<span class="string">"canceled-at-delivery"</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Deliver a normal response or error, depending.</span></span><br><span class="line">        <span class="keyword">if</span> (mResponse.isSuccess()) &#123;</span><br><span class="line">            mRequest.deliverResponse(mResponse.result);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            mRequest.deliverError(mResponse.error);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// If this is an intermediate response, add a marker, otherwise we're done</span></span><br><span class="line">        <span class="comment">// and the request can be finished.</span></span><br><span class="line">        <span class="keyword">if</span> (mResponse.intermediate) &#123;</span><br><span class="line">            mRequest.addMarker(<span class="string">"intermediate-response"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            mRequest.finish(<span class="string">"done"</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// If we have been provided a post-delivery runnable, run it.</span></span><br><span class="line">        <span class="keyword">if</span> (mRunnable != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mRunnable.run();</span><br><span class="line">        &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过 ResponseDeliveryRunnable 的构造方法，将 request，response 传入，同时还可以在传入一个 Runnable 对象，这在 ResponseDelivery 的第二个接口中有提到过，该 Runnable 会在 response 被发送到 UI 线程后立即执行。</p>
+<p>那么 ResponseDeliveryRunnable 类中的 run 方法则是整个线程切换的核心了；</p>
+<p>要明确一点是，如果能执行到这里，那么 request 一定是得到 response 了</p>
+<p>首先，判断该 request 是不是在得到请求还为发送到 UI 线程之前被取消了，如果是的话，执行 request 的 finish 方法</p>
+<p>接着，如果 response 成功返回了，那么就调用 request 的 deliverResponse 方法，这个方法也很眼熟吧，这是我们在自定义 request 时必须要实现的方法，这个方法内部一般是回调 request 中的 listener 的 onResponse，否则，如果该 response 没有成功返回，会调用 request 的 deliverError 方法，而这个方法内部 request 的默认实现是调用 ErrorListener 的 onErrorResponse 方法。</p>
+<p>最后调用 request 的 finish 方法，表示该请求已经执行结束了，同时，如果 ResponseDeliveryRunnable 的构造方法中的第三个参数 runnable 不为空，立即执行该 runnable 的 run 方法。</p>
+<p>至此，在子线程中的 response 就被发送到 UI 线程中去了。其实说到这里，你可能发现，在 Android 体系中，很多框架都要在子线程中执行任务，然后将结果传输到 UI 线程，其处理的方式大多类似，那就是 “线程池” + “Handler” 的组合 。较为知名的框架<code>RxJava</code>，<code>EventBus</code>等都是这样实现的。关于 RxJava 的实现方式，请参考之前的一片文章<a href="https://zachaxy.github.io/2017/04/03/RxJava%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3-%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%8E%9F%E7%90%86/">RxJava源码详解-线程切换原理</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/24/Volley源码解析-网络/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/24/Volley源码解析-网络/" itemprop="url">Volley源码解析-网络</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-24T22:31:01+08:00">
+                2017-05-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,507
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <hr>
+<h1 id="NetWork-接口"><a href="#NetWork-接口" class="headerlink" title="NetWork 接口"></a>NetWork 接口</h1><p>一个 request 并不是一开始就被添加进 mNetworkQueue 中的，而是先添加进 mCacheQueue，如果缓存不存在或者缓存失效，才会走网络路线，这里一旦用到了网络，就用到了 NetWork 接口，该接口是整个 Volley 库的网络请求的最外层的封装，其内部只包含了一个方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Network</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Performs the specified request.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> request Request to process</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> A &#123;<span class="doctag">@link</span> NetworkResponse&#125; with data and caching metadata; will never be null</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> VolleyError on errors</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> NetworkResponse <span class="title">performRequest</span><span class="params">(Request&lt;?&gt; request)</span> <span class="keyword">throws</span> VolleyError</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行网络请求，返回 NetWorkResponse，而该接口只有一个实现类——BasicNetwork，那么就看一下 BasicNetwork 中是如何实现该方法，执行网络请求的。</p>
+<h2 id="BasicNetwork"><a href="#BasicNetwork" class="headerlink" title="BasicNetwork"></a>BasicNetwork</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> NetworkResponse <span class="title">performRequest</span><span class="params">(Request&lt;?&gt; request)</span> <span class="keyword">throws</span> VolleyError </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> requestStart = SystemClock.elapsedRealtime();</span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">        HttpResponse httpResponse = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">byte</span>[] responseContents = <span class="keyword">null</span>;</span><br><span class="line">        Map&lt;String, String&gt; responseHeaders = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// Gather headers.</span></span><br><span class="line">            Map&lt;String, String&gt; headers = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</span><br><span class="line">            addCacheHeaders(headers, request.getCacheEntry());</span><br><span class="line">            httpResponse = mHttpStack.performRequest(request, headers);</span><br><span class="line">            StatusLine statusLine = httpResponse.getStatusLine();</span><br><span class="line">            <span class="keyword">int</span> statusCode = statusLine.getStatusCode();</span><br><span class="line"></span><br><span class="line">            responseHeaders = convertHeaders(httpResponse.getAllHeaders());</span><br><span class="line">            <span class="comment">// Handle cache validation.</span></span><br><span class="line">            <span class="keyword">if</span> (statusCode == HttpStatus.SC_NOT_MODIFIED) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> NetworkResponse(HttpStatus.SC_NOT_MODIFIED,</span><br><span class="line">                        request.getCacheEntry().data, responseHeaders, <span class="keyword">true</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Some responses such as 204s do not have content.  We must check.</span></span><br><span class="line">            <span class="keyword">if</span> (httpResponse.getEntity() != <span class="keyword">null</span>) &#123;</span><br><span class="line">              responseContents = entityToBytes(httpResponse.getEntity());</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">              <span class="comment">// Add 0 byte response as a way of honestly representing a</span></span><br><span class="line">              <span class="comment">// no-content request.</span></span><br><span class="line">              responseContents = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">0</span>];</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// if the request is slow, log it.</span></span><br><span class="line">            <span class="keyword">long</span> requestLifetime = SystemClock.elapsedRealtime() - requestStart;</span><br><span class="line">            logSlowRequests(requestLifetime, request, responseContents, statusLine);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (statusCode &lt; <span class="number">200</span> || statusCode &gt; <span class="number">299</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IOException();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> NetworkResponse(statusCode, responseContents, responseHeaders, <span class="keyword">false</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SocketTimeoutException e) &#123;</span><br><span class="line">            attemptRetryOnException(<span class="string">"socket"</span>, request, <span class="keyword">new</span> TimeoutError());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ConnectTimeoutException e) &#123;</span><br><span class="line">            attemptRetryOnException(<span class="string">"connection"</span>, request, <span class="keyword">new</span> TimeoutError());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (MalformedURLException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Bad URL "</span> + request.getUrl(), e);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            <span class="keyword">int</span> statusCode = <span class="number">0</span>;</span><br><span class="line">            NetworkResponse networkResponse = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">if</span> (httpResponse != <span class="keyword">null</span>) &#123;</span><br><span class="line">                statusCode = httpResponse.getStatusLine().getStatusCode();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> NoConnectionError(e);</span><br><span class="line">            &#125;</span><br><span class="line">            VolleyLog.e(<span class="string">"Unexpected response code %d for %s"</span>, statusCode, request.getUrl());</span><br><span class="line">            <span class="keyword">if</span> (responseContents != <span class="keyword">null</span>) &#123;</span><br><span class="line">                networkResponse = <span class="keyword">new</span> NetworkResponse(statusCode, responseContents,</span><br><span class="line">                        responseHeaders, <span class="keyword">false</span>);</span><br><span class="line">                <span class="keyword">if</span> (statusCode == HttpStatus.SC_UNAUTHORIZED ||</span><br><span class="line">                        statusCode == HttpStatus.SC_FORBIDDEN) &#123;</span><br><span class="line">                    attemptRetryOnException(<span class="string">"auth"</span>,</span><br><span class="line">                            request, <span class="keyword">new</span> AuthFailureError(networkResponse));</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// <span class="doctag">TODO:</span> Only throw ServerError for 5xx status codes.</span></span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> ServerError(networkResponse);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> NetworkError(networkResponse);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第 11 行，执行了 addCacheHeaders 方法，因为执行网络请求分两种情况，第一种：全新的请求；第二种：超时的缓存，也就是说缓存过期了，再次请求时需要附带上一次请求所带的<code>If-None-Match</code>或者<code>If-Modified-Since</code>等信息（如果有的话），如果是全新的请求，则没有这些；</p>
+<p>第 12 行，利用 HttpStack 执行其 performRequest 方法，这是网络请求的核心。关于 HttpStack，请参考中的讲解；</p>
+<p>第 13、14 行获取执行网络请求后的状态行和状态码</p>
+<p>第 16 行，将 12 行中执行的网络请求的 响应的头部保存到一个 map 中，作为响应头</p>
+<p>第 18 行，首先做一个特殊的处理，如果状态码是 304，也就是表明当前缓存依然可用，那么直接从缓存中读出数据，然后封装成 NetworkResponse，直接返回</p>
+<p>第 24 行，判断响应中的响应体是否为空，因为例如像 204 表示响应执行成功，但没有数据返回，浏览器不用刷新，不用导向新页面，所以我们为 response 的内容添加一个长度为 0 的字节数组；否则读取响应中的响应体，将其转换为字节数组，然后赋给 responseContents</p>
+<p>第 39 行，最终返回由 statusCode, responseContents, responseHeaders 组成的 NetworkResponse。</p>
+<p><strong>注意：第 36 行，这里判断了如果响应码是在 200 范围之外的，直接抛出了 IOException，除了在 18 行处理的 304，其它非 2XX 的响应均不能处理，这也是 Volley 的一个缺陷。</strong></p>
+<h2 id="关于-HttpStack"><a href="#关于-HttpStack" class="headerlink" title="关于 HttpStack"></a>关于 HttpStack</h2><p>这是一个接口，该接口中只有一个方法 performRequest，该方法的作用是：根据所给的参数，执行 HTTP 请求，并返回服务器的响应。</p>
+<p>这个接口有两个实现类：HurlStack 和 HttpClientStack；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">HttpStack</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Performs an HTTP request with the given parameters.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;A GET request is sent if request.getPostBody() == null. A POST request is sent otherwise,</span></span><br><span class="line"><span class="comment">     * and the Content-Type header is set to request.getPostBodyContentType().&lt;/p&gt;</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> request the request to perform</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> additionalHeaders additional headers to be sent together with</span></span><br><span class="line"><span class="comment">     *         &#123;<span class="doctag">@link</span> Request#getHeaders()&#125;</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> the HTTP response</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HttpResponse <span class="title">performRequest</span><span class="params">(Request&lt;?&gt; request, Map&lt;String, String&gt; additionalHeaders)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException, AuthFailureError</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们知道在 Android 中主要提供了两种方式来进行 HTTP 操作，分别是：HttpURLConnection 和 HttpClient。而 Volley 作为一个网络请求库，其底层网络请求的实现正是依靠这两种实现方式，所以 HttpStack 的两个实现类中，HurlStack 是基于 HttpURLConnection ，而 HttpClientStack 则基于 HttpClient 。不过 HttpURLConnection 和 HttpClient 的用法还是稍微有些复杂的，如果不进行适当封装的话，很容易就会写出不少重复代码。那么接下来看一下 HurlStack 和 HttpClientStack 是如何对 HttpURLConnection 和 HttpClient 进行封装的，这里选 HurlStack 类，主要看其如何实现 HttpStack 中的 performRequest 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> HttpResponse <span class="title">performRequest</span><span class="params">(Request&lt;?&gt; request, Map&lt;String, String&gt; additionalHeaders)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException, AuthFailureError </span>&#123;</span><br><span class="line">    String url = request.getUrl();</span><br><span class="line">    HashMap&lt;String, String&gt; map = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</span><br><span class="line">    map.putAll(request.getHeaders());</span><br><span class="line">    map.putAll(additionalHeaders);</span><br><span class="line">    <span class="keyword">if</span> (mUrlRewriter != <span class="keyword">null</span>) &#123;</span><br><span class="line">        String rewritten = mUrlRewriter.rewriteUrl(url);</span><br><span class="line">        <span class="keyword">if</span> (rewritten == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"URL blocked by rewriter: "</span> + url);</span><br><span class="line">        &#125;</span><br><span class="line">        url = rewritten;</span><br><span class="line">    &#125;</span><br><span class="line">    URL parsedUrl = <span class="keyword">new</span> URL(url);</span><br><span class="line">    HttpURLConnection connection = openConnection(parsedUrl, request);</span><br><span class="line">    <span class="keyword">for</span> (String headerName : map.keySet()) &#123;</span><br><span class="line">        connection.addRequestProperty(headerName, map.get(headerName));</span><br><span class="line">    &#125;</span><br><span class="line">    setConnectionParametersForRequest(connection, request);</span><br><span class="line">    <span class="comment">// Initialize HttpResponse with data from the HttpURLConnection.</span></span><br><span class="line">    ProtocolVersion protocolVersion = <span class="keyword">new</span> ProtocolVersion(<span class="string">"HTTP"</span>, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">int</span> responseCode = connection.getResponseCode();</span><br><span class="line">    <span class="keyword">if</span> (responseCode == -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// -1 is returned by getResponseCode() if the response code could not be retrieved.</span></span><br><span class="line">        <span class="comment">// Signal to the caller that something was wrong with the connection.</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"Could not retrieve response code from HttpUrlConnection."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    StatusLine responseStatus = <span class="keyword">new</span> BasicStatusLine(protocolVersion,</span><br><span class="line">            connection.getResponseCode(), connection.getResponseMessage());</span><br><span class="line">    BasicHttpResponse response = <span class="keyword">new</span> BasicHttpResponse(responseStatus);</span><br><span class="line">    response.setEntity(entityFromConnection(connection));</span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;String, List&lt;String&gt;&gt; header : connection.getHeaderFields().entrySet()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (header.getKey() != <span class="keyword">null</span>) &#123;</span><br><span class="line">            Header h = <span class="keyword">new</span> BasicHeader(header.getKey(), header.getValue().get(<span class="number">0</span>));</span><br><span class="line">            response.addHeader(h);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> response;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第 4 行，拿到请求中的 url 字符串</p>
+<p>第 5 行，创建一个 Map，并将 request 中的 headers 都添加到该 map 中，（我们在构造 request 的时候，可以重写其中的 getHeaders 方法，在内部创建一个 Map，然后把 HTTP 请求中需要额外定制的 header 添加到该 map 中），同时把 performRequest 方法中的第二个参数 additionalHeaders 中的所有键值对也都添加到 map 中。</p>
+<p>第 16 行，创建了 HttpURLConnection，这里设置了连接超时时间，读取数据的超时时间，如果我们使用的是 HTTPS 协议，那么还要对该连接设置 SSL 相关的属性</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> HttpURLConnection <span class="title">openConnection</span><span class="params">(URL url, Request&lt;?&gt; request)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    HttpURLConnection connection = createConnection(url);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> timeoutMs = request.getTimeoutMs();</span><br><span class="line">    connection.setConnectTimeout(timeoutMs);</span><br><span class="line">    connection.setReadTimeout(timeoutMs);</span><br><span class="line">    connection.setUseCaches(<span class="keyword">false</span>);</span><br><span class="line">    connection.setDoInput(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// use caller-provided custom SslSocketFactory, if any, for HTTPS</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="string">"https"</span>.equals(url.getProtocol()) &amp;&amp; mSslSocketFactory != <span class="keyword">null</span>) &#123;</span><br><span class="line">        ((HttpsURLConnection)connection).setSSLSocketFactory(mSslSocketFactory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> connection;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第 17 行，将我们之前第 5 行的 map 中所有的 HTTP 头部设置添加到连接中。</p>
+<p>第 20 行，设置 HTTP 的请求方法。如果我们在创建 request 时没有设置请求方法，那么需要根据该 request 中是否包含 body，如果包含，则设置为 post，如果不包含，则设置为 get。但是在创建 request 时不设置请求方法，是极为不负责的形式，我们在编码时不要这么做。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SuppressWarnings</span>(<span class="string">"deprecation"</span>)</span><br><span class="line"><span class="comment">/* package */</span> <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setConnectionParametersForRequest</span><span class="params">(HttpURLConnection connection,</span></span></span><br><span class="line"><span class="function"><span class="params">		Request&lt;?&gt; request)</span> <span class="keyword">throws</span> IOException, AuthFailureError </span>&#123;</span><br><span class="line">	<span class="keyword">switch</span> (request.getMethod()) &#123;</span><br><span class="line">		<span class="keyword">case</span> Method.DEPRECATED_GET_OR_POST:</span><br><span class="line">			<span class="comment">// This is the deprecated way that needs to be handled for backwards compatibility.</span></span><br><span class="line">			<span class="comment">// If the request's post body is null, then the assumption is that the request is</span></span><br><span class="line">			<span class="comment">// GET.  Otherwise, it is assumed that the request is a POST.</span></span><br><span class="line">			<span class="keyword">byte</span>[] postBody = request.getPostBody();</span><br><span class="line">			<span class="keyword">if</span> (postBody != <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="comment">// Prepare output. There is no need to set Content-Length explicitly,</span></span><br><span class="line">				<span class="comment">// since this is handled by HttpURLConnection using the size of the prepared</span></span><br><span class="line">				<span class="comment">// output stream.</span></span><br><span class="line">				connection.setDoOutput(<span class="keyword">true</span>);</span><br><span class="line">				connection.setRequestMethod(<span class="string">"POST"</span>);</span><br><span class="line">				connection.addRequestProperty(HEADER_CONTENT_TYPE,</span><br><span class="line">						request.getPostBodyContentType());</span><br><span class="line">				DataOutputStream out = <span class="keyword">new</span> DataOutputStream(connection.getOutputStream());</span><br><span class="line">				out.write(postBody);</span><br><span class="line">				out.close();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> Method.GET:</span><br><span class="line">			<span class="comment">// Not necessary to set the request method because connection defaults to GET but</span></span><br><span class="line">			<span class="comment">// being explicit here.</span></span><br><span class="line">			connection.setRequestMethod(<span class="string">"GET"</span>);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> Method.DELETE:</span><br><span class="line">			connection.setRequestMethod(<span class="string">"DELETE"</span>);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> Method.POST:</span><br><span class="line">			connection.setRequestMethod(<span class="string">"POST"</span>);</span><br><span class="line">			addBodyIfExists(connection, request);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> Method.PUT:</span><br><span class="line">			connection.setRequestMethod(<span class="string">"PUT"</span>);</span><br><span class="line">			addBodyIfExists(connection, request);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Unknown method type."</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里看一下其中的 post 方法，除了设置请求方法为 post 之外，还要把请求体添加上去，这就用到了 addBodyIfExists 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">addBodyIfExists</span><span class="params">(HttpURLConnection connection, Request&lt;?&gt; request)</span></span></span><br><span class="line"><span class="function">		<span class="keyword">throws</span> IOException, AuthFailureError </span>&#123;</span><br><span class="line">	<span class="keyword">byte</span>[] body = request.getBody();</span><br><span class="line">	<span class="keyword">if</span> (body != <span class="keyword">null</span>) &#123;</span><br><span class="line">		connection.setDoOutput(<span class="keyword">true</span>);</span><br><span class="line">		connection.addRequestProperty(HEADER_CONTENT_TYPE, request.getBodyContentType());</span><br><span class="line">		DataOutputStream out = <span class="keyword">new</span> DataOutputStream(connection.getOutputStream());</span><br><span class="line">		out.write(body);</span><br><span class="line">		out.close();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里先获取 request 中的 body（字节数组），如果 body 不为空，那么为连接添加”Content-Type”的头部，其值默认为“application/x-www-form-urlencoded”，默认编码方式为”UTF-8”。拼接起来一项请求头是：”Content-Type:application/x-www-form-urlencoded; charset=UTF-8”。</p>
+<p>（如果值为：x-www-form-urlencoded，那么其请求体中的数据采用的是键值对，形如：key1=val1&amp;key2=val2），关于 HTTP 相关知识，请参考<a href>HTTP 包结构</a></p>
+<p>额，刚刚扯得有点远了，再回到 performRequest 方法中，前面是阐述了一个 HTTP 的<strong>request</strong>是如何构造的，那么接下来就该执行 HTTP 请求了</p>
+<p>第 23 行，这是一个阻塞的方法，一直等待服务器的响应。当然我们在 request 中已经设置了等待时间。</p>
+<p>第 29 行，拿到 HTTP 的状态行和响应体，最终包装成 BasicHttpResponse；</p>
+<p>第 33 行，拿到响应头部，应该是一个以 key-value 形式的 map，一次解析出响应头，添加到 response 中，最终返回。</p>
+<h1 id="NetworkDispatcher-线程"><a href="#NetworkDispatcher-线程" class="headerlink" title="NetworkDispatcher 线程"></a>NetworkDispatcher 线程</h1><h2 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h2><p>首先看一下 NetworkDispatcher 的构造方法，传入了在 RequestQueue 中创建的 mNetworkQueue, mNetwork, mCache, mDelivery，其中 mNetwork 是 RequestQueue 的构造方法中传入的第二个参数 Network；mCache 是在 RequestQueue 的构造方法中传入的第一个参数 Cache，mDelivery 用来将子线程中得到的响应发送要主线程。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">NetworkDispatcher</span><span class="params">(BlockingQueue&lt;Request&gt; queue,</span></span></span><br><span class="line"><span class="function"><span class="params">        Network network, Cache cache,</span></span></span><br><span class="line"><span class="function"><span class="params">        ResponseDelivery delivery)</span> </span>&#123;</span><br><span class="line">    mQueue = queue;</span><br><span class="line">    mNetwork = network;</span><br><span class="line">    mCache = cache;</span><br><span class="line">    mDelivery = delivery;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="run-方法"><a href="#run-方法" class="headerlink" title="run 方法"></a>run 方法</h2><p>接下来看一下 NetworkDispatcher 线程的 run 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);</span><br><span class="line">	Request request;</span><br><span class="line">	<span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="comment">// Take a request from the queue.</span></span><br><span class="line">			request = mQueue.take();</span><br><span class="line">		&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">			<span class="comment">// We may have been interrupted because it was time to quit.</span></span><br><span class="line">			<span class="keyword">if</span> (mQuit) &#123;</span><br><span class="line">				<span class="keyword">return</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			request.addMarker(<span class="string">"network-queue-take"</span>);</span><br><span class="line"></span><br><span class="line">			<span class="comment">// If the request was cancelled already, do not perform the</span></span><br><span class="line">			<span class="comment">// network request.</span></span><br><span class="line">			<span class="keyword">if</span> (request.isCanceled()) &#123;</span><br><span class="line">				request.finish(<span class="string">"network-discard-cancelled"</span>);</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Tag the request (if API &gt;= 14)</span></span><br><span class="line">			<span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.ICE_CREAM_SANDWICH) &#123;</span><br><span class="line">				TrafficStats.setThreadStatsTag(request.getTrafficStatsTag());</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Perform the network request.</span></span><br><span class="line">			NetworkResponse networkResponse = mNetwork.performRequest(request);</span><br><span class="line">			request.addMarker(<span class="string">"network-http-complete"</span>);</span><br><span class="line"></span><br><span class="line">			<span class="comment">// If the server returned 304 AND we delivered a response already,</span></span><br><span class="line">			<span class="comment">// we're done -- don't deliver a second identical response.</span></span><br><span class="line">			<span class="keyword">if</span> (networkResponse.notModified &amp;&amp; request.hasHadResponseDelivered()) &#123;</span><br><span class="line">				request.finish(<span class="string">"not-modified"</span>);</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Parse the response here on the worker thread.</span></span><br><span class="line">			Response&lt;?&gt; response = request.parseNetworkResponse(networkResponse);</span><br><span class="line">			request.addMarker(<span class="string">"network-parse-complete"</span>);</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Write to cache if applicable.</span></span><br><span class="line">			<span class="comment">// <span class="doctag">TODO:</span> Only update cache metadata instead of entire record for 304s.</span></span><br><span class="line">			<span class="keyword">if</span> (request.shouldCache() &amp;&amp; response.cacheEntry != <span class="keyword">null</span>) &#123;</span><br><span class="line">				mCache.put(request.getCacheKey(), response.cacheEntry);</span><br><span class="line">				request.addMarker(<span class="string">"network-cache-written"</span>);</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Post the response back.</span></span><br><span class="line">			request.markDelivered();</span><br><span class="line">			mDelivery.postResponse(request, response);</span><br><span class="line">		&#125; <span class="keyword">catch</span> (VolleyError volleyError) &#123;</span><br><span class="line">			parseAndDeliverNetworkError(request, volleyError);</span><br><span class="line">		&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			VolleyLog.e(e, <span class="string">"Unhandled exception %s"</span>, e.toString());</span><br><span class="line">			mDelivery.postError(request, <span class="keyword">new</span> VolleyError(e));</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第 3 行，设置当前线程的优先级为：Process.THREAD_PRIORITY_BACKGROUND，后台线程，相对来说优先级还是比较低的。</p>
+<p>第 5 行，可以看到该线程是个死循环。</p>
+<p>第 8 行，从 BlockingQueue 中取出一个 request，如果没有的话，就会被阻塞，也不会占用系统资源，赞。</p>
+<p>第 22 行，如果该 request 还未被执行，但是在其它线程取消了，那么调用 request 的 finish 方法，其主要功能是将该 request 从 RequestQueue 的 mCurrentRequests 中移除掉当前 request。</p>
+<p>第 33 行，如果能走到这一步，就表明真的要执行网络请求了，还记的 NetworkDispatcher 的构造方法中传入的 Network 对象吗，调用了它的 performRequest 方法，但是真正的执行者是 Network 的实现类 BasicNetwork。具体流程已经在上面进行了分析。</p>
+<p>第 38 行，如果响应是 304 并且该 request 已经分发了，那么调用 request 的 finish 方法，该方法是将 RequestQueue 中 mWaitingRequests 队列中取出相同的 request，然后添加到 mCacheQueue 中。</p>
+<p>第 44 行，调用 request 的 parseNetworkResponse 方法对 33 得到的 networkResponse 进行解析，至于具体怎么解析，还记的我们自定义请求时需要重写的方法，就是这个方法，所以具体如何解析 networkResponse 完全由你自己决定</p>
+<p>第 49 行，执行缓存相关的操作，具体实现请参考<a href="https://zachaxy.github.io/2017/05/23/Volley%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-%E7%BC%93%E5%AD%98/">Volley 源码解析-缓存</a></p>
+<p>第 55 行，将该 request 标记为已分发</p>
+<p>第 56 行，将该 request 进行分发，调用了 mDelivery 的方法，这个 mDelivery 是在 NetworkDispatcher 的构造方法中传入进来的，具体创建是在 RequestQueue 的构造方法中，期创建方式是：<code>new ExecutorDelivery(new Handler(Looper.getMainLooper()))</code>看到这相信各位也能猜个大概了，我们前面也说了这个 ResponseDelivery 的作用是分发 response，我们在应用中请求网络数据，首先在子线程中执行网络请求，得到了响应之后，肯定要将结果返回到主线程，如何发呢？答案就是 Handler，而 ResponseDelivery 正是包装了一个 Handler；具体如何实现请参考<a href>Volley 源码解析-线程切换</a></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此，一个完整的网络请求的过程就分析完了，这里在总结一下网络请求的过程：</p>
+<p>需要执行网络的 request 无非是两种情况：</p>
+<ul>
+<li>第一种：一个新的请求，之前没有执行过，自然也没有对应的缓存，所以必须要走 NetworkDispatcher 这个线程；</li>
+<li>第二种：之前执行过该请求，所以先从缓存中取，但是缓存不可用（缓存过期了或者不存在了），所以也必须要走 NetworkDispatcher 这个线程；</li>
+</ul>
+<p>走网络路线，有一个接口 Network，该接口内部封装了执行网络操作的所有方法，其唯一实现类是 BasicNetwork，而 BasicNetwork 中有包含了 HttpStack，HttpStack 接口的实现类才是真正实现了真正执行网络请求的功能（HttpURLConnection 和 HttpClient）</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/24/海量数据场景下的解决思路/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -896,376 +1260,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/20/Volley框架详解-基本使用/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/20/Volley框架详解-基本使用/" itemprop="url">Volley框架详解-基本使用</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-20T21:52:01+08:00">
-                2017-05-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2,634
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p>最近在往博客上整理一些之前看过的框架，翻到了已经推出很久的网络请求框架—— Volley。这是在 13 年由谷歌推出的一款轻量级的 Android 异步网络请求框架和图片加载框架。虽然现在市面上已经出现了比 Volley 更好的网络请求框架——Okhttp，和图片请求框架——Glide，但是个人认为 Volley 的源码比其它框架的源码更加优美，所以 Volley 的源码非常值得初学者拿来分析练手。</p>
-</blockquote>
-<h1 id="Volley-简介"><a href="#Volley-简介" class="headerlink" title="Volley 简介"></a>Volley 简介</h1><p>Volley 是 Google 推出的 Android 异步网络请求框架和图片加载框架。在 Google I/O 2013 大会上发布。</p>
-<p>Volley 的特点：特别适合<strong>数据量小，通信频繁</strong>的网络操作。</p>
-<h1 id="Volley-的主要特点"><a href="#Volley-的主要特点" class="headerlink" title="Volley 的主要特点"></a>Volley 的主要特点</h1><ol>
-<li>扩展性强。Volley 中大多是<strong>基于接口</strong>的设计，可配置性强。</li>
-<li>一定程度符合 Http 规范，包括返回 ResponseCode(2xx、3xx、4xx、5xx）的处理，请求头的处理，缓存机制的支持等。并支持重试及优先级定义。</li>
-<li>默认 Android2.3 及以上基于 HttpURLConnection，2.3 以下基于 HttpClient 实现。所以兼容性强。</li>
-</ol>
-<h1 id="Volley-的基本用法"><a href="#Volley-的基本用法" class="headerlink" title="Volley 的基本用法"></a>Volley 的基本用法</h1><p>在使用 Volley 之前，不要忘记在你的 manifest 文件中添加网络权限。</p>
-<h2 id="（一）创建请求队列"><a href="#（一）创建请求队列" class="headerlink" title="（一）创建请求队列"></a>（一）创建请求队列</h2><p>首先需要创建一个 RequestQueue 对象，用来保存所有的网路请求 request，其获取方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RequestQueue mQueue = Volley.newRequestQueue(context);</span><br></pre></td></tr></table></figure>
-
-<p>这里要注意的是：RequestQueue 内部的设计适合高并发，因此我们不必为每一次 HTTP 请求都创建一个 RequestQueue 对象，这是非常浪费资源的，基本上一个 RequestQueue 对象就足够了。所以我们将 RequestQueue 的获取放在自定义的 Application 中：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApp</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> RequestQueue queues;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate();</span><br><span class="line">        queues = Volley.newRequestQueue(getApplicationContext());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> RequestQueue <span class="title">getHttpQueues</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> queues;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="（二）创建请求"><a href="#（二）创建请求" class="headerlink" title="（二）创建请求"></a>（二）创建请求</h2><p>Volley 自带的请求有：</p>
-<ol>
-<li>StringRequest</li>
-<li>JsonRequest</li>
-<li>ImageRequest</li>
-</ol>
-<p>一般我们请求的数据都是当做字符串来返回的，如果返回的结果使我们自定义的简单的结果，那么直接解析返回的字符串即可，但如果返回的结果是 Json 或者 Xml，那么就需要我们手动将返回的字符串转换为对应的 Json 或 Xml，好在 Volley 已经为我们实现了 Json，后面我们会学习如何自定义 Xml 的请求。</p>
-<p>常见的请求又分为两种，一种是 GET 请求，一种是 POST 请求，这里以 StringRequest 为例，分别创建 GET 请求和 POST 请求：</p>
-<h3 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">String url = <span class="string">"http://op.juhe.cn/onebox/phone/query?tel=18220197835&amp;key=xxxxxxxxxxxxxxxxxxx"</span>;</span><br><span class="line"><span class="comment">//使用 get 方法;传入 URL;请求成功的监听回调;请求失败的监听回调;</span></span><br><span class="line">StringRequest request = <span class="keyword">new</span> StringRequest(Request.Method.GET, url, <span class="keyword">new</span> Response.Listener&lt;String&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//System.out.println(s);</span></span><br><span class="line">        Log.e(<span class="string">"volley_GetByString"</span>, <span class="string">"onResponse: "</span> + s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="keyword">new</span> Response.ErrorListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onErrorResponse</span><span class="params">(VolleyError volleyError)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">request.setTag(<span class="string">"abc"</span>);</span><br><span class="line">MyApp.getHttpQueues().add(request);</span><br></pre></td></tr></table></figure>
-
-<p>创建 GET 请求，只需要在创建的 StringRequest 的构造方法的第一个参数中传入常量 Request.Method.GET 即可；第二个参数是所请求的 URL，第三个参数是请求成功的回调，这是一个接口，需要我们实现 onResponse 方法，该方法中传入的参数就是服务器给我们回调的结果；第四个参数是请求失败的回调，也是一个接口，需要我们实现 onErrorResponse，我们可以根据自己的业务需求，分别在请求成功或者失败的回调中处理不同的逻辑；</p>
-<p>至此，一个请求就已经创建好了，如何发送请求呢？很简单，只需要将该请求添加到我们在上一步中创建的 RequestQueue 中即可。这里我们为 request 打上了一个标签，这个标签有什么用？在 Volley 与 Activity 生命周期的联动中会用到，别急。</p>
-<h3 id="POST-请求"><a href="#POST-请求" class="headerlink" title="POST 请求"></a>POST 请求</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">String url = <span class="string">"http://op.juhe.cn/onebox/phone/query?"</span>;</span><br><span class="line">StringRequest request = <span class="keyword">new</span> StringRequest(Request.Method.POST, url, <span class="keyword">new</span> Response.Listener&lt;String&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">        PhoneMsg msg;</span><br><span class="line">        Gson gson = <span class="keyword">new</span> Gson();</span><br><span class="line">        msg = gson.fromJson(s, PhoneMsg.class);</span><br><span class="line">        Log.e(<span class="string">"###"</span>, <span class="string">"volley_PostByString: "</span> + msg.reason + <span class="string">"&lt;&gt;"</span> + msg.result.city + <span class="string">"&lt;&gt;"</span> + msg.error_code);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="keyword">new</span> Response.ErrorListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onErrorResponse</span><span class="params">(VolleyError volleyError)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;) &#123;</span><br><span class="line">    <span class="comment">//StringRequest 的父类中的方法,这里我们是创建了一个匿名 StringRequest,重写了其 getParams 方法;</span></span><br><span class="line">    <span class="comment">//当使用 post 方法时,会自动回调该方法,得到一个 map,并将其中的 key-value 以 key1=value1&amp;key2=value2&amp; 的形式拼接起来</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Map&lt;String, String&gt; <span class="title">getParams</span><span class="params">()</span> <span class="keyword">throws</span> AuthFailureError </span>&#123;</span><br><span class="line">        Map&lt;String, String&gt; hashMap = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        hashMap.put(<span class="string">"tel"</span>, <span class="string">"18220197835"</span>);</span><br><span class="line">        hashMap.put(<span class="string">"key"</span>, <span class="string">"xxxxxxxxxxxxxxxxxx"</span>);</span><br><span class="line">        <span class="keyword">return</span> hashMap;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">request.setTag(<span class="string">"abc"</span>);</span><br><span class="line">MyApp.getHttpQueues().add(request);</span><br></pre></td></tr></table></figure>
-
-<p>POST 请求和 GET 请求类似，只不过在创建的 StringRequest 第一个参数改为常量 Request.Method.POST 即可，第二个参数 URL 和 get 不同了，因为我们这里是用 POST 方法发送请求，那么请求的 key-value 都不会出现在 url 中，而是重写了 StringRequest 的 getParams 方法，创建了一个 map，将请求的 key-value 保存到 map 中，然后将该 map 返回即可，在 post 请求发送时会自动回调 getParams 方法,并得到的 map 中的 key-value 以 key1=value1&amp;key2=value2&amp; 的形式拼接起来，添加到请求体中。第三个参数和第四个参数与 GET 请求相同。</p>
-<h1 id="Volley-与-Activity-生命周期的联动"><a href="#Volley-与-Activity-生命周期的联动" class="headerlink" title="Volley 与 Activity 生命周期的联动"></a>Volley 与 Activity 生命周期的联动</h1><p>在创建了请求之后，将请求添加到 RequestQueue 中，</p>
-<p>考虑这样一种场景，如果我们在当前的 Activity 中创建了大量的 request，但是这时突然用户有点击了 back 键或者跳转到了另一个 Activity，那么还未执行的 request 此时就没有必要去执行了，如何取消还未执行的请求呢？注意我们在每个 request 中都绑定了一个 tag，<code>request.setTag(&quot;abc&quot;);</code>，如果想取消这些 request，只需要在 Activity 的 onStop 回调中调用 cancelAll 方法，取消特定的 tag，那么之前发出的请求将不会被执行。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onStop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onStop();</span><br><span class="line">    MyApp.getHttpQueues().cancelAll(<span class="string">"abc"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="自定义请求"><a href="#自定义请求" class="headerlink" title="自定义请求"></a>自定义请求</h1><p>前面也介绍了 Volley 的一个特点就是高扩展性，官方也为我们提供了 StringRequest，JsonRequest 等现成的 request，但是如果我们的业务用的是我们一种公司自定义的形式，那么我们就有必要自定义请求来解析返回的结果。</p>
-<p>首先要明确的是：最原始的请求返回的结果都是字节流，我们正是通过对字节流的转换，才得到了我们想要的请求，这就是自定义 request 的本质。</p>
-<p>JsonRequest 的数据解析是利用 Android 本身自带的 JSONObject 和 JSONArray 来实现的，配合使用 JSONObject 和 JSONArray 就可以解析出任意格式的 JSON 数据。但是使用 JSONObject 还是太麻烦了，还有很多方法可以让 JSON 数据解析变得更加简单，比如说 GSON。那么接下来我们自定义一个 GsonRequest。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GsonRequest</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">Request</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Response.Listener&lt;T&gt; mListener;</span><br><span class="line">    <span class="keyword">private</span> Gson mGson;</span><br><span class="line">    <span class="keyword">private</span> Class&lt;T&gt; mClass;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GsonRequest</span><span class="params">(<span class="keyword">int</span> method, String url, Class&lt;T&gt; clazz, Response.Listener&lt;T&gt; listener,</span></span></span><br><span class="line"><span class="function"><span class="params">                       Response.ErrorListener elistener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(method, url, elistener);</span><br><span class="line">        mGson = <span class="keyword">new</span> Gson();</span><br><span class="line">        mClass = clazz;</span><br><span class="line">        mListener = listener;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GsonRequest</span><span class="params">(String url, Class&lt;T&gt; clazz, Response.Listener&lt;T&gt; listener,</span></span></span><br><span class="line"><span class="function"><span class="params">                       Response.ErrorListener errorListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(Method.GET, url, clazz, listener, errorListener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    这是响应最原始的面貌,得到的就是一个 NetWorkResponse,至于应用层想得到什么类型的响应,需要在这里进行转换;</span></span><br><span class="line"><span class="comment">    这个过程和 StringRequest 的构造很像,具体可以参考 StringRequest;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Response <span class="title">parseNetworkResponse</span><span class="params">(NetworkResponse response)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//这一句是固定格式,先将 response 的 data 域拿出来,其是字节,要转换成字符串,同时要获取该字节的编码;</span></span><br><span class="line">            String jsonString = <span class="keyword">new</span> String(response.data, HttpHeaderParser.parseCharset(response.headers));</span><br><span class="line">            <span class="keyword">return</span> Response.success(mGson.fromJson(jsonString, mClass), HttpHeaderParser.parseCacheHeaders(response));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            <span class="keyword">return</span> Response.error(<span class="keyword">new</span> ParseError(e));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">deliverResponse</span><span class="params">(T response)</span> </span>&#123;</span><br><span class="line">        mListener.onResponse(response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>自定义 request 需要继承 Request 类，而 Request 是一个抽象类，需要我们实现其抽象方法，包含两个：parseNetworkResponse 和 deliverResponse。</p>
-<p>第一个要实现的方法 parseNetworkResponse，该方法是得到服务器响应时回调的结果，其参数是执行网络请求得到的响应 NetworkResponse，我们可以通过 NetworkResponse.data 拿到包含在响应中的字节数组，然后通过 HttpHeaderParser.parseCacheHeaders(response)获取响应中的编码格式，将该字节数组转换为对应的字符串。如果字符串解析成功，接下来我们就可以调用 Response 中的 success 方法，将结果传入进去，如果解码失败，那么调用 Response 的 error 方法。</p>
-<p>第二个要实现的方法是 deliverResponse，这个方法也必须实现,该方法的参数是从上一步 parseNetworkResponse 中 Response.success()第一个参数得到的响应,我们要把这个响应分发下去;注意这一步说明我们已经得到成功的响应了,而之前 errorListener 的响应则是在网络出错或者服务器出错的情况下分发的 是由 Volley 顶层实现的。</p>
-<p>我们看一下Volley自带的StringRequest是如何实现的：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StringRequest</span> <span class="keyword">extends</span> <span class="title">Request</span>&lt;<span class="title">String</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Listener&lt;String&gt; mListener;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Creates a new request with the given method.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method the request &#123;<span class="doctag">@link</span> Method&#125; to use</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url URL to fetch the string at</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> listener Listener to receive the String response</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> errorListener Error listener, or null to ignore errors</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StringRequest</span><span class="params">(<span class="keyword">int</span> method, String url, Listener&lt;String&gt; listener,</span></span></span><br><span class="line"><span class="function"><span class="params">            ErrorListener errorListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(method, url, errorListener);</span><br><span class="line">        mListener = listener;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Creates a new GET request.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url URL to fetch the string at</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> listener Listener to receive the String response</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> errorListener Error listener, or null to ignore errors</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StringRequest</span><span class="params">(String url, Listener&lt;String&gt; listener, ErrorListener errorListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(Method.GET, url, listener, errorListener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">deliverResponse</span><span class="params">(String response)</span> </span>&#123;</span><br><span class="line">        mListener.onResponse(response);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Response&lt;String&gt; <span class="title">parseNetworkResponse</span><span class="params">(NetworkResponse response)</span> </span>&#123;</span><br><span class="line">        String parsed;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            parsed = <span class="keyword">new</span> String(response.data, HttpHeaderParser.parseCharset(response.headers));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            parsed = <span class="keyword">new</span> String(response.data);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> Response.success(parsed, HttpHeaderParser.parseCacheHeaders(response));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>是不是相同的套路，同样是拿到了服务器的字节数组之后，直接转换为了字符串，然后就返回了，这个我们自定义的GsonRequest和StringRequest的套路是一致的。</p>
-<p>至此，关于Volley的基本使用就讲完了，具体的使用请参考<a href="https://github.com/zachaxy/android-project-demo/blob/master/TestVolley/app/src/main/java/com/zx/testvolley/MainActivity.java" target="_blank" rel="noopener">这里</a>，下一篇，会进入Volley的源码，详细解剖其内部的基本实现。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/15/手写JVM系列-10-解释器/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/15/手写JVM系列-10-解释器/" itemprop="url">手写JVM系列(10)-解释器</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-15T11:44:03+08:00">
-                2017-05-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,714
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p>上一节介绍了关于 JVM 指令集的相关知识，那么接下来我们就根据上一节介绍的知识，编写一个简易的解释器，读取字节码中的操作码和操作数，实现 JVM 规范中描述的指令集对应功能，从而完成简单方法的调用过程，并在接下来的章节中不断完善该解释器，使其支持更多指令。本节所实现的代码均在<a href="https://github.com/zachaxy/JVM" target="_blank" rel="noopener">项目</a>的 instructions 包下。</p>
-</blockquote>
-<h1 id="操作码的实现"><a href="#操作码的实现" class="headerlink" title="操作码的实现"></a>操作码的实现</h1><p>在 Code 属性中的字节数组就是字节码。操作码规定长度为一个字节，所以这里先读取一个字节，查看其对应的是哪种操作码，然后根据该操作码的实际含义，再决定是不是后面还有操作数需要读取。这一节实现了约 150 条指令，这些指令根据其分类，在 instructions 包下的子包中，具体实现见<a href="https://github.com/zachaxy/JVM" target="_blank" rel="noopener">项目源码</a>。</p>
-<h1 id="指令抽象接口"><a href="#指令抽象接口" class="headerlink" title="指令抽象接口"></a>指令抽象接口</h1><p>有了前面的基础知识，接下来我们就要从字节码中读取指令，并执行指令，完成解释器的功能了。首先定义指令接口，然后定义一个结构体用来辅助指令解码。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Instruction</span> </span>&#123;</span><br><span class="line">    <span class="comment">//从字节码中提取操作数</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行指令逻辑</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">execute</span><span class="params">(Zframe frame)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这是所有指令都要完成的两个动作，提取操作数（如果有的话），执行指令。</p>
-<h1 id="指令抽象类"><a href="#指令抽象类" class="headerlink" title="指令抽象类"></a>指令抽象类</h1><p>有很多指令的操作数都是类似的。为了避免重复代码，按照操作码类型定义一些抽象类，这些抽象类实现了 Instruction 接口，并实现 FetchOperands（）方法。再由具体的类去继承这些抽象类，然后<br>专注实现 Execute（）方法即可。定义的抽象类有以下几种。</p>
-<h2 id="NoOperandsInstruction"><a href="#NoOperandsInstruction" class="headerlink" title="NoOperandsInstruction"></a>NoOperandsInstruction</h2><p>NoOperandsInstruction 表示没有操作数的指令，所以没有定义任何字段。FetchOperands（）方法自然也是空空如也，什么也不用读。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">NoOperandsInstruction</span> <span class="keyword">implements</span> <span class="title">Instruction</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="BranchInstruction"><a href="#BranchInstruction" class="headerlink" title="BranchInstruction"></a>BranchInstruction</h2><p>BranchInstruction 表示跳转指令，Offset 字段存放跳转偏移量。FetchOperands（）方法从字节码中读取一个 uint16 整数，转成 int 后赋给 Offset 字段。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">BranchInstruction</span> <span class="keyword">implements</span> <span class="title">Instruction</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> offset;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span> </span>&#123;</span><br><span class="line">        offset = reader.readInt16();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="Index8Instruction"><a href="#Index8Instruction" class="headerlink" title="Index8Instruction"></a>Index8Instruction</h2><p>存储和加载类指令需要根据索引存取局部变量表，索引由单字节操作数给出。把这类指令抽象成 Index8Instruction 结构体，用 Index 字段表示局部变量表索引。FetchOperands（）方法从字节码中读取一个 int8 整数，转成 uint 后赋给 Index 字段。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Index8Instruction</span> <span class="keyword">implements</span> <span class="title">Instruction</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Index8Instruction</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> index;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span> </span>&#123;</span><br><span class="line">        index = reader.readUint8();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="Index16Instruction"><a href="#Index16Instruction" class="headerlink" title="Index16Instruction"></a>Index16Instruction</h2><p>有一些指令需要访问运行时常量池，常量池索引由两字节操作数给出。把这类指令抽象成 Index16Instruction 结构体，用 Index 字段表示常量池索引。FetchOperands（）方法从字节码中读取一个 uint16 整数，转成 uint 后赋给 Index 字段。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Index16Instruction</span> <span class="keyword">implements</span> <span class="title">Instruction</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> index;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span> </span>&#123;</span><br><span class="line">        index = reader.readUint16();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="读取字节码辅助类"><a href="#读取字节码辅助类" class="headerlink" title="读取字节码辅助类"></a>读取字节码辅助类</h1><p>code 字段存放字节码，pc 字段记录读取到了哪个字节。所有的指令都要从字节码中读取数据，并根据不同的指令类型读取 int、long、float、double 等类型的数据，所以定义一个读取字节码的辅助类 BytecodeReader，让其实现一系列的 readXXX（）方法。至于具体调用哪个 read 方法，则根据操作码中对应的操作类型来调用。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BytecodeReader</span> </span>&#123;</span><br><span class="line">    <span class="keyword">byte</span>[] code;  <span class="comment">//Java 语言中 byte 的范围四 -128~127,和 Go 语言中的 byte:0~255 不同,所以在取数据的时候需要注意;</span></span><br><span class="line">    <span class="keyword">int</span> pc;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">reset</span><span class="params">(<span class="keyword">byte</span>[] code, <span class="keyword">int</span> pc)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.code = code;</span><br><span class="line">        <span class="keyword">this</span>.pc = pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getPc</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">byte</span> <span class="title">readInt8</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span> res = code[pc];</span><br><span class="line">        pc++;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">readUint8</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> res = code[pc];</span><br><span class="line">        res = (res + <span class="number">256</span>) % <span class="number">256</span>;</span><br><span class="line">        pc++;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">readInt16</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="keyword">short</span>) readUint16();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span>  <span class="keyword">int</span> <span class="title">readUint16</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> a1 = readUint8();</span><br><span class="line">        <span class="keyword">int</span> a2 = readUint8();</span><br><span class="line">        <span class="keyword">return</span> (a1 &lt;&lt; <span class="number">8</span> | a2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">readInt32</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] data = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];</span><br><span class="line">        data[<span class="number">0</span>] = readInt8();</span><br><span class="line">        data[<span class="number">1</span>] = readInt8();</span><br><span class="line">        data[<span class="number">2</span>] = readInt8();</span><br><span class="line">        data[<span class="number">3</span>] = readInt8();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ByteUtils.byteToInt32(data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span>[] readInt32s(<span class="keyword">int</span> n) &#123;</span><br><span class="line">        <span class="keyword">int</span>[] data = <span class="keyword">new</span> <span class="keyword">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            data[i] = readInt32();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//4k 对齐,没有对齐的会有填充数据,这些数据要忽略掉;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">skipPadding</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (pc % <span class="number">4</span> != <span class="number">0</span>) &#123;</span><br><span class="line">            readInt8();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="指令创建工厂"><a href="#指令创建工厂" class="headerlink" title="指令创建工厂"></a>指令创建工厂</h1><p>有了前面的各个指令的具体实现，接下来统一对外提供一个创建指令的接口，根据不同的操作码创建具体的指令，整体结构就是一个 switch-case 语句，其枚举了这一节已经实现的 150 多种指令，代码太长就不列举了，具体实现在 instructions 包下的 InstructionFactory 类中。</p>
-<h1 id="解释器"><a href="#解释器" class="headerlink" title="解释器"></a>解释器</h1><p>Java 虚拟机解释器的大致逻辑，其伪码如下所示：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">    atomically calculate pc and fetch opcode at pc;</span><br><span class="line">    <span class="keyword">if</span> (operands) fetch operands;</span><br><span class="line">    execute the action <span class="keyword">for</span> the opcode;</span><br><span class="line">&#125; <span class="keyword">while</span> (there is more to <span class="keyword">do</span>);</span><br></pre></td></tr></table></figure>
-
-<p>解释一下上面的过程：</p>
-<ol>
-<li>计算 pc 值（默认 pc++，取下一条指令，否则就是跳转指令，对应 pc + offset ）；</li>
-<li>根据 pc 寄存器的指示位置，从字节码中读取出操作码；</li>
-<li>如果该操作码存在操作数，那么继续从字节码中读取操作数；</li>
-<li>执行操作码所定义的操作；</li>
-<li>如果字节码还未读取完，继续步骤 1；</li>
-</ol>
-<p>我们根据前面已经实现的编码，创建 Interpreter 类，实现指令的执行过程，代码如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">loop</span><span class="params">(Zthread thread, <span class="keyword">byte</span>[] byteCode)</span> </span>&#123;</span><br><span class="line">    Zframe frame = thread.popFrame();   <span class="comment">//得到栈顶的帧。</span></span><br><span class="line">    BytecodeReader reader = <span class="keyword">new</span> BytecodeReader();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里循环的条件是 true,因为在解析指令的时候会遇到 return,而现在还没有实现 return,所以遇到 return 直接抛出异常,那么循环也就终止了</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> pc = frame.getNextPC(); <span class="comment">//这第一次 frame 才刚初始化，获取的 pc 应该是默认值 0 吧。</span></span><br><span class="line">        thread.setPc(pc);</span><br><span class="line">        reader.reset(byteCode, pc); <span class="comment">//reset 方法，其实是在不断的设置 pc 的位置。</span></span><br><span class="line">        <span class="keyword">int</span> opCode = reader.readUint8();</span><br><span class="line">        <span class="comment">//解析指令,创建指令,然后根据不同的指令执行不同的操作</span></span><br><span class="line">        Instruction instruction = InstructionFactory.createInstruction(opCode);</span><br><span class="line">        instruction.fetchOperands(reader);</span><br><span class="line">        frame.setNextPC(reader.getPc());</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">"pc: %2d, inst: %s \n"</span>, pc, instruction.getClass().getSimpleName());</span><br><span class="line">        instruction.execute(frame);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>其中 Interpreter#loop（）方法中，while 循环部分的代码就是 Java 虚拟机规范中 JVM 解释器的具体实现。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/7/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/9/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/7/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/9/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1315,7 +1314,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-count">66</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1328,7 +1327,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1395,7 +1394,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">148.1k</span>
+    <span title="站点文章字数总计">148.9k</span>
   
 </div>
 

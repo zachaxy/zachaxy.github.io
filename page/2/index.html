@@ -336,6 +336,342 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2019/09/07/introduce-Java8-lambda/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/09/07/introduce-Java8-lambda/" itemprop="url">函数式编程的理解(Java语言)</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-07T09:53:38+08:00">
+                2019-09-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,941
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方式1</span></span><br><span class="line">view.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"I am clicked"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 方式2</span></span><br><span class="line">view.setOnClickListener(v -&gt; System.out.println(<span class="string">"I am clicked"</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方式3</span></span><br><span class="line">view.setOnClickListener(<span class="keyword">this</span>::onViewClick);</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onViewClick</span><span class="params">(View view)</span> </span>&#123;</span><br><span class="line">    System.out.println(<span class="string">"I am clicked"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面三种方式最终都是为view 设置了点击的监听,最终效果都是一样的, 但是哪种方式更好呢?</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/09/07/introduce-Java8-lambda/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2018/04/20/uml图基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/20/uml图基础/" itemprop="url">uml图基础</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-20T19:36:11+08:00">
+                2018-04-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  508
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="类"><a href="#类" class="headerlink" title="类"></a>类</h1><ul>
+<li>类名</li>
+<li>属性名</li>
+<li>方法名</li>
+</ul>
+<blockquote>
+<p>属性或方法前面的符号，<code>+</code> 表示public；<code>-</code> 表示private； <code>#</code> 表示protected; <code>~</code> 表示 default,只有同一个包中的类才能访问<br>静态方法或者静态属性用下划线</p>
+</blockquote>
+<h1 id="抽象类"><a href="#抽象类" class="headerlink" title="抽象类"></a>抽象类</h1><p>同 类 的格式是一样的,只不过类名需要用斜体,抽象方法也用斜体</p>
+<h1 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h1><ul>
+<li>接口名</li>
+<li>方法名</li>
+</ul>
+<blockquote>
+<p>其中接口名要用两行,首行固定为<code>&lt;&lt;interface&gt;&gt;</code>,第二行为接口名</p>
+</blockquote>
+<h1 id="类与类之间的继承关系"><a href="#类与类之间的继承关系" class="headerlink" title="类与类之间的继承关系"></a>类与类之间的继承关系</h1><ul>
+<li>空心三角实线,指向父类</li>
+</ul>
+<h1 id="类与接口的实现关系"><a href="#类与接口的实现关系" class="headerlink" title="类与接口的实现关系"></a>类与接口的实现关系</h1><ul>
+<li>空心三角虚线,指向接口</li>
+</ul>
+<h1 id="聚合"><a href="#聚合" class="headerlink" title="聚合"></a>聚合</h1><blockquote>
+<p>聚合(Aggregation)表示一种弱的拥有关系，体现的是A对象可以包含B对象，但B对象不是A对象的一部分。</p>
+</blockquote>
+<ul>
+<li>空心的菱形实线箭头,指向A</li>
+</ul>
+<h1 id="关联"><a href="#关联" class="headerlink" title="关联"></a>关联</h1><blockquote>
+<p>当类A知道另一个类B时，可以用关联(association),是一种拥有的关系;eg:A 中使用了 B; A 中生成了 B; A 向 B 发送消息等都算关联</p>
+</blockquote>
+<ul>
+<li>实线箭头,指向B</li>
+</ul>
+<p>比较常见的一种UML 图中,经常是聚合与关联同时有的,A 和 B 之间,空心菱形指向 A,实线箭头指向 B</p>
+<h1 id="组合"><a href="#组合" class="headerlink" title="组合"></a>组合</h1><blockquote>
+<p> 组合(Composition)是一种强的拥有关系，体现了严格的部分B和整体A的关系，部分B和整体A的生命周期一样。</p>
+</blockquote>
+<ul>
+<li>实心的菱形实线箭头,指向A</li>
+</ul>
+<h1 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h1><blockquote>
+<p>依赖关系(Dependency)，是一种使用关系。多用于局部变量，方法的参数或者对静态方法的调用。要避免双向依赖。</p>
+</blockquote>
+<ul>
+<li>虚线箭头，指向所依赖的类</li>
+</ul>
+<h1 id="连接线的注释说明"><a href="#连接线的注释说明" class="headerlink" title="连接线的注释说明"></a>连接线的注释说明</h1><blockquote>
+<p>有时候在一个类图中光有上面的元素,依然无法清楚的说明类之间的关系,因此可以在连接线上,再伸出一根虚线到旁边,并附带一个折掉右上角的矩形,在该矩形中,添加相关说明</p>
+</blockquote>
+<ul>
+<li>虚线 + 折掉右上角的矩形</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2018/01/23/TestMusic/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -753,297 +1089,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2018/01/18/手写JVM系列-16-反射机制简介/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/18/手写JVM系列-16-反射机制简介/" itemprop="url">手写JVM系列(16)反射机制简介</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-18T22:19:01+08:00">
-                2018-01-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2,227
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>反射是 java 一个强大的机制，通过反射，我们可以动态地创建类型的实例，将类型绑定到现有对象，或从现有对象中获取类型，然后调用类型的方法或访问其字段和属性。本节主要介绍反射机制中用到的类对象。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/01/18/手写JVM系列-16-反射机制简介/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2018/01/16/手写JVM系列-15-字符串的实现/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/16/手写JVM系列-15-字符串的实现/" itemprop="url">手写JVM系列(15)-字符串的实现</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-16T20:52:01+08:00">
-                2018-01-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  3,686
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>Java 程序中最常用的除了基本类型的变量，就数得上字符串了吧，String 在 Java 中并不是基本类型，而是一个引用类型，但是它又很特别，所以特意对 JVM 中的 String 进行讲解。但是不得不承认的是，我的示例中是用 java 来构建的 JVM，起初的目的就是为了快速实现该 JVM，快速的了解 JVM 内部原理，虽然达到了目标，但是在实现该 JVM 内部的一些细节时，总有些不尽人意的地方，这是当初所没想到的，例如本节字符串池的实现，以及后面本地方法的实现上，所写的代码都显得有点挫。不过对于理解 JVM 的内部原理，依然有很大帮助。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/01/16/手写JVM系列-15-字符串的实现/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1093,7 +1143,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-count">66</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1106,7 +1156,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1173,7 +1223,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">148.1k</span>
+    <span title="站点文章字数总计">148.9k</span>
   
 </div>
 

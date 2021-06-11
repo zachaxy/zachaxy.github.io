@@ -336,6 +336,371 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/20/Volley框架详解-基本使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/20/Volley框架详解-基本使用/" itemprop="url">Volley框架详解-基本使用</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-20T21:52:01+08:00">
+                2017-05-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,634
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>最近在往博客上整理一些之前看过的框架，翻到了已经推出很久的网络请求框架—— Volley。这是在 13 年由谷歌推出的一款轻量级的 Android 异步网络请求框架和图片加载框架。虽然现在市面上已经出现了比 Volley 更好的网络请求框架——Okhttp，和图片请求框架——Glide，但是个人认为 Volley 的源码比其它框架的源码更加优美，所以 Volley 的源码非常值得初学者拿来分析练手。</p>
+</blockquote>
+<h1 id="Volley-简介"><a href="#Volley-简介" class="headerlink" title="Volley 简介"></a>Volley 简介</h1><p>Volley 是 Google 推出的 Android 异步网络请求框架和图片加载框架。在 Google I/O 2013 大会上发布。</p>
+<p>Volley 的特点：特别适合<strong>数据量小，通信频繁</strong>的网络操作。</p>
+<h1 id="Volley-的主要特点"><a href="#Volley-的主要特点" class="headerlink" title="Volley 的主要特点"></a>Volley 的主要特点</h1><ol>
+<li>扩展性强。Volley 中大多是<strong>基于接口</strong>的设计，可配置性强。</li>
+<li>一定程度符合 Http 规范，包括返回 ResponseCode(2xx、3xx、4xx、5xx）的处理，请求头的处理，缓存机制的支持等。并支持重试及优先级定义。</li>
+<li>默认 Android2.3 及以上基于 HttpURLConnection，2.3 以下基于 HttpClient 实现。所以兼容性强。</li>
+</ol>
+<h1 id="Volley-的基本用法"><a href="#Volley-的基本用法" class="headerlink" title="Volley 的基本用法"></a>Volley 的基本用法</h1><p>在使用 Volley 之前，不要忘记在你的 manifest 文件中添加网络权限。</p>
+<h2 id="（一）创建请求队列"><a href="#（一）创建请求队列" class="headerlink" title="（一）创建请求队列"></a>（一）创建请求队列</h2><p>首先需要创建一个 RequestQueue 对象，用来保存所有的网路请求 request，其获取方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RequestQueue mQueue = Volley.newRequestQueue(context);</span><br></pre></td></tr></table></figure>
+
+<p>这里要注意的是：RequestQueue 内部的设计适合高并发，因此我们不必为每一次 HTTP 请求都创建一个 RequestQueue 对象，这是非常浪费资源的，基本上一个 RequestQueue 对象就足够了。所以我们将 RequestQueue 的获取放在自定义的 Application 中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApp</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> RequestQueue queues;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate();</span><br><span class="line">        queues = Volley.newRequestQueue(getApplicationContext());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> RequestQueue <span class="title">getHttpQueues</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> queues;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="（二）创建请求"><a href="#（二）创建请求" class="headerlink" title="（二）创建请求"></a>（二）创建请求</h2><p>Volley 自带的请求有：</p>
+<ol>
+<li>StringRequest</li>
+<li>JsonRequest</li>
+<li>ImageRequest</li>
+</ol>
+<p>一般我们请求的数据都是当做字符串来返回的，如果返回的结果使我们自定义的简单的结果，那么直接解析返回的字符串即可，但如果返回的结果是 Json 或者 Xml，那么就需要我们手动将返回的字符串转换为对应的 Json 或 Xml，好在 Volley 已经为我们实现了 Json，后面我们会学习如何自定义 Xml 的请求。</p>
+<p>常见的请求又分为两种，一种是 GET 请求，一种是 POST 请求，这里以 StringRequest 为例，分别创建 GET 请求和 POST 请求：</p>
+<h3 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">String url = <span class="string">"http://op.juhe.cn/onebox/phone/query?tel=18220197835&amp;key=xxxxxxxxxxxxxxxxxxx"</span>;</span><br><span class="line"><span class="comment">//使用 get 方法;传入 URL;请求成功的监听回调;请求失败的监听回调;</span></span><br><span class="line">StringRequest request = <span class="keyword">new</span> StringRequest(Request.Method.GET, url, <span class="keyword">new</span> Response.Listener&lt;String&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//System.out.println(s);</span></span><br><span class="line">        Log.e(<span class="string">"volley_GetByString"</span>, <span class="string">"onResponse: "</span> + s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="keyword">new</span> Response.ErrorListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onErrorResponse</span><span class="params">(VolleyError volleyError)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">request.setTag(<span class="string">"abc"</span>);</span><br><span class="line">MyApp.getHttpQueues().add(request);</span><br></pre></td></tr></table></figure>
+
+<p>创建 GET 请求，只需要在创建的 StringRequest 的构造方法的第一个参数中传入常量 Request.Method.GET 即可；第二个参数是所请求的 URL，第三个参数是请求成功的回调，这是一个接口，需要我们实现 onResponse 方法，该方法中传入的参数就是服务器给我们回调的结果；第四个参数是请求失败的回调，也是一个接口，需要我们实现 onErrorResponse，我们可以根据自己的业务需求，分别在请求成功或者失败的回调中处理不同的逻辑；</p>
+<p>至此，一个请求就已经创建好了，如何发送请求呢？很简单，只需要将该请求添加到我们在上一步中创建的 RequestQueue 中即可。这里我们为 request 打上了一个标签，这个标签有什么用？在 Volley 与 Activity 生命周期的联动中会用到，别急。</p>
+<h3 id="POST-请求"><a href="#POST-请求" class="headerlink" title="POST 请求"></a>POST 请求</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">String url = <span class="string">"http://op.juhe.cn/onebox/phone/query?"</span>;</span><br><span class="line">StringRequest request = <span class="keyword">new</span> StringRequest(Request.Method.POST, url, <span class="keyword">new</span> Response.Listener&lt;String&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">        PhoneMsg msg;</span><br><span class="line">        Gson gson = <span class="keyword">new</span> Gson();</span><br><span class="line">        msg = gson.fromJson(s, PhoneMsg.class);</span><br><span class="line">        Log.e(<span class="string">"###"</span>, <span class="string">"volley_PostByString: "</span> + msg.reason + <span class="string">"&lt;&gt;"</span> + msg.result.city + <span class="string">"&lt;&gt;"</span> + msg.error_code);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="keyword">new</span> Response.ErrorListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onErrorResponse</span><span class="params">(VolleyError volleyError)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;) &#123;</span><br><span class="line">    <span class="comment">//StringRequest 的父类中的方法,这里我们是创建了一个匿名 StringRequest,重写了其 getParams 方法;</span></span><br><span class="line">    <span class="comment">//当使用 post 方法时,会自动回调该方法,得到一个 map,并将其中的 key-value 以 key1=value1&amp;key2=value2&amp; 的形式拼接起来</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Map&lt;String, String&gt; <span class="title">getParams</span><span class="params">()</span> <span class="keyword">throws</span> AuthFailureError </span>&#123;</span><br><span class="line">        Map&lt;String, String&gt; hashMap = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        hashMap.put(<span class="string">"tel"</span>, <span class="string">"18220197835"</span>);</span><br><span class="line">        hashMap.put(<span class="string">"key"</span>, <span class="string">"xxxxxxxxxxxxxxxxxx"</span>);</span><br><span class="line">        <span class="keyword">return</span> hashMap;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">request.setTag(<span class="string">"abc"</span>);</span><br><span class="line">MyApp.getHttpQueues().add(request);</span><br></pre></td></tr></table></figure>
+
+<p>POST 请求和 GET 请求类似，只不过在创建的 StringRequest 第一个参数改为常量 Request.Method.POST 即可，第二个参数 URL 和 get 不同了，因为我们这里是用 POST 方法发送请求，那么请求的 key-value 都不会出现在 url 中，而是重写了 StringRequest 的 getParams 方法，创建了一个 map，将请求的 key-value 保存到 map 中，然后将该 map 返回即可，在 post 请求发送时会自动回调 getParams 方法,并得到的 map 中的 key-value 以 key1=value1&amp;key2=value2&amp; 的形式拼接起来，添加到请求体中。第三个参数和第四个参数与 GET 请求相同。</p>
+<h1 id="Volley-与-Activity-生命周期的联动"><a href="#Volley-与-Activity-生命周期的联动" class="headerlink" title="Volley 与 Activity 生命周期的联动"></a>Volley 与 Activity 生命周期的联动</h1><p>在创建了请求之后，将请求添加到 RequestQueue 中，</p>
+<p>考虑这样一种场景，如果我们在当前的 Activity 中创建了大量的 request，但是这时突然用户有点击了 back 键或者跳转到了另一个 Activity，那么还未执行的 request 此时就没有必要去执行了，如何取消还未执行的请求呢？注意我们在每个 request 中都绑定了一个 tag，<code>request.setTag(&quot;abc&quot;);</code>，如果想取消这些 request，只需要在 Activity 的 onStop 回调中调用 cancelAll 方法，取消特定的 tag，那么之前发出的请求将不会被执行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onStop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onStop();</span><br><span class="line">    MyApp.getHttpQueues().cancelAll(<span class="string">"abc"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="自定义请求"><a href="#自定义请求" class="headerlink" title="自定义请求"></a>自定义请求</h1><p>前面也介绍了 Volley 的一个特点就是高扩展性，官方也为我们提供了 StringRequest，JsonRequest 等现成的 request，但是如果我们的业务用的是我们一种公司自定义的形式，那么我们就有必要自定义请求来解析返回的结果。</p>
+<p>首先要明确的是：最原始的请求返回的结果都是字节流，我们正是通过对字节流的转换，才得到了我们想要的请求，这就是自定义 request 的本质。</p>
+<p>JsonRequest 的数据解析是利用 Android 本身自带的 JSONObject 和 JSONArray 来实现的，配合使用 JSONObject 和 JSONArray 就可以解析出任意格式的 JSON 数据。但是使用 JSONObject 还是太麻烦了，还有很多方法可以让 JSON 数据解析变得更加简单，比如说 GSON。那么接下来我们自定义一个 GsonRequest。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GsonRequest</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">Request</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Response.Listener&lt;T&gt; mListener;</span><br><span class="line">    <span class="keyword">private</span> Gson mGson;</span><br><span class="line">    <span class="keyword">private</span> Class&lt;T&gt; mClass;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GsonRequest</span><span class="params">(<span class="keyword">int</span> method, String url, Class&lt;T&gt; clazz, Response.Listener&lt;T&gt; listener,</span></span></span><br><span class="line"><span class="function"><span class="params">                       Response.ErrorListener elistener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(method, url, elistener);</span><br><span class="line">        mGson = <span class="keyword">new</span> Gson();</span><br><span class="line">        mClass = clazz;</span><br><span class="line">        mListener = listener;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GsonRequest</span><span class="params">(String url, Class&lt;T&gt; clazz, Response.Listener&lt;T&gt; listener,</span></span></span><br><span class="line"><span class="function"><span class="params">                       Response.ErrorListener errorListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(Method.GET, url, clazz, listener, errorListener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    这是响应最原始的面貌,得到的就是一个 NetWorkResponse,至于应用层想得到什么类型的响应,需要在这里进行转换;</span></span><br><span class="line"><span class="comment">    这个过程和 StringRequest 的构造很像,具体可以参考 StringRequest;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Response <span class="title">parseNetworkResponse</span><span class="params">(NetworkResponse response)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//这一句是固定格式,先将 response 的 data 域拿出来,其是字节,要转换成字符串,同时要获取该字节的编码;</span></span><br><span class="line">            String jsonString = <span class="keyword">new</span> String(response.data, HttpHeaderParser.parseCharset(response.headers));</span><br><span class="line">            <span class="keyword">return</span> Response.success(mGson.fromJson(jsonString, mClass), HttpHeaderParser.parseCacheHeaders(response));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            <span class="keyword">return</span> Response.error(<span class="keyword">new</span> ParseError(e));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">deliverResponse</span><span class="params">(T response)</span> </span>&#123;</span><br><span class="line">        mListener.onResponse(response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>自定义 request 需要继承 Request 类，而 Request 是一个抽象类，需要我们实现其抽象方法，包含两个：parseNetworkResponse 和 deliverResponse。</p>
+<p>第一个要实现的方法 parseNetworkResponse，该方法是得到服务器响应时回调的结果，其参数是执行网络请求得到的响应 NetworkResponse，我们可以通过 NetworkResponse.data 拿到包含在响应中的字节数组，然后通过 HttpHeaderParser.parseCacheHeaders(response)获取响应中的编码格式，将该字节数组转换为对应的字符串。如果字符串解析成功，接下来我们就可以调用 Response 中的 success 方法，将结果传入进去，如果解码失败，那么调用 Response 的 error 方法。</p>
+<p>第二个要实现的方法是 deliverResponse，这个方法也必须实现,该方法的参数是从上一步 parseNetworkResponse 中 Response.success()第一个参数得到的响应,我们要把这个响应分发下去;注意这一步说明我们已经得到成功的响应了,而之前 errorListener 的响应则是在网络出错或者服务器出错的情况下分发的 是由 Volley 顶层实现的。</p>
+<p>我们看一下Volley自带的StringRequest是如何实现的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StringRequest</span> <span class="keyword">extends</span> <span class="title">Request</span>&lt;<span class="title">String</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Listener&lt;String&gt; mListener;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Creates a new request with the given method.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method the request &#123;<span class="doctag">@link</span> Method&#125; to use</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url URL to fetch the string at</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> listener Listener to receive the String response</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> errorListener Error listener, or null to ignore errors</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StringRequest</span><span class="params">(<span class="keyword">int</span> method, String url, Listener&lt;String&gt; listener,</span></span></span><br><span class="line"><span class="function"><span class="params">            ErrorListener errorListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(method, url, errorListener);</span><br><span class="line">        mListener = listener;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Creates a new GET request.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url URL to fetch the string at</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> listener Listener to receive the String response</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> errorListener Error listener, or null to ignore errors</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StringRequest</span><span class="params">(String url, Listener&lt;String&gt; listener, ErrorListener errorListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(Method.GET, url, listener, errorListener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">deliverResponse</span><span class="params">(String response)</span> </span>&#123;</span><br><span class="line">        mListener.onResponse(response);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Response&lt;String&gt; <span class="title">parseNetworkResponse</span><span class="params">(NetworkResponse response)</span> </span>&#123;</span><br><span class="line">        String parsed;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            parsed = <span class="keyword">new</span> String(response.data, HttpHeaderParser.parseCharset(response.headers));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            parsed = <span class="keyword">new</span> String(response.data);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> Response.success(parsed, HttpHeaderParser.parseCacheHeaders(response));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>是不是相同的套路，同样是拿到了服务器的字节数组之后，直接转换为了字符串，然后就返回了，这个我们自定义的GsonRequest和StringRequest的套路是一致的。</p>
+<p>至此，关于Volley的基本使用就讲完了，具体的使用请参考<a href="https://github.com/zachaxy/android-project-demo/blob/master/TestVolley/app/src/main/java/com/zx/testvolley/MainActivity.java" target="_blank" rel="noopener">这里</a>，下一篇，会进入Volley的源码，详细解剖其内部的基本实现。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/15/手写JVM系列-10-解释器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/15/手写JVM系列-10-解释器/" itemprop="url">手写JVM系列(10)-解释器</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-15T11:44:03+08:00">
+                2017-05-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,714
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>上一节介绍了关于 JVM 指令集的相关知识，那么接下来我们就根据上一节介绍的知识，编写一个简易的解释器，读取字节码中的操作码和操作数，实现 JVM 规范中描述的指令集对应功能，从而完成简单方法的调用过程，并在接下来的章节中不断完善该解释器，使其支持更多指令。本节所实现的代码均在<a href="https://github.com/zachaxy/JVM" target="_blank" rel="noopener">项目</a>的 instructions 包下。</p>
+</blockquote>
+<h1 id="操作码的实现"><a href="#操作码的实现" class="headerlink" title="操作码的实现"></a>操作码的实现</h1><p>在 Code 属性中的字节数组就是字节码。操作码规定长度为一个字节，所以这里先读取一个字节，查看其对应的是哪种操作码，然后根据该操作码的实际含义，再决定是不是后面还有操作数需要读取。这一节实现了约 150 条指令，这些指令根据其分类，在 instructions 包下的子包中，具体实现见<a href="https://github.com/zachaxy/JVM" target="_blank" rel="noopener">项目源码</a>。</p>
+<h1 id="指令抽象接口"><a href="#指令抽象接口" class="headerlink" title="指令抽象接口"></a>指令抽象接口</h1><p>有了前面的基础知识，接下来我们就要从字节码中读取指令，并执行指令，完成解释器的功能了。首先定义指令接口，然后定义一个结构体用来辅助指令解码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Instruction</span> </span>&#123;</span><br><span class="line">    <span class="comment">//从字节码中提取操作数</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行指令逻辑</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">execute</span><span class="params">(Zframe frame)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是所有指令都要完成的两个动作，提取操作数（如果有的话），执行指令。</p>
+<h1 id="指令抽象类"><a href="#指令抽象类" class="headerlink" title="指令抽象类"></a>指令抽象类</h1><p>有很多指令的操作数都是类似的。为了避免重复代码，按照操作码类型定义一些抽象类，这些抽象类实现了 Instruction 接口，并实现 FetchOperands（）方法。再由具体的类去继承这些抽象类，然后<br>专注实现 Execute（）方法即可。定义的抽象类有以下几种。</p>
+<h2 id="NoOperandsInstruction"><a href="#NoOperandsInstruction" class="headerlink" title="NoOperandsInstruction"></a>NoOperandsInstruction</h2><p>NoOperandsInstruction 表示没有操作数的指令，所以没有定义任何字段。FetchOperands（）方法自然也是空空如也，什么也不用读。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">NoOperandsInstruction</span> <span class="keyword">implements</span> <span class="title">Instruction</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="BranchInstruction"><a href="#BranchInstruction" class="headerlink" title="BranchInstruction"></a>BranchInstruction</h2><p>BranchInstruction 表示跳转指令，Offset 字段存放跳转偏移量。FetchOperands（）方法从字节码中读取一个 uint16 整数，转成 int 后赋给 Offset 字段。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">BranchInstruction</span> <span class="keyword">implements</span> <span class="title">Instruction</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> offset;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span> </span>&#123;</span><br><span class="line">        offset = reader.readInt16();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Index8Instruction"><a href="#Index8Instruction" class="headerlink" title="Index8Instruction"></a>Index8Instruction</h2><p>存储和加载类指令需要根据索引存取局部变量表，索引由单字节操作数给出。把这类指令抽象成 Index8Instruction 结构体，用 Index 字段表示局部变量表索引。FetchOperands（）方法从字节码中读取一个 int8 整数，转成 uint 后赋给 Index 字段。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Index8Instruction</span> <span class="keyword">implements</span> <span class="title">Instruction</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Index8Instruction</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> index;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span> </span>&#123;</span><br><span class="line">        index = reader.readUint8();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Index16Instruction"><a href="#Index16Instruction" class="headerlink" title="Index16Instruction"></a>Index16Instruction</h2><p>有一些指令需要访问运行时常量池，常量池索引由两字节操作数给出。把这类指令抽象成 Index16Instruction 结构体，用 Index 字段表示常量池索引。FetchOperands（）方法从字节码中读取一个 uint16 整数，转成 uint 后赋给 Index 字段。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Index16Instruction</span> <span class="keyword">implements</span> <span class="title">Instruction</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> index;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fetchOperands</span><span class="params">(BytecodeReader reader)</span> </span>&#123;</span><br><span class="line">        index = reader.readUint16();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="读取字节码辅助类"><a href="#读取字节码辅助类" class="headerlink" title="读取字节码辅助类"></a>读取字节码辅助类</h1><p>code 字段存放字节码，pc 字段记录读取到了哪个字节。所有的指令都要从字节码中读取数据，并根据不同的指令类型读取 int、long、float、double 等类型的数据，所以定义一个读取字节码的辅助类 BytecodeReader，让其实现一系列的 readXXX（）方法。至于具体调用哪个 read 方法，则根据操作码中对应的操作类型来调用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BytecodeReader</span> </span>&#123;</span><br><span class="line">    <span class="keyword">byte</span>[] code;  <span class="comment">//Java 语言中 byte 的范围四 -128~127,和 Go 语言中的 byte:0~255 不同,所以在取数据的时候需要注意;</span></span><br><span class="line">    <span class="keyword">int</span> pc;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">reset</span><span class="params">(<span class="keyword">byte</span>[] code, <span class="keyword">int</span> pc)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.code = code;</span><br><span class="line">        <span class="keyword">this</span>.pc = pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getPc</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">byte</span> <span class="title">readInt8</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span> res = code[pc];</span><br><span class="line">        pc++;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">readUint8</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> res = code[pc];</span><br><span class="line">        res = (res + <span class="number">256</span>) % <span class="number">256</span>;</span><br><span class="line">        pc++;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">readInt16</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="keyword">short</span>) readUint16();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span>  <span class="keyword">int</span> <span class="title">readUint16</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> a1 = readUint8();</span><br><span class="line">        <span class="keyword">int</span> a2 = readUint8();</span><br><span class="line">        <span class="keyword">return</span> (a1 &lt;&lt; <span class="number">8</span> | a2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">readInt32</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] data = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];</span><br><span class="line">        data[<span class="number">0</span>] = readInt8();</span><br><span class="line">        data[<span class="number">1</span>] = readInt8();</span><br><span class="line">        data[<span class="number">2</span>] = readInt8();</span><br><span class="line">        data[<span class="number">3</span>] = readInt8();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ByteUtils.byteToInt32(data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span>[] readInt32s(<span class="keyword">int</span> n) &#123;</span><br><span class="line">        <span class="keyword">int</span>[] data = <span class="keyword">new</span> <span class="keyword">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            data[i] = readInt32();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//4k 对齐,没有对齐的会有填充数据,这些数据要忽略掉;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">skipPadding</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (pc % <span class="number">4</span> != <span class="number">0</span>) &#123;</span><br><span class="line">            readInt8();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="指令创建工厂"><a href="#指令创建工厂" class="headerlink" title="指令创建工厂"></a>指令创建工厂</h1><p>有了前面的各个指令的具体实现，接下来统一对外提供一个创建指令的接口，根据不同的操作码创建具体的指令，整体结构就是一个 switch-case 语句，其枚举了这一节已经实现的 150 多种指令，代码太长就不列举了，具体实现在 instructions 包下的 InstructionFactory 类中。</p>
+<h1 id="解释器"><a href="#解释器" class="headerlink" title="解释器"></a>解释器</h1><p>Java 虚拟机解释器的大致逻辑，其伪码如下所示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">    atomically calculate pc and fetch opcode at pc;</span><br><span class="line">    <span class="keyword">if</span> (operands) fetch operands;</span><br><span class="line">    execute the action <span class="keyword">for</span> the opcode;</span><br><span class="line">&#125; <span class="keyword">while</span> (there is more to <span class="keyword">do</span>);</span><br></pre></td></tr></table></figure>
+
+<p>解释一下上面的过程：</p>
+<ol>
+<li>计算 pc 值（默认 pc++，取下一条指令，否则就是跳转指令，对应 pc + offset ）；</li>
+<li>根据 pc 寄存器的指示位置，从字节码中读取出操作码；</li>
+<li>如果该操作码存在操作数，那么继续从字节码中读取操作数；</li>
+<li>执行操作码所定义的操作；</li>
+<li>如果字节码还未读取完，继续步骤 1；</li>
+</ol>
+<p>我们根据前面已经实现的编码，创建 Interpreter 类，实现指令的执行过程，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">loop</span><span class="params">(Zthread thread, <span class="keyword">byte</span>[] byteCode)</span> </span>&#123;</span><br><span class="line">    Zframe frame = thread.popFrame();   <span class="comment">//得到栈顶的帧。</span></span><br><span class="line">    BytecodeReader reader = <span class="keyword">new</span> BytecodeReader();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里循环的条件是 true,因为在解析指令的时候会遇到 return,而现在还没有实现 return,所以遇到 return 直接抛出异常,那么循环也就终止了</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> pc = frame.getNextPC(); <span class="comment">//这第一次 frame 才刚初始化，获取的 pc 应该是默认值 0 吧。</span></span><br><span class="line">        thread.setPc(pc);</span><br><span class="line">        reader.reset(byteCode, pc); <span class="comment">//reset 方法，其实是在不断的设置 pc 的位置。</span></span><br><span class="line">        <span class="keyword">int</span> opCode = reader.readUint8();</span><br><span class="line">        <span class="comment">//解析指令,创建指令,然后根据不同的指令执行不同的操作</span></span><br><span class="line">        Instruction instruction = InstructionFactory.createInstruction(opCode);</span><br><span class="line">        instruction.fetchOperands(reader);</span><br><span class="line">        frame.setNextPC(reader.getPc());</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">"pc: %2d, inst: %s \n"</span>, pc, instruction.getClass().getSimpleName());</span><br><span class="line">        instruction.execute(frame);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 Interpreter#loop（）方法中，while 循环部分的代码就是 Java 虚拟机规范中 JVM 解释器的具体实现。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/13/setContentView内部原理/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1071,415 +1436,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/12/LayoutInflater内部原理/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/12/LayoutInflater内部原理/" itemprop="url">LayoutInflater内部原理</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-12T22:36:24+08:00">
-                2017-05-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  4,118
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="LayoutInflater"><a href="#LayoutInflater" class="headerlink" title="LayoutInflater"></a>LayoutInflater</h1><p>相信大家对 LayoutInflater 并不陌生，我们在使用 ListView，RecyclerView 时，经常需要将 item 的布局文件加载到 ListView 上，这就用到了 LayoutInflater，调用 inflate 方法就可以将一项 item 添加到父控件中，那么它内部是如何实现的呢？</p>
-<p>先来看一下我们平时是怎么获取 LayoutInflater 的</p>
-<ul>
-<li>LayoutInflater layoutInflater = LayoutInflater.from(context);</li>
-<li>LayoutInflater layoutInflater = (LayoutInflater) context  .getSystemService(Context.LAYOUT_INFLATER_SERVICE); </li>
-</ul>
-<p>其实第一种内部是调用了第二种方法，这是一个跨进程通信的过程，因为解析布局文件这个服务是系统级的服务。</p>
-<p>在获取到 LayoutInflater 之后，就可以使用其方法了,其对外提供的 inflate 方法有若干重载方法，但是最后都是调用到了下面的方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">inflate(<span class="meta">@LayoutRes</span> <span class="keyword">int</span> resource, <span class="meta">@Nullable</span> ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span><br></pre></td></tr></table></figure>
-
-<p>接下来进入 inflate 方法内部，看其如何实现：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(@LayoutRes <span class="keyword">int</span> resource, @Nullable ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> Resources res = getContext().getResources();</span><br><span class="line">    <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"INFLATING from resource: \""</span> + res.getResourceName(resource) + <span class="string">"\" ("</span></span><br><span class="line">                + Integer.toHexString(resource) + <span class="string">")"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> XmlResourceParser parser = res.getLayout(resource);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> inflate(parser, root, attachToRoot);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        parser.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在第 10 行，根据传入的布局文件 id，生成一个 Xml 解析器，LayoutInflater 其实就是使用 Android 提供的 pull 解析方式来解析布局文件的。接下来调用 inflate(XmlPullParser parser, @Nullable ViewGroup root, boolean attachToRoot)方法开始解析所提供的布局文件了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><span class="line">public View inflate(XmlPullParser parser, @Nullable ViewGroup root, boolean attachToRoot) &#123;</span><br><span class="line">    synchronized (mConstructorArgs) &#123;</span><br><span class="line">        Trace.traceBegin(Trace.TRACE_TAG_VIEW, &quot;inflate&quot;);</span><br><span class="line"></span><br><span class="line">        final Context inflaterContext = mContext;</span><br><span class="line">        final AttributeSet attrs = Xml.asAttributeSet(parser);</span><br><span class="line">        Context lastContext = (Context) mConstructorArgs[0];</span><br><span class="line">        mConstructorArgs[0] = inflaterContext;</span><br><span class="line">        View result = root;</span><br><span class="line"></span><br><span class="line">        try &#123;</span><br><span class="line">            // Look for the root node.</span><br><span class="line">            int type;</span><br><span class="line">            while ((type = parser.next()) != XmlPullParser.START_TAG &amp;&amp;</span><br><span class="line">                    type != XmlPullParser.END_DOCUMENT) &#123;</span><br><span class="line">                // Empty</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            if (type != XmlPullParser.START_TAG) &#123;</span><br><span class="line">                throw new InflateException(parser.getPositionDescription()</span><br><span class="line">                        + &quot;: No start tag found!&quot;);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            final String name = parser.getName();</span><br><span class="line">            </span><br><span class="line">            if (DEBUG) &#123;</span><br><span class="line">                System.out.println(&quot;**************************&quot;);</span><br><span class="line">                System.out.println(&quot;Creating root view: &quot;</span><br><span class="line">                        + name);</span><br><span class="line">                System.out.println(&quot;**************************&quot;);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            if (TAG_MERGE.equals(name)) &#123;</span><br><span class="line">                if (root == null || !attachToRoot) &#123;</span><br><span class="line">                    throw new InflateException(&quot;&lt;merge /&gt; can be used only with a valid &quot;</span><br><span class="line">                            + &quot;ViewGroup root and attachToRoot=true&quot;);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                rInflate(parser, root, inflaterContext, attrs, false);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                // Temp is the root view that was found in the xml</span><br><span class="line">                final View temp = createViewFromTag(root, name, inflaterContext, attrs);</span><br><span class="line"></span><br><span class="line">                ViewGroup.LayoutParams params = null;</span><br><span class="line"></span><br><span class="line">                if (root != null) &#123;</span><br><span class="line">                    if (DEBUG) &#123;</span><br><span class="line">                        System.out.println(&quot;Creating params from root: &quot; +</span><br><span class="line">                                root);</span><br><span class="line">                    &#125;</span><br><span class="line">                    // Create layout params that match root, if supplied</span><br><span class="line">                    params = root.generateLayoutParams(attrs);</span><br><span class="line">                    if (!attachToRoot) &#123;</span><br><span class="line">                        // Set the layout params for temp if we are not</span><br><span class="line">                        // attaching. (If we are, we use addView, below)</span><br><span class="line">                        temp.setLayoutParams(params);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                if (DEBUG) &#123;</span><br><span class="line">                    System.out.println(&quot;-----&gt; start inflating children&quot;);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                // Inflate all children under temp against its context.</span><br><span class="line">                rInflateChildren(parser, temp, attrs, true);</span><br><span class="line"></span><br><span class="line">                if (DEBUG) &#123;</span><br><span class="line">                    System.out.println(&quot;-----&gt; done inflating children&quot;);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                // We are supposed to attach all the views we found (int temp)</span><br><span class="line">                // to root. Do that now.</span><br><span class="line">                if (root != null &amp;&amp; attachToRoot) &#123;</span><br><span class="line">                    root.addView(temp, params);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                // Decide whether to return the root that was passed in or the</span><br><span class="line">                // top view found in xml.</span><br><span class="line">                if (root == null || !attachToRoot) &#123;</span><br><span class="line">                    result = temp;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; catch (XmlPullParserException e) &#123;</span><br><span class="line">            InflateException ex = new InflateException(e.getMessage());</span><br><span class="line">            ex.initCause(e);</span><br><span class="line">            throw ex;</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            InflateException ex = new InflateException(</span><br><span class="line">                    parser.getPositionDescription()</span><br><span class="line">                            + &quot;: &quot; + e.getMessage());</span><br><span class="line">            ex.initCause(e);</span><br><span class="line">            throw ex;</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            // Don&apos;t retain static reference on context.</span><br><span class="line">            mConstructorArgs[0] = lastContext;</span><br><span class="line">            mConstructorArgs[1] = null;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Trace.traceEnd(Trace.TRACE_TAG_VIEW);</span><br><span class="line"></span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>第 6 行，创建一个 AttributeSet 对象，该对象用来保存 xml 布局中 View 中设置的属性，只不过现在只是创建了这个类，对于该类的成员变量现在还没有进行初始化，其实这个类中持有了 xmlParser(这一点要明确)，其内部封装了 getAttributeByName 等方法，并且在接下来的解析过程中从来没有显示的解析过 view 的属性，而是在反射创建 view 的过程中，传入这个 AttributeSet 对象，想要获取什么属性，直接调用 AttributeSet 的 getAttributeByXXX 的方法即可。至于和 layout 相关的属性，都不在 view 的构造方法中获取，而是在为其设置 LayoutParams 的时候，进行获取。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LayoutParams</span><span class="params">(Context c, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">    TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.ViewGroup_Layout);</span><br><span class="line">    setBaseAttributes(a,</span><br><span class="line">            R.styleable.ViewGroup_Layout_layout_width,</span><br><span class="line">            R.styleable.ViewGroup_Layout_layout_height);</span><br><span class="line">    a.recycle();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>第 9 行，将传入的第二个参数 root 赋给 result，先不管这个方法内部做了什么，总之这个方法返回值就是 result，但是也不一定就是第二个参数 root，因为该方法中间还有可能改变 result 的值。</p>
-<p>第 14 行，开始解析 xml 布局文件，这里是个 while 循环，循环体中是空实现，目的是要获得该 xml 的开始节点或者结尾节点。如果不是开始或者结束，那么就一直寻找 Dom 树中的下一个节点，直到找到为止。当然这里还是为了获取开始节点，因为在第 19 行还会判断找到的是不是开始节点，不是的话直接报错了。</p>
-<p>第 24 行，获取到传入的布局文件的根节点的 name</p>
-<p>第 33 行，如果该节点是”merge”，会进行一次判断，因为 merge 的用法是会将 merge 节点下的所有布局全部添加到其父容器中，如果我们传入的 root 为 null，或者 attachToRoot 为 false，违背了 merge 的用法，直接报错；否则会调用 rInflate 方法解析 merge 节点中的控件，rInflate 的内部实现在下面进行分析</p>
-<p>第 42 行，如果根节点不是”merge”，那么调用<code>createViewFromTag(root, name, inflaterContext, attrs)</code>方法，创建该布局根节点所代表的 View 对象 temp，createViewFromTag 方法的内部流程在下面进行解释。</p>
-<p>第 46 行，判断该 inflate 方法的第二个参数 root 是否为 null，如果不为空，那么调用该 root 的 generateLayoutParams 方法产生 LayoutParams</p>
-<p>第 52 行，判断该 inflate 方法的第三个参数 attachToRoot 的值，如果为 false，那么给第 42 行返回的布局的根 View 设置第 46 行创建的 LayoutParams</p>
-<p>第 65 行，执行 rInflateChildren(parser, temp, attrs, true)方法，解析 temp 节点内的子 view，内部执行流程在下面进行分析</p>
-<p>第 73 行，如果同时满足 root 不为 null 并且 attachToRoot 为 true，那么执行 root.addView(temp, params)，并最终返回该 root（inflate 的第二个参数）</p>
-<p>第 79 行，如果 root 为 null 或者 attachToRoot 为 false，那么直接返回 temp（解析的布局文件的根节点的 View 对象）</p>
-<h1 id="LayoutInflater-方法使用不同参数产生不同的效果"><a href="#LayoutInflater-方法使用不同参数产生不同的效果" class="headerlink" title="LayoutInflater 方法使用不同参数产生不同的效果"></a>LayoutInflater 方法使用不同参数产生不同的效果</h1><p>现在有如下两个布局文件：</p>
-<p>activity_main.xml ：</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">LinearLayout</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:id</span>=<span class="string">"@+id/activity_main"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:orientation</span>=<span class="string">"vertical"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>button_layout.xml：</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Button</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>  </span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span>  </span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_height</span>=<span class="string">"300dp"</span>  </span></span><br><span class="line"><span class="tag">    <span class="attr">android:text</span>=<span class="string">"Button"</span> &gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">Button</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>我们并没有在 LinearLayout 中添加 Button 的标签，而是将 Button 写在另一个单独的布局文件中，然后在代码中将 button 添加到上面的 LinearLayout 中,但是使用不同的 inflate 的参数，查看结果：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">	getWindow().requestFeature(Window.FEATURE_NO_TITLE);</span><br><span class="line">	setContentView(R.layout.activity_main);</span><br><span class="line"></span><br><span class="line">	LinearLayout linearLayout = (LinearLayout) findViewById(R.id.activity_main);</span><br><span class="line">	Button button;</span><br><span class="line">	LayoutInflater inflater = LayoutInflater.from(<span class="keyword">this</span>);</span><br><span class="line">	<span class="comment">//（1）</span></span><br><span class="line">	button = (Button) inflater.inflate(R.layout.button_main, <span class="keyword">null</span>);</span><br><span class="line">	linearLayout.addView(button);</span><br><span class="line"></span><br><span class="line">  	<span class="comment">//（2）</span></span><br><span class="line">	inflater.inflate(R.layout.button_main, linearLayout);</span><br><span class="line">	</span><br><span class="line">  	<span class="comment">//（3）</span></span><br><span class="line">	button = (Button) inflater.inflate(R.layout.button_main, linearLayout, <span class="keyword">false</span>);</span><br><span class="line">	linearLayout.addView(button);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>显示效果如图：</p>
-<h2 id="inflate-layoutId-null"><a href="#inflate-layoutId-null" class="headerlink" title="inflate(layoutId, null)"></a>inflate(layoutId, null)</h2><p>使用这个方法，没有指定父容器，现象就是第一个 button 并没有按照布局文件中设定的那样，显示 300dp 的高度。根据 inflate 方法中的第 79 行，直接将解析到 button 返回，我们直接拿到这个 button 是没有用的，想要在 LinearLayout 中显示出来，还需要调用 addView 的方法，但是此时的 button 是没有 LayoutParams 的，所以直接执行 addView，那么检查到该 button 没有 LayoutParams，会给其添加一个自带的 LayoutParams，在 LinearLayout 中，产生的默认 LayoutParams 如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mOrientation == HORIZONTAL) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mOrientation == VERTICAL) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>关于 LayoutParams，如果不了解的话，请参考<a href="https://zachaxy.github.io/2017/05/11/%E5%AF%B9LayoutParams%E7%9A%84%E7%90%86%E8%A7%A3/">对 LayoutParams 的理解</a></p>
-<p>我们的线性布局是纵向的，所以宽度是父容器宽度，高度是包裹内容，结果正是我们看到的第一个 button 的效果；</p>
-<h2 id="inflate-layoutId-root"><a href="#inflate-layoutId-root" class="headerlink" title="inflate(layoutId, root )"></a>inflate(layoutId, root )</h2><p>使用这个方法，指定了父容器为 LinearLayout，inflate 方法中如果使用了两个参数的方法，那么第三个参数 attachToRoot 的值默认为 true</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(@LayoutRes <span class="keyword">int</span> resource, @Nullable ViewGroup root)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> inflate(resource, root, root != <span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>此时 root 不为 null 所以 attachToRoot 为 true，满足 inflate 方法中第 73 行的条件，所以为 button 的 LayoutParams 与 LinearLayout 进行关联，从而满足了 button 的 300dp 的高度，结果就是现实的第二个 button 的效果。</p>
-<h2 id="inflate-layoutId-root-false"><a href="#inflate-layoutId-root-false" class="headerlink" title="inflate(layoutId, root, false )"></a>inflate(layoutId, root, false )</h2><p>使用这个方法，root 不为空，但是 attachToRoot 为 false，所以调用了 inflate 方法中第 52 行的逻辑，为这个 view 添加了 root 的 LayoutParams，并返回该 view，之前也说过，一个 View 如果没有与父容器关联的 LayoutParams，那么这个 view 是没有办法使用的。所以在这里要比第二种方法多了一步手动 addView 的方法，所以这样和第二种效果是一样的，只是 attachToRoot 的值，如果为 true，inflate 时自动帮我们添加到 root 中，为 false，那么返回的 view 需要我们手动执行一次 root.addView 方法才可以，当然这里我们也可以将 view 解析出来之后，不调用 root 的 addView 方法，而是调用其它 ViewGroup 的 addView 方法，但是这样感觉有点混乱，如果想调用其它 ViewGroup 的 addView 方法，何不在 inflate 时，将 root 设置为我们真正的 ViewGroup。</p>
-<h1 id="在-inflate-方法中炸出的几个方法"><a href="#在-inflate-方法中炸出的几个方法" class="headerlink" title="在 inflate 方法中炸出的几个方法"></a>在 inflate 方法中炸出的几个方法</h1><h2 id="createViewFromTag"><a href="#createViewFromTag" class="headerlink" title="createViewFromTag"></a>createViewFromTag</h2><blockquote>
-<p>该方法的作用是根据解析到的布局文件的节点名（eg：RelativeLayout，TextView，com.your.coustom.view 等）创建对应的 Java 对象，在 Java 中如何根据类名创建对象呢？很显然是用反射来实现的。这就是 createViewFromTag 所完成的功能，其将解析到对应的 View 返回。</p>
-</blockquote>
-<p>那么接下来深入源码，看一下其具体流程：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> View temp = createViewFromTag(root, name, inflaterContext, attrs);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> View <span class="title">createViewFromTag</span><span class="params">(View parent, String name, Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> createViewFromTag(parent, name, context, attrs, <span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function">View <span class="title">createViewFromTag</span><span class="params">(View parent, String name, Context context, AttributeSet attrs,<span class="keyword">boolean</span> ignoreThemeAttr)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (name.equals(<span class="string">"view"</span>)) &#123;</span><br><span class="line">		name = attrs.getAttributeValue(<span class="keyword">null</span>, <span class="string">"class"</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Apply a theme wrapper, if allowed and one is specified.</span></span><br><span class="line">	<span class="keyword">if</span> (!ignoreThemeAttr) &#123;</span><br><span class="line">		<span class="keyword">final</span> TypedArray ta = context.obtainStyledAttributes(attrs, ATTRS_THEME);</span><br><span class="line">		<span class="keyword">final</span> <span class="keyword">int</span> themeResId = ta.getResourceId(<span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (themeResId != <span class="number">0</span>) &#123;</span><br><span class="line">		context = <span class="keyword">new</span> ContextThemeWrapper(context, themeResId);</span><br><span class="line">		&#125;</span><br><span class="line">	ta.recycle();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (name.equals(TAG_1995)) &#123;</span><br><span class="line">   		 <span class="comment">// Let's party like it's 1995!</span></span><br><span class="line">   	 	<span class="keyword">return</span> <span class="keyword">new</span> BlinkLayout(context, attrs);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">    	View view;</span><br><span class="line">        <span class="keyword">if</span> (mFactory2 != <span class="keyword">null</span>) &#123;</span><br><span class="line">       		 view = mFactory2.onCreateView(parent, name, context, attrs);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mFactory != <span class="keyword">null</span>) &#123;</span><br><span class="line">        	view = mFactory.onCreateView(name, context, attrs);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        	view = <span class="keyword">null</span>;</span><br><span class="line">   		 &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (view == <span class="keyword">null</span> &amp;&amp; mPrivateFactory != <span class="keyword">null</span>) &#123;</span><br><span class="line">    	view = mPrivateFactory.onCreateView(parent, name, context, attrs);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (view == <span class="keyword">null</span>) &#123;</span><br><span class="line">   		 <span class="keyword">final</span> Object lastContext = mConstructorArgs[<span class="number">0</span>];</span><br><span class="line">   		 mConstructorArgs[<span class="number">0</span>] = context;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">    	<span class="keyword">if</span> (-<span class="number">1</span> == name.indexOf(<span class="string">'.'</span>)) &#123;</span><br><span class="line">    	view = onCreateView(parent, name, attrs);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">   		 view = createView(name, <span class="keyword">null</span>, attrs);</span><br><span class="line">   		 &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">   		 mConstructorArgs[<span class="number">0</span>] = lastContext;</span><br><span class="line">    	&#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> view;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InflateException e) &#123;</span><br><span class="line">		<span class="keyword">throw</span> e;</span><br><span class="line">	&#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">		<span class="keyword">final</span> InflateException ie = <span class="keyword">new</span> InflateException(attrs.getPositionDescription()</span><br><span class="line">			+ <span class="string">": Error inflating class "</span> + name);</span><br><span class="line">          ie.initCause(e);</span><br><span class="line">          <span class="keyword">throw</span> ie;</span><br><span class="line"></span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		<span class="keyword">final</span> InflateException ie = <span class="keyword">new</span> InflateException(attrs.getPositionDescription()</span><br><span class="line">			+ <span class="string">": Error inflating class "</span> + name);</span><br><span class="line">		ie.initCause(e);</span><br><span class="line">		<span class="keyword">throw</span> ie;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>第 30 行，开始解析我们的 view 了，这里是使用不同的 mFactory 来创建 View，优先顺序为：mFactory2=》mFactory=》mPrivateFactory，哪个 Factory 不为空，就用哪个，调用其 createView 方法，通过反射创建相应的对象，createView 方法就不在往下跟了，要不这篇就解不了了，后面有时间会写一篇关于插件换肤的文章，会对 createView 方法进一步深入。</p>
-<p>总之，你要记住结论，那就是 createViewFromTag 方法根据布局文件解析到的节点名，通过反射创建相应的对象。</p>
-<h2 id="rInflate"><a href="#rInflate" class="headerlink" title="rInflate"></a>rInflate</h2><blockquote>
-<p>回顾调用 rinflate 方法的地方，是在解析布局文件时，根 tag 为”merge”，我们知道 merge 必须是某个布局文件的根 tag，其下包含的所有的子 view 们直接添加到其父容器中，这样就减少了一层布局的嵌套。在单独的一个布局文件中，merge 的表现类似于 FrameLayout。那么根据这个特性，解析时直接跳过 merge 这一层，进入内部，继续解析具体的 view。</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">rInflate(parser, root, inflaterContext, attrs, false);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void rInflate(XmlPullParser parser, View parent, Context context,</span><br><span class="line">		AttributeSet attrs, boolean finishInflate) throws XmlPullParserException, IOException &#123;</span><br><span class="line"></span><br><span class="line">	final int depth = parser.getDepth();	//这个 depth 的值，估计是 2，因为 merge 作为根标签，其 depth 是 1，现在进入了 merge 的内部，所以为 2</span><br><span class="line">	int type;</span><br><span class="line"></span><br><span class="line">	while (((type = parser.next()) != XmlPullParser.END_TAG ||</span><br><span class="line">			parser.getDepth() &gt; depth) &amp;&amp; type != XmlPullParser.END_DOCUMENT) &#123;</span><br><span class="line"></span><br><span class="line">		if (type != XmlPullParser.START_TAG) &#123;</span><br><span class="line">			continue;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		final String name = parser.getName();</span><br><span class="line">		</span><br><span class="line">		if (TAG_REQUEST_FOCUS.equals(name)) &#123;</span><br><span class="line">			parseRequestFocus(parser, parent);</span><br><span class="line">		&#125; else if (TAG_TAG.equals(name)) &#123;</span><br><span class="line">			parseViewTag(parser, parent, attrs);</span><br><span class="line">		&#125; else if (TAG_INCLUDE.equals(name)) &#123;</span><br><span class="line">			if (parser.getDepth() == 0) &#123;</span><br><span class="line">				throw new InflateException(&quot;&lt;include /&gt; cannot be the root element&quot;);</span><br><span class="line">			&#125;</span><br><span class="line">			parseInclude(parser, context, parent, attrs);</span><br><span class="line">		&#125; else if (TAG_MERGE.equals(name)) &#123;</span><br><span class="line">			throw new InflateException(&quot;&lt;merge /&gt; must be the root element&quot;);</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			final View view = createViewFromTag(parent, name, context, attrs);</span><br><span class="line">			final ViewGroup viewGroup = (ViewGroup) parent;</span><br><span class="line">			final ViewGroup.LayoutParams params = viewGroup.generateLayoutParams(attrs);</span><br><span class="line">			rInflateChildren(parser, view, attrs, true);</span><br><span class="line">			viewGroup.addView(view, params);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	if (finishInflate) &#123;</span><br><span class="line">		parent.onFinishInflate();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>第 7 行，拿到当前标签的深度，其深度在这里是 2，因为已经跳过了跟标签 merge，进去其内部了，xml 的深度示意图如下：</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- outside --&gt;</span>     0</span><br><span class="line"><span class="tag">&lt;<span class="name">root</span>&gt;</span>               1</span><br><span class="line">  sometext           1</span><br><span class="line">    <span class="tag">&lt;<span class="name">foobar</span>&gt;</span>         2</span><br><span class="line">      ...			 2</span><br><span class="line">    <span class="tag">&lt;/<span class="name">foobar</span>&gt;</span>        2</span><br><span class="line"><span class="tag">&lt;/<span class="name">root</span>&gt;</span>              1</span><br><span class="line"><span class="comment">&lt;!-- outside --&gt;</span>     0</span><br></pre></td></tr></table></figure>
-
-<p>第 23 行，主要这里解释了如果解析到的 tag 是 include，那么并且其深度为 0，那么直接抛出异常，这表明 include 标签是不能作为根标签的。只能作为子标签，接下来开始调用 parseInclude 方法解析 include 指定的布局文件，内部依旧是类似于 createViewFromTag 的方法通过反射不断的创建 view 对象，这里不再深入。</p>
-<p>第 31 行，这里调用了 createViewFromTag 的方法，创建了 merge 标签下的 view，并将该 view 添加到 rinflate 方法的第二个参数 root 中，其调用了 root.addView(view)，如果该 view 是一个 ViewGroup，其内部还有其它子 view，会调用 rInflateChildren 方法，继续解析该 view 下的子 view，最终结果相当于直接将 merge 标签下的子元素添加到 merge 标签 parent 中，这样就保证了不会引入额外的层级。</p>
-<h2 id="rInflateChildren"><a href="#rInflateChildren" class="headerlink" title="rInflateChildren"></a>rInflateChildren</h2><blockquote>
-<p>该方法被调用的时机是在当解析到一个 ViewGroup 类型的标签时（eg：LinearLayout 等），那么会调用该方法，继续解析该 ViewGroup 下的标签。其内部的实现很简单，直接调用了上面的 rinflate 方法，以当前解析的到 ViewGroup 作为该方法的第二个参数 root，进行解析。</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">rInflateChildren</span><span class="params">(XmlPullParser parser, View parent, AttributeSet attrs,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">boolean</span> finishInflate)</span> <span class="keyword">throws</span> XmlPullParserException, IOException </span>&#123;</span><br><span class="line">    rInflate(parser, parent, parent.getContext(), attrs, finishInflate);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="总结：解析-XML-布局文件的作用"><a href="#总结：解析-XML-布局文件的作用" class="headerlink" title="总结：解析 XML 布局文件的作用"></a>总结：解析 XML 布局文件的作用</h1><p>本节以 LayoutInflater 方法的不同参数抛出问题，引出 LayoutInflater 内部的执行流程，并解释了 inflate 方法中的几个解析布局文件的关键方法，然后又根据 inflate 不同的参数，观察其不同的现象。相信此刻你对于 LayoutInflater 的使用以及其内部的执行原理已经很清楚了。接下来再做一个总结</p>
-<p>当我们用 LayoutInflater 解析一个布局文件的时候到底做了什么，简单的一句话就是：<strong>将布局映射成一棵多叉树</strong>。</p>
-<p>inflate 方法的核心就是根据不同的标签，反射出不同的 View 对象。那么采用何种方法，才能表现 xml 布局文件中，父容器中和子 View 的包含关系呢？</p>
-<p>答案就是使用了 ViewGroup#addView 方法，如果解析的 View 是一个 ViewGroup，那么会将该 ViewGroup 作为 parent，继续解析内部的 view，并将其添加到了 ViewGroup#mChilddren 数组中，这个数组默认长度为 12，如果子 view 数量过多，会对该数组进行扩容，都是以 12 进行扩充。如果子 View 依然是一个 ViewGroup，那么继续执行上面的过程，这个过程就是<strong>深度优先遍历</strong>，将整个布局文件映射为一棵树，每个父节点必定是一个 ViewGroup，其对应的子节点就是在该 ViewGroup 标签下的 View，其引用保存在该 ViewGroup 的 mChildren 数组中，这样就形成了一棵多叉树，其根节点就是布局文件的根节点。</p>
-<p>最后附上一张inflate的内部执行流程图</p>
-<p><img src="http://opda1q948.bkt.clouddn.com/LayoutInflater.png" alt="inflate方法内部执行流程图"></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/11/对LayoutParams的理解/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/11/对LayoutParams的理解/" itemprop="url">对LayoutParams的理解</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-11T09:33:25+08:00">
-                2017-05-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2,471
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="LayoutParams-是什么？"><a href="#LayoutParams-是什么？" class="headerlink" title="LayoutParams 是什么？"></a>LayoutParams 是什么？</h1><p>相信很多人都有疑惑，LayoutParams 是什么？不知道大家想过没有，如果定义一个 ViewGroup，然后在这个 ViewGroup 中放若干 view，这些 view 在 ViewGroup 中的大小关系是保存在哪里的呢？</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">LinearLayout</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:tools</span>=<span class="string">"http://schemas.android.com/tools"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:id</span>=<span class="string">"@+id/activity_main"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:orientation</span>=<span class="string">"vertical"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">tools:context</span>=<span class="string">"com.zx.readsourcecode.MainActivity"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">TextView</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:id</span>=<span class="string">"@+id/tv"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:text</span>=<span class="string">"文字"</span>/&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>上面是一段最简单不过的布局文件，这里我们最常用的一个属性<code>android:layout_width</code>和<code>android:layout_height</code>相信大家再熟悉不过，其实这两个属性对应两个变量 width 和 height，那么这两个变量是哪个类的成员变量呢？答案就是 LayoutParams。虽然之前不知道 LayoutParams 这和类的存在，但是却一直偷偷的使用它。</p>
-<h1 id="LayoutParams-的作用"><a href="#LayoutParams-的作用" class="headerlink" title="LayoutParams 的作用"></a>LayoutParams 的作用</h1><p> <strong>LayoutParams 是 View 用来告诉它的父控件如何放置自己的。</strong>基类 LayoutParams（也就是 ViewGroup.LayoutParams）仅仅描述了这个 View 想要的宽度和高度。在 View 的测量过程中，LayoutParams 起到了决定性的作用！</p>
-<p>注意：<code>android:layout_width</code>和<code>android:layout_height</code>表面看起来是 TextView 的宽度和高度，相信这是很多人误解的地方，但如果是描述自己的宽高，那么属性名直接定义为<code>android:width</code>和<code>android:height</code>不就行了，为什么前面要加<code>layout_</code>的前缀？这是因为 TextView 既然放在 LinearLayout 中，那么它的宽度和高度并不是由自己决定的，而是由其父容器（这里对应 LinearLayout）来决定的。通过该属性可选的值 <code>match_parent</code>可以看出，这并不是一个具体的值，而是描述为和父容器一样宽，所以宽度是看父容器有多宽，才给子 view 设置多宽的。</p>
-<p>而描述 View 直接用它们自己的属性就好了，如<code>textColor</code>和<code>text</code>等等，为什么还需要引入 LayoutParams 呢？因为<code>textColor</code>和<code>text</code>等这样的属性都是只与 TextView 自身有关的，无论这个 TextView 处于什么环境，这些属性都是不变的。而<code>layout_width</code>与<code>layout_marginLeft</code>这样的属性是与它的父控件息息相关的，是父控件通过 LayoutParams 提供这些”layout_”属性给孩子们用的；是父控件根据孩子们的要求（LayoutParams）来决定怎么测量。</p>
-<p>所以在 xml 布局中，凡是以<code>layout_</code>开头的属性，均不是 view 自身的，而是它所在的父控件的 LayoutParams 类中的属性，这里的父控件一定是 ViewGroup 的一个子类。</p>
-<h1 id="ViewGroup-LayoutParams"><a href="#ViewGroup-LayoutParams" class="headerlink" title="ViewGroup.LayoutParams"></a>ViewGroup.LayoutParams</h1><p>LayoutParams 是 ViewGroup 中的一个静态类，而每个 ViewGroup 的子类（eg：LinearLayout，FrameLayout，RelativeLayout 等）中依然有一个各自的 LayoutParams 的子类，其在 ViewGroup 的 LayoutParams 静态类的基础之上，添加了和具体布局相关的属性，比如 LinearLayout 中特有的 layout_weight 属性，用来指定特定方向的分配比例，再比如 RelativeLayout 特有的 layout_left，用来指定当前 view 和其它子 view 相对位置的属性等。进入源码中看一下 ViewGroup 中静态内部类 LayoutParams。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">public static class LayoutParams &#123;</span><br><span class="line"></span><br><span class="line">    @SuppressWarnings(&#123;&quot;UnusedDeclaration&quot;&#125;)</span><br><span class="line">    @Deprecated</span><br><span class="line">    public static final int FILL_PARENT = -1;</span><br><span class="line"></span><br><span class="line">    public static final int MATCH_PARENT = -1;</span><br><span class="line"></span><br><span class="line">    public static final int WRAP_CONTENT = -2;</span><br><span class="line"></span><br><span class="line">    public int width;</span><br><span class="line"></span><br><span class="line">    public int height;</span><br><span class="line">    </span><br><span class="line">    public LayoutParams(Context c, AttributeSet attrs) &#123;</span><br><span class="line">    TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.ViewGroup_Layout);</span><br><span class="line">    </span><br><span class="line">    	setBaseAttributes(a,</span><br><span class="line">   			 R.styleable.ViewGroup_Layout_layout_width,</span><br><span class="line">   		 	R.styleable.ViewGroup_Layout_layout_height);</span><br><span class="line">    </span><br><span class="line">    	a.recycle();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public LayoutParams(int width, int height) &#123;</span><br><span class="line">        this.width = width;</span><br><span class="line">        this.height = height;</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以看到其内部的成员变量只有最基本的 width 和 height，对应了布局文件中的<code>android:layout_width</code>和<code>android:layout_height</code>的值，在解析布局文件时，遇到这两个属性，就给对应的 LayoutParams 的这两个成员变量进行赋值了。</p>
-<p>在 ViewGroup 中还自带了一个 LayoutParams 的子类 MarginLayoutParams，供不同的布局使用</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MarginLayoutParams</span> <span class="keyword">extends</span> <span class="title">ViewGroup</span>.<span class="title">LayoutParams</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> leftMargin;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> topMargin;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> rightMargin;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> bottomMargin;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> startMargin = DEFAULT_MARGIN_RELATIVE;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> endMargin = DEFAULT_MARGIN_RELATIVE;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>其添加了 Margin 相关的属性，相对于布局文件的<code>android:layout_marginLeft=&quot;5dp&quot;</code>等属性。</p>
-<p><code>LayoutParams</code>其实是父控件提供给子 view 的，好让子 view 选择如何测量和放置自己。所以在子 view 添加到父控件的那一刻，子 view 就应该有<code>LayoutParams</code>了。我们来看看几中常见的在代码中添加 View 的方式：还是上面的布局，这次我们不用 xml，而是用代码来实现一样的效果。 </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">LinearLayout linearLayout = (LinearLayout) findViewById(R.id.activity_main);</span><br><span class="line">TextView textView = <span class="keyword">new</span> TextView(<span class="keyword">this</span>);</span><br><span class="line">LinearLayout.LayoutParams params = <span class="keyword">new</span> LinearLayout.LayoutParams(</span><br><span class="line">        LinearLayout.LayoutParams.MATCH_PARENT,</span><br><span class="line">        LinearLayout.LayoutParams.WRAP_CONTENT);</span><br><span class="line">linearLayout.addView(textView, params);</span><br></pre></td></tr></table></figure>
-
-<p>View 要是想被添加到 ViewGroup 中，是不可能脱离相应的 ViewGroup.LayoutParams，而独立存在的，不信你将布局文件中的<code>android:layout_width</code>和<code>android:layout_height</code>这两个属性删掉，编译器立即报错。</p>
-<p>同时在代码中添加上述操作，虽然可以使用如下代码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LinearLayout linearLayout = (LinearLayout) findViewById(R.id.activity_main);</span><br><span class="line">TextView textView = <span class="keyword">new</span> TextView(<span class="keyword">this</span>);</span><br><span class="line">linearLayout.addView(textView);</span><br></pre></td></tr></table></figure>
-
-<p>但是我们追到 addView 方法内部看一下，可以得出结论，调用 addView（view）的方法，对应的 ViewGroup子类会通过 generateDefaultLayoutParams（）方法自动添加一个默认的 LayoutParams。不同的 ViewGroup（这里指的是 LinearLayout）产生具体 LayoutParams 的方法不同。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addView</span><span class="params">(View child)</span> </span>&#123;</span><br><span class="line">    addView(child, -<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addView</span><span class="params">(View child, <span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (child == <span class="keyword">null</span>) &#123;</span><br><span class="line">    	<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Cannot add a null child view to a ViewGroup"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    LayoutParams params = child.getLayoutParams();</span><br><span class="line">    <span class="keyword">if</span> (params == <span class="keyword">null</span>) &#123;</span><br><span class="line">    	params = generateDefaultLayoutParams();</span><br><span class="line">    <span class="keyword">if</span> (params == <span class="keyword">null</span>) &#123;</span><br><span class="line">    	<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"generateDefaultLayoutParams() cannot return null"</span>);</span><br><span class="line">    	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    addView(child, index, params);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>不同的 ViewGroup（布局）产生具体 LayoutParams 的方法不同。看一下 LinearLayout 中的 generateDefaultLayoutParams（）是如何添加的：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> LayoutParams <span class="title">generateDefaultLayoutParams</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>很简单的添加了一个宽高均为 wrap_content 的属性。</p>
-<p><strong>注：generateDefaultLayoutParams 方法中返回的 LayoutParams 类，是具体的 ViewGroup 子类（这里代表 LinearLayout）中的静态类 LayoutParams，而不是 ViewGroup 中的。</strong></p>
-<p>在深入到 addView 中，看一下 view 和 LayoutParams 是如何关联的，这里删除了部分代码，只看主线；</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addViewInner</span><span class="params">(View child, <span class="keyword">int</span> index, LayoutParams params,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">boolean</span> preventRequestLayout)</span> </span>&#123;  </span><br><span class="line"></span><br><span class="line">	<span class="comment">//(1)</span></span><br><span class="line">    <span class="keyword">if</span> (child.getParent() != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"The specified child already has a parent. "</span> +</span><br><span class="line">                <span class="string">"You must call removeView() on the child's parent first."</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//(2)</span></span><br><span class="line">    <span class="keyword">if</span> (!checkLayoutParams(params)) &#123;</span><br><span class="line">        params = generateLayoutParams(params);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  	<span class="comment">//(3)preventRequestLayout 参数的默认值是 false；</span></span><br><span class="line">    <span class="keyword">if</span> (preventRequestLayout) &#123;</span><br><span class="line">        child.mLayoutParams = params;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        child.setLayoutParams(params);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  	<span class="comment">//(4)默认值为 -1</span></span><br><span class="line">    <span class="keyword">if</span> (index &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        index = mChildrenCount;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//(5)</span></span><br><span class="line">    addInArray(child, index);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//(6) tell our children，默认值为 false；</span></span><br><span class="line">    <span class="keyword">if</span> (preventRequestLayout) &#123;</span><br><span class="line">        child.assignParent(<span class="keyword">this</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        child.mParent = <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//(7)</span></span><br><span class="line">    dispatchViewAdded(child);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">//......</span></span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这里看一下 addViewInner 方法内部的执行流程</p>
-<ol>
-<li>检查 view 是否被别的 ViewGroup 添加过，如果被别的添加过，那么抛出异常</li>
-<li>再对 layoutParams 进行检测，如果为 null，执行 generateLayoutParams(params)，这也是最后一次为 view 创建 params 了，这里添加的是 ViewGroup.LayoutParams，一般在 LinearLayout、RelativeLayout 等已有的布局中，addview 中会先执行类似的为 view 创建 params 的方法，添加的是各布局特有的 LayoutParams，但是如果是我们自定义的 ViewGroup，也许没有实现配套的 LayoutParams，所以最后用的是 ViewGroup 中自带的 LayoutParams</li>
-<li>将 view 的 layoutParams 设置为当前的 layoutParams，在这里执行了关联</li>
-<li>除非我们在 addView(view,index)指定了具体值，否则 index 默认值为 -1，如果是 -1 的话，这一步将 index 改为 ViewGroup 中当前 child view 的总和</li>
-<li>ViewGroup 中有一个数组，保存着其所有子 view，这里根据 index 值添加到相应的位置，当然这里也涉及到了数组扩容问题，如果你手动指定的 index 过大，超过了当前 ViewGroup 的 mChildrenCount，那么直接报错，index 过大</li>
-<li>为 view 分配 parent，这个 parent 就是添加该子 view 的 ViewGroup</li>
-<li>执行了 addView 方法，那么原有的 ViewGroup 的结构势必会发生改变，这时候会执行一个回调，通知当前 ViewGroup 添加或者移除了一个 view；当然这个回调默认是 null，我们可以手动添加该回调，使用<code>setOnHierarchyChangeListener(OnHierarchyChangeListener listener)</code></li>
-</ol>
-<h1 id="自定义-LayoutParams"><a href="#自定义-LayoutParams" class="headerlink" title="自定义 LayoutParams"></a>自定义 LayoutParams</h1><p>前面提到，每个 ViewGroup 的子类（eg：LinearLayout，FrameLayout，RelativeLayout 等）中依然有一个各自的静态内部类 xxxLayout.LayoutParams，其继承了 ViewGroup#LayoutParams，并根据具体的布局，新增了相关属性，比如 LinearLayout 中特有的 layout_weight 属性，用来指定特定方向的分配比例，再比如 RelativeLayout 特有的 layout_left、layout_right 等，用来指定当前 view 和其它子 view 相对位置的属性等。</p>
-<p>前面分析 addView 的流程中也介绍到子 view 要想添加到父容器中，父容器必定会给子 view 指定一个 LayoutParams，脱离了 LayoutParams，view 无法单独存在，view 可以通过其 getLayoutParams 方法获取其父容器为子 view 绑定的 LayoutParams。</p>
-<p>使用 Android 官方提供的这些 ViewGroup（eg：LinearLayout，FrameLayout，RelativeLayout 等）在 addView 时都会为 view 设置一个 xxxLayout.LayoutParams，而在我们自定义 ViewGroup 控件的时候，如果没有为自定义的 ViewGroup 添加配套的 LayoutParams，那么最终在执行 addViewInner 方法时，会为 view 添加 ViewGroup#LayoutParams，这个 LayoutParams 是一个最基础的，只有 width 和 height 属性，如果我们想实现自定义的 ViewGroup 特殊需求，那么自定义 LayoutParams 是必不可少的。</p>
-<p>关于如何自定义 LayoutParams，以及在自定义 LayoutParams 时要注意哪些问题，请参考实战案例<a href>自定义 ViewGroup——百分比布局</a>，这篇文章会根据具体的 ViewGroup 的功能需求，制定对应的 LayoutParams。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>LayoutParams 的作用：是 View 用来告诉它的父控件如何放置自己的，理解这一点很重要，因为这是 view 在 measure 和 layout 过程中很重要的因素。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1529,7 +1490,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-count">66</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1542,7 +1503,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1609,7 +1570,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">148.1k</span>
+    <span title="站点文章字数总计">148.9k</span>
   
 </div>
 

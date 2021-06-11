@@ -336,6 +336,304 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2018/01/10/Windows配置JNI开发环境/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/10/Windows配置JNI开发环境/" itemprop="url">Windows配置JNI开发环境</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-10T20:06:54+08:00">
+                2018-01-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  871
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="JNI-简介"><a href="#JNI-简介" class="headerlink" title="JNI 简介"></a>JNI 简介</h1><p>JNI：Java Native Interface。<br>当 JDK 所提供的 API 无法满足当前应用的需求时,就要调用 native interface。我们知道 Java 程序跨平台是有前提的，其并不是直接运行时操作系统上的，而是运行在 Java 虚拟机上的，我们平时调用的 JDK 中的 api 是基于 JVM 实现的,但是有一些情况下,这些 api 不能满足我们对性能的要求，那么就需要调用更为底层的语言来解决效率问题。所谓底层语言，一般是说 c/c++，这类语言是可以直接和操作系统的内存做交互的，所以在效率上更加高效。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/01/10/Windows配置JNI开发环境/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2018/01/04/手写JVM系列-13-方法调用机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/04/手写JVM系列-13-方法调用机制/" itemprop="url">手写JVM系列(13)-方法调用机制</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-04T20:46:26+08:00">
+                2018-01-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,184
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>我们知道一个程序的运行的逻辑就是在一个代码块中不断的调用方法，将这些方法的调用堆砌好之后就形成的程序的逻辑。有了前面介绍的知识基础，接下来就来介绍下方法的执行过程。本节的代码主要是在<a href="https://github.com/zachaxy/JVM/tree/master/Java/src/instructions/references" target="_blank" rel="noopener">instructions-references包下的 invokeXXX 指令</a>。同时也可以配合<a href="https://github.com/zachaxy/JVM/blob/master/Java/src/test/TestInvokeMethod08.java" target="_blank" rel="noopener">测试用例TestInvokeMethod08</a>加深了解。</p>
+</blockquote>
+<h1 id="方法的调用机制"><a href="#方法的调用机制" class="headerlink" title="方法的调用机制"></a>方法的调用机制</h1><p>注:方法的调用不等同与方法的执行,方法的调用阶段只是用来确定被调用的是哪一个方法，拿到具体的方法之后，就可以拿到其字节码指令，从而执行程序了。</p>
+<p>JVM 中方法调用的指令有以下五条：</p>
+<ul>
+<li>invokestatic:调用静态方法</li>
+<li>invokespecial:调用实例构造器<code>&lt;init&gt;</code>方法,私有方法和父类方法</li>
+<li>invokevirtual:调用所有的虚方法</li>
+<li>invokeinterfae:调用接口方法(在运行时确定实现了此接口的一个具体对象)</li>
+<li>invokenative:本地方法的调用</li>
+</ul>
+<p>前两个在解析阶段就可以确定唯一的调用版本，而后两个需要在调用时寻找真正的 method。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/01/04/手写JVM系列-13-方法调用机制/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2018/01/04/手写JVM系列-12-类加载器的实现/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -782,314 +1080,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/12/12/MOP总结/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/12/MOP总结/" itemprop="url">MOP总结</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-12T08:57:42+08:00">
-                2017-12-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  902
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>之前介绍了基于 MOP的技术：</p>
-<ul>
-<li><a href="https://zachaxy.github.io/2017/12/09/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%8B%A6%E6%88%AA/">MOP——方法拦截</a></li>
-<li><a href="https://zachaxy.github.io/2017/12/10/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%B3%A8%E5%85%A5/">MOP——方法注入</a></li>
-<li><a href="https://zachaxy.github.io/2017/12/11/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E5%90%88%E6%88%90/">MOP——方法合成</a></li>
-</ul>
-<p>接下来对 MOP 的这三种技术的使用做一个汇总</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2017/12/12/MOP总结/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/12/11/MOP——方法合成/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/11/MOP——方法合成/" itemprop="url">MOP——方法合成</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-11T09:27:16+08:00">
-                2017-12-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  803
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>前面<a href="https://zachaxy.github.io/2017/12/10/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%B3%A8%E5%85%A5/">MOP——方法注入</a>介绍了利用 MOP 对方法的调用进行注入，接下来要介绍利用 MOP 实现方法的合成。</p>
-<p>合成：在运行期，根据输入状态的不同，动态的生成一个方法。<br>这里要注意的是：方法合成，在运行时动态的生成方法，看起来很智能，但是合成是有前提的，就是调用的方法的方法名必须要符合预先定义好的规范，才能生成。</p>
-<p>同样，这里要和前面的方法注入区分开：<br>方法的合成和注入看起来似乎相同，都是向类中添加方法，以扩展类的功能，但这里也是有区别的：</p>
-<ul>
-<li>注入是已经知道要注入的方法名了，是发生在编译期的。</li>
-<li>合成是在编译期还不知道方法名，只有在调用的时候，发现并没有对应的方法，所以动态的生成该方法，然后并调用。<br>合成强调的是在运行时，注入强调的是在编译期；</li>
-</ul>
-<p>实现方法合成有以下两种方式：</p>
-<ul>
-<li>使用 methodMissing 合成方法</li>
-<li>使用 ExpandoMetaClass 合成方法</li>
-</ul>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2017/12/11/MOP——方法合成/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1139,7 +1134,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-count">66</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1152,7 +1147,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1219,7 +1214,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">148.1k</span>
+    <span title="站点文章字数总计">148.9k</span>
   
 </div>
 
