@@ -4,6 +4,48 @@
   
     
     <entry>
+      <title>kotlin中的lambda</title>
+      <link href="/2021/06/12/kotlin%E4%B8%AD%E7%9A%84lambda/"/>
+      <url>/2021/06/12/kotlin%E4%B8%AD%E7%9A%84lambda/</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 编程语言 </tag>
+            
+            <tag> kotlin </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>kotlin中的object关键字</title>
+      <link href="/2021/06/12/kotlin%E4%B8%AD%E7%9A%84object%E5%85%B3%E9%94%AE%E5%AD%97/"/>
+      <url>/2021/06/12/kotlin%E4%B8%AD%E7%9A%84object%E5%85%B3%E9%94%AE%E5%AD%97/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>object 关键字: 用来定义一个类同时创建一个实例(声明即定义)</p></blockquote><ul><li>定义单例</li><li>实现类似 java 中静态变量</li><li>实现类似 java 中静态方法</li><li>对象表达式:匿名内部类的一种方式<a id="more"></a></li></ul><h1 id="定义单例"><a href="#定义单例" class="headerlink" title="定义单例"></a>定义单例</h1><p>由于 object 关键字的特殊性,其天然具备单例的特性</p><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">object</span> Single &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">foo</span><span class="params">()</span></span> &#123;</span><br><span class="line">        println(<span class="string">"foo() in Single"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>调用方式:</p><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Single.foo();           <span class="comment">// 在 kotlin 中这样调用</span></span><br><span class="line">Single.INSTANCE.foo();  <span class="comment">// 在 java 中这样调用</span></span><br></pre></td></tr></table></figure><p>该单例类同样可以继承父类,或者实现接口,但是不允定义单例类有构造方法,默认为无参构造方法,否则无法实现单例</p><h1 id="定义静态成员变量"><a href="#定义静态成员变量" class="headerlink" title="定义静态成员变量"></a>定义静态成员变量</h1><p>kotlin 中没有 static 关键字,在 java 类中,定义静态成员变量可以在类中使用 static 关键字,而在 kotlin 中,可以在类中定义 object 对象,其用法同 java 中的 static 变量类似,只不过 kotlin 中定义即创建;</p><p>定义在类中的对象声明,同样可以继承父类或实现接口,并添加扩展方法</p><h1 id="定义静态方法"><a href="#定义静态方法" class="headerlink" title="定义静态方法"></a>定义静态方法</h1><p>要实现 kotlin 中静态方法的效果,需要使用两个关键字 <code>companion</code> + <code>object</code>; 其本质依然是创建了一个单例类,官方定义为伴生对象</p><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span></span>(<span class="keyword">val</span> name: String) &#123; </span><br><span class="line">    <span class="keyword">companion</span> <span class="keyword">object</span> Loader &#123;</span><br><span class="line">        <span class="function"><span class="keyword">fun</span> <span class="title">foo</span><span class="params">()</span></span> &#123;</span><br><span class="line">            println(<span class="string">"person companion"</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Person.foo()        <span class="comment">// (1)</span></span><br><span class="line">Person.Loader.foo()  <span class="comment">// (2)</span></span><br><span class="line"></span><br><span class="line">Person.Loader.foo(); <span class="comment">// (3)</span></span><br><span class="line"><span class="comment">//Person.Companion.foo(); //(4)</span></span><br></pre></td></tr></table></figure><ol><li>伴生对象类的名字可以自定义,如上面的 Loader, 也可以忽略</li><li>之所以说像静态方法,是因为在 kotlin 中调用的时候,可以像(1)中的方式调用</li><li>在 kotlin 中如果伴生对象有定义名字,也可以像(2)中的方式去调用,也可以忽略类名,像(1)中的方式调用; 因此 kotlin 类中最多只能有一个伴生对象!!</li><li>在 Java 中访问伴生对象,如果有定义类名,eg:Loader, 则方式方式如(3)所示,如果未定义,那么其访问方式为(4),使用 Companion 获取伴生对象</li><li>伴生对象同样可以可以继承父类或实现接口,并添加扩展方法</li></ol><h1 id="定义对象表达式创建匿名内部类"><a href="#定义对象表达式创建匿名内部类" class="headerlink" title="定义对象表达式创建匿名内部类"></a>定义对象表达式创建匿名内部类</h1><p>因为 object 定义即创建对象,这种特性也符合匿名内部类的写法:</p><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> zhangxin</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span>   2021/6/12</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">OnClickListener</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">onClick</span><span class="params">()</span></span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">open</span> <span class="class"><span class="keyword">class</span> <span class="title">AnimationAdapter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">open</span> <span class="function"><span class="keyword">fun</span> <span class="title">onStart</span><span class="params">()</span></span> &#123;&#125;</span><br><span class="line">    <span class="keyword">open</span> <span class="function"><span class="keyword">fun</span> <span class="title">onEnd</span><span class="params">()</span></span> &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">object</span> : OnClickListener &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onClick</span><span class="params">()</span></span> &#123;</span><br><span class="line">            println(<span class="string">"onClick"</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> : AnimationAdapter() &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onStart</span><span class="params">()</span></span> &#123;</span><br><span class="line">            println(<span class="string">"onStart"</span>)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>特别注意的是: 使用 object 定义的匿名内部类不是单例,而是每次执行的时候都会重新创建</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 编程语言 </tag>
+            
+            <tag> kotlin </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Python快速上手</title>
       <link href="/2021/04/18/Python%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/"/>
       <url>/2021/04/18/Python%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/</url>

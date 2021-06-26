@@ -336,6 +336,308 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2018/01/03/手写JVM系列-11-线程共享的运行时数据/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/03/手写JVM系列-11-线程共享的运行时数据/" itemprop="url">手写JVM系列(11)-线程共享的运行时数据</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-03T16:42:03+08:00">
+                2018-01-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,897
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>前面已经初步实现了线程私有的运行时数据区，主要包括操作数栈和局部变量表。接下来将继续丰富运行时数据区的内容——线程共享的运行时数据区，包括方法区和运行时常量池。本节的代码集中在 <a href="https://github.com/zachaxy/JVM/tree/master/Java/src/runtimedata/heap" target="_blank" rel="noopener">heap</a> 包下。同时也会对一些概念做出解释。因为自己之前在这些概念上的错误认识，走了很多弯路。</p>
+</blockquote>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/01/03/手写JVM系列-11-线程共享的运行时数据/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/12/13/Groovy与DSL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/12/13/Groovy与DSL/" itemprop="url">Groovy与DSL</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-13T10:33:46+08:00">
+                2017-12-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,857
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>DSL：领域特定语言。常用于聚焦指定的领域或问题，这就要求 DSL 具备强大的表现力，同时在使用起来要简单。由于其使用简单的特性，DSL 通常不会像 Java，C++等语言将其应用于一般性的编程任务。</p>
+<p>由语言的难易程度，做一个简单的排序：配置文件 &lt; DSL &lt; 编程语言(eg:Java,C++…)</p>
+<ul>
+<li>配置文件是最简单的一种，常见的有用 xml 来进行配置项目，这需要预先定义好一些规范，只有按照预先定义好的规范书写配置文件，才能得到正确的解析。解析其实也是使用编程语言，通过读文件的形式，按照预先定义的规范，得到相应的配置。</li>
+<li>编程语言是最高级的，其本身可以实现条件判断，循环等这样的逻辑，这是配置文件很难实现的。但是很少有用编程语言来直接表述一项任务的，因为其缺乏像配置文件那样简介的语义。</li>
+<li>DSL 则介于两者之间，即有像配置文件那样清晰的语义，即很强的语义表现力，同时自身也具备一定的逻辑。</li>
+</ul>
+<p>然而 DSL 的应用领域非常有限，没有必要单独为其开发一款语言。就像 xml 中的配置文件是通过高级语言解析而来，我们也可以用高级语言解析 DSL 文件，执行相关的逻辑。但是与 xml 配置文件不同的是，xml 配置文件需要预先定义规范。而 DSL 不需要定义规范，其语法受到现有语言的约束，不用使用任何解析器，而是巧妙的讲语法映射到底层语言中的方法和属性，这样使得用户在使用起来可能意识不到自己正在使用的是一门更广泛的语言的语法。</p>
+<p>DSL 的两个显著特点：</p>
+<ul>
+<li>上下文相关</li>
+<li>流畅的调用</li>
+</ul>
+<p>鉴于 Groovy 动态特性和元编程能力，其很适合作为 DSL 底层的解析语言。接下来探讨在 Groovy 的基础上构建 DSL。</p>
+<p>对于 Groovy 来说，一个伟大的 DSL 产物就是新一代构建工具——Gradle。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/12/13/Groovy与DSL/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/12/12/MOP总结/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -779,327 +1081,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/12/09/MOP——方法拦截/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/09/MOP——方法拦截/" itemprop="url">MOP——方法拦截</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-09T17:14:35+08:00">
-                2017-12-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,059
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>前面<a href="https://zachaxy.github.io/2017/12/08/Groovy%E5%AF%B9%E8%B1%A1%E5%92%8CMOP/">Groovy 对象和 MOP</a>简单了介绍了 Groovy 所提供的 MOP 机制。<br>接下来要介绍利用 MOP 实现方法的拦截。<br>拦截：在对方法进行调用时，我们可能有一些其它的要求，eg：日志的记录，执行时间的记录等，在 Java 可以 AOP 对方法的调用进行拦截，插入我们想执行的方法。而 Groovy 提供的 MOP 机制可以更为轻松的实现对方法的拦截。</p>
-<p>MOP 的拦截有两种实现方式：</p>
-<ol>
-<li>实现 GroovyInterceptable 接口进行拦截</li>
-<li>利用 MetaClass 进行拦截</li>
-</ol>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2017/12/09/MOP——方法拦截/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/12/08/Groovy对象和MOP/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/08/Groovy对象和MOP/" itemprop="url">Groovy对象和MOP</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-08T21:32:11+08:00">
-                2017-12-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,625
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Groovy-对象"><a href="#Groovy-对象" class="headerlink" title="Groovy 对象"></a>Groovy 对象</h1><p>Groovy 中的对象其实本质也是 Java 对象，只不过比 Java 对象附加了一些其它的功能。在 Groovy 中的对象，其顶级父类也是 <code>java.lang.Object</code>，同时其也实现了 <code>groovy.lang.GroovyObject</code> 接口。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">GroovyObject</span> &#123;</span></span><br><span class="line">    Object invokeMethod(String name, Object args);</span><br><span class="line"></span><br><span class="line">    Object getProperty(String propertyName);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> setProperty(String propertyName, Object newValue);</span><br><span class="line"></span><br><span class="line">    MetaClass getMetaClass();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> setMetaClass(MetaClass metaClass);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>我们的 Groovy 中的对象是可以直接调用 GroovyObject 接口中的方法，然而我们定义的 Groovy 类中没有自己实现过该接口中的任何方法，因此其必定有一个类帮我们实现好了这些方法。现在还未得到证实，但是我猜测是 GroovyObjectSupport 这个类提供的实现，并且在运行时注入到了我们的 Groovy 类中，所以我们才能调用这些方法。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">GroovyObjectSupport</span> <span class="keyword">implements</span> <span class="title">GroovyObject</span> &#123;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// never persist the MetaClass</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> MetaClass metaClass;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> GroovyObjectSupport() &#123;</span><br><span class="line">        <span class="keyword">this</span>.metaClass = InvokerHelper.getMetaClass(<span class="keyword">this</span>.getClass());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object getProperty(String property) &#123;</span><br><span class="line">        <span class="keyword">return</span> getMetaClass().getProperty(<span class="keyword">this</span>, property);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> setProperty(String property, Object newValue) &#123;</span><br><span class="line">        getMetaClass().setProperty(<span class="keyword">this</span>, property, newValue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object invokeMethod(String name, Object args) &#123;</span><br><span class="line">        <span class="keyword">return</span> getMetaClass().invokeMethod(<span class="keyword">this</span>, name, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> MetaClass getMetaClass() &#123;</span><br><span class="line">        <span class="keyword">if</span> (metaClass == <span class="literal">null</span>) &#123;</span><br><span class="line">            metaClass = InvokerHelper.getMetaClass(getClass());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> metaClass;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> setMetaClass(MetaClass metaClass) &#123;</span><br><span class="line">        <span class="keyword">this</span>.metaClass = metaClass;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这里重点关注一个对象 MetaClass。在 Groovy 的世界中，每个对象(不管是 Groovy 对象还是 Java 对象)都包含一个 MetaClass 对象，该 MetaClass 对象持有其所依附的对象的所有信息(包括属性和方法)，每当我们调用一个对象的方法时，都是由该 MetaClass 对象负责路由对方法的调用。我们知道一旦一个类被加载进 JVM，那么这个类就无法修改了，但是我们可以修改这个类的 MetaClass 对象，从而实现对类动态的添加方法和行为。</p>
-<p>Groovy 中还有一种特殊的对象——实现了 GroovyInterceptable 接口的类，GroovyInterceptable 接口是一个标记接口，其扩展了 GroovyObject，对于实现了该接口的对象而言，只要调用该对象上的任何方法，都会被 invokeMethod 方法拦截。(要实现拦截，不仅要在类的定义中声明实现该接口，同时还要重写其 invokeMethod 方法，才会有拦截的效果)</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">GroovyInterceptable</span> <span class="keyword">extends</span> <span class="title">GroovyObject</span> &#123;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="Groovy-中的方法调用机制"><a href="#Groovy-中的方法调用机制" class="headerlink" title="Groovy 中的方法调用机制"></a>Groovy 中的方法调用机制</h2><p><img src="http://docs.groovy-lang.org/next/html/documentation/assets/img/xGroovyInterceptions.png.pagespeed.ic.lQZRl0FSbC.webp" alt="Groovy interception mechanism"></p>
-<p>该图描述了 Groovy 中方法调用的路由机制。这里做以下补充：</p>
-<ol>
-<li>invokeMethod 方法是 GroovyObject 接口中的方法，所有的 Groovy 类都默认实现了该方法。而 GroovyInterceptable 只是一个标记接口，该接口的作用是将 invokeMethod 方法的调用时机提前到了最前面，也就是所有的方法调用都会先统一路由到 invokeMethod 方法中，若为实现 GroovyInterceptable 接口，那么 invokeMethod 方法只有最后才有机会执行。</li>
-<li>若在类的定义中声明了 GroovyInterceptable 接口，但是在类中没有覆盖 invokeMethod 方法，则等同于没有实现 GroovyInterceptable 接口，路由转向左侧。</li>
-<li>若未实现 GroovyInterceptable 接口，而一个类的外部直接调用了 invokeMethod 方法，那么就是方法的直接调用了，不存在拦不拦截的问题，但是如果该类中又没有覆盖 invokeMethod 方法，那么会调用 methodMissing 方法(如果有的话)</li>
-<li>若向一个类的 metaClass 中添加了 invokeMethod 方法或者 methodMissing 方法，在外部调用一个不存在的方法时，会路由到该 invokeMethod 方法上，如果没有实现 invokeMethod 方法，那么会路由到 metaClass 上的 methodMissing 方法上(如果有的话)</li>
-</ol>
-<p>提供一个例子直观的感受下 groovy 的方法路由机制</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TestMethodInvocation</span> <span class="keyword">extends</span> <span class="title">GroovyTestCase</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span> testInterceptedMethodCallonPOJO() &#123;</span><br><span class="line">        <span class="keyword">def</span> val = <span class="keyword">new</span> Integer(<span class="number">3</span>)</span><br><span class="line">        Integer.metaClass.toString = &#123; -&gt; <span class="string">'intercepted'</span> &#125;</span><br><span class="line"></span><br><span class="line">        assertEquals <span class="string">"intercepted"</span>, val.toString()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//实现了 GroovyInterceptable 接口,复写 invokeMethod,那么所有的方法调用,都会被路由到 invokeMethod 中</span></span><br><span class="line">    <span class="keyword">void</span> testInterceptableCalled() &#123;</span><br><span class="line">        <span class="keyword">def</span> obj = <span class="keyword">new</span> AnInterceptable()</span><br><span class="line">        assertEquals <span class="string">'intercepted'</span>, obj.existingMethod()</span><br><span class="line">        assertEquals <span class="string">'intercepted'</span>, obj.nonExistingMethod()</span><br><span class="line">        assertEquals <span class="string">'intercepted'</span>, obj.invokeMethod(<span class="string">"existingMethod"</span>, <span class="literal">null</span>)</span><br><span class="line">        assertEquals <span class="string">'intercepted'</span>, obj.invokeMethod(<span class="string">"nonExistingMethod"</span>, <span class="literal">null</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> testInterceptedExistingMethodCalled() &#123;</span><br><span class="line">        <span class="comment">//将原有的 ex2 方法覆盖了</span></span><br><span class="line">        AGroovyObject.metaClass.existingMethod2 = &#123; -&gt; <span class="string">'intercepted'</span> &#125;</span><br><span class="line">        <span class="keyword">def</span> obj = <span class="keyword">new</span> AGroovyObject()</span><br><span class="line">        assertEquals <span class="string">'intercepted'</span>, obj.existingMethod2()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> testUnInterceptedExistingMethodCalled() &#123;</span><br><span class="line">        <span class="keyword">def</span> obj = <span class="keyword">new</span> AGroovyObject()</span><br><span class="line">        assertEquals <span class="string">'existingMethod'</span>, obj.existingMethod()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> testPropertyThatIsClosureCalled() &#123;</span><br><span class="line">        <span class="keyword">def</span> obj = <span class="keyword">new</span> AGroovyObject()</span><br><span class="line">        assertEquals <span class="string">'closure called'</span>, obj.closureProp()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> testMethodMissingCalledOnlyForNonExistent() &#123;</span><br><span class="line">        <span class="keyword">def</span> obj = <span class="keyword">new</span> ClassWithInvokeAndMissingMethod()</span><br><span class="line">        assertEquals <span class="string">'existingMethod'</span>, obj.existingMethod()</span><br><span class="line">        assertEquals <span class="string">'missing called'</span>, obj.nonExistingMethod()</span><br><span class="line">        assertEquals <span class="string">'invoke called'</span>, obj.invokeMethod(<span class="string">"haha"</span>, <span class="literal">null</span>)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> testInvokeMethodCalledForOnlyNonExistent() &#123;</span><br><span class="line">        <span class="keyword">def</span> obj = <span class="keyword">new</span> ClassWithInvokeOnly()</span><br><span class="line">        assertEquals <span class="string">'existingMethod'</span>, obj.existingMethod()</span><br><span class="line">        assertEquals <span class="string">'invoke called'</span>, obj.nonExistingMethod()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> testClassWithMethodMissingOnly()&#123;</span><br><span class="line">        <span class="keyword">def</span> obj = <span class="keyword">new</span> ClassWithMethodMissingOnly()</span><br><span class="line">        assertEquals <span class="string">'existingMethod'</span>, obj.existingMethod()</span><br><span class="line">        assertEquals <span class="string">'missing called'</span>, obj.nonExistingMethod()</span><br><span class="line">        assertEquals <span class="string">'missing called'</span>, obj.invokeMethod(<span class="string">"haha"</span>,<span class="literal">null</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span> testMethodFailsOnNonExistent() &#123;</span><br><span class="line">        <span class="keyword">def</span> obj = <span class="keyword">new</span> TestMethodInvocation()</span><br><span class="line">        shouldFail(MissingMethodException) &#123; obj.nonExistingMethod() &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实现了 GroovyInterceptable 接口,复写 invokeMethod,那么所有的方法调用,都会被路由到 invokeMethod 中</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AnInterceptable</span> <span class="keyword">implements</span> <span class="title">GroovyInterceptable</span> &#123;</span></span><br><span class="line">    <span class="keyword">def</span> existingMethod() &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> invokeMethod(String name, args) &#123; <span class="string">'intercepted'</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 普通的 Groovy 类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AGroovyObject</span> &#123;</span></span><br><span class="line">    <span class="keyword">def</span> existingMethod() &#123; <span class="string">'existingMethod'</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> existingMethod2() &#123; <span class="string">'existingMethod2'</span> &#125;</span><br><span class="line">    <span class="keyword">def</span> closureProp = &#123; <span class="string">'closure called'</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 普通的 Groovy 类,并实现 invokeMethod 和 methodMissing 方法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ClassWithInvokeAndMissingMethod</span> &#123;</span></span><br><span class="line">    <span class="keyword">def</span> existingMethod() &#123; <span class="string">'existingMethod'</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> invokeMethod(String name, args) &#123; <span class="string">'invoke called'</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> methodMissing(String name, args) &#123; <span class="string">'missing called'</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 普通的 Groovy 类,并实现 invokeMethod</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ClassWithInvokeOnly</span> &#123;</span></span><br><span class="line">    <span class="keyword">def</span> existingMethod() &#123; <span class="string">'existingMethod'</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> invokeMethod(String name, args) &#123; <span class="string">'invoke called'</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ClassWithMethodMissingOnly</span> &#123;</span></span><br><span class="line">    <span class="keyword">def</span> existingMethod() &#123; <span class="string">'existingMethod'</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> methodMissing(String name, args) &#123; <span class="string">'missing called'</span> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="MOP-MetaObject-Protocol"><a href="#MOP-MetaObject-Protocol" class="headerlink" title="MOP(MetaObject Protocol)"></a>MOP(MetaObject Protocol)</h1><p>MOP：元对象协议。由 Groovy 语言中的一种协议。该协议的出现为元编程提供了优雅的解决方案。而 MOP 机制的核心就是 MetaClass。<br>元编程：编写能够操作程序的程序，也包括操作程序自身。</p>
-<p>正是 Groovy 提供了 MOP 的机制，才使得 Groovy 对象更加灵活，我们可以根据对象的 metaClass，动态的查询对象的方法和属性。这里所属的动态指的是在运行时，根据所提供的方法或者属性的字符串，即可得到<br>有点类似于 Java 中的反射，但是在使用上却比 Java 中的反射简单的多。</p>
-<h2 id="动态访问方法"><a href="#动态访问方法" class="headerlink" title="动态访问方法"></a>动态访问方法</h2><p>常用的方法有:</p>
-<ul>
-<li>getMetaMethod()</li>
-<li>resondsTo()</li>
-<li>hasProperty()</li>
-<li>……  </li>
-</ul>
-<p>在使用了 getMetaMethod 方法得到一个 MetaMethod 后，可以调用其 invoke 方法执行。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">str = <span class="string">'hello'</span></span><br><span class="line">targetMethod = str.metaClass.getMetaMethod(<span class="string">'toUpperCase'</span>)</span><br><span class="line">targetMethod.invoke(str)</span><br></pre></td></tr></table></figure>
-
-<h2 id="动态访问方法或属性——Groovy-的语法糖"><a href="#动态访问方法或属性——Groovy-的语法糖" class="headerlink" title="动态访问方法或属性——Groovy 的语法糖"></a>动态访问方法或属性——Groovy 的语法糖</h2><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span>&#123;</span></span><br><span class="line">	<span class="keyword">int</span> bar</span><br><span class="line">	<span class="keyword">def</span> func1()&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo = <span class="keyword">new</span> Foo()</span><br><span class="line"></span><br><span class="line">String propertyName = <span class="string">'bar'</span></span><br><span class="line">String methodName = <span class="string">'func1'</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//访问属性</span></span><br><span class="line">foo[propertyName]</span><br><span class="line">foo.<span class="string">"$propertyName"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//访问方法</span></span><br><span class="line">foo.<span class="string">"$methodName"</span>()</span><br><span class="line">foo.invokeMethod(methodName,<span class="literal">null</span>)</span><br></pre></td></tr></table></figure>
-
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1154,7 +1135,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">66</span>
+                  <span class="site-state-item-count">68</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1167,7 +1148,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1234,7 +1215,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">148.9k</span>
+    <span title="站点文章字数总计">149.6k</span>
   
 </div>
 

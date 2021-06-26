@@ -336,6 +336,416 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/23/Volley源码解析-缓存/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/23/Volley源码解析-缓存/" itemprop="url">Volley源码解析-缓存</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-23T14:48:12+08:00">
+                2017-05-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,343
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Cache-接口"><a href="#Cache-接口" class="headerlink" title="Cache 接口"></a>Cache 接口</h1><p>我们再来回顾一下一个 Request 被添加到 RequestQueue 后，首先是被添加到 mCacheQueue 中，而不是添加到 mNetworkQueue，因为这个请求可能之前执行过，先看一下缓存中有没有，如果没有或者过期，那么再将该请求从 mCacheQueue 中移除，并添加到 mNetworkQueue。</p>
+<p>那么 Cache 中保存了哪些信息呢？</p>
+<p>代码过多这里就不贴出来了，首先作为缓存，肯定要指定一个缓存文件夹以及其保存的位置，接着每个缓存最好是以键值对的形式存在，使用 HashMap 结构来保存，这样才能快速的通过 key 查找 value，key 对应的是一个 request 的 url，value 对应的是 request 得到的 response；</p>
+<p>接下来，response 中需要保存哪些数据呢？首先肯定要保存响应体中的数据，使用字节数组保存。同时还应该保存这个请求的 Etag，有效时长等和 HTTP 缓存相关的字段，以及其它的响应头信息，这些信息被封装在一个 Entry 的类中，该类是 Cache 接口中的静态内部类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> </span>&#123;</span><br><span class="line">    <span class="comment">/** The data returned from cache. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">byte</span>[] data;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** ETag for cache coherency. */</span></span><br><span class="line">    <span class="keyword">public</span> String etag;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Date of this response as reported by the server. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">long</span> serverDate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** TTL for this record. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">long</span> ttl;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Soft TTL for this record. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">long</span> softTtl;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Immutable response headers as received from server; must be non-null. */</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, String&gt; responseHeaders = Collections.emptyMap();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** True if the entry is expired. */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isExpired</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.ttl &lt; System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** True if a refresh is needed from the original data source. */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">refreshNeeded</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.softTtl &lt; System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="DiskBasedCache"><a href="#DiskBasedCache" class="headerlink" title="DiskBasedCache"></a>DiskBasedCache</h2><p>前面讲了 Cache 的整体实现思路，接下来设计到具体如何读写缓存，这就用到了 Cache 的实现类 DiskBasedCache</p>
+<p>这里只列出方法名和内部实现流程，就不一行一行的写了，因为太多了！！！</p>
+<ul>
+<li><p><code>private final Map&lt;String, CacheHeader&gt; mEntries = new LinkedHashMap&lt;String, CacheHeader&gt;(16, .75f, true)</code>是整个缓存的 map</p>
+</li>
+<li><p><code>CacheHeader</code>是map 中保存的 value，DiskBasedCache 中的静态内部类，是缓存文件中内容的一个概述，不包含 Cache 中 Entry 类中的 data 数据，因为这是要读取到内存中的，如果带上响应体数据，那么会占用很大一部分内存。</p>
+<p> Cache.Entry 和 DiskBasedCache.CacheHeader 之间的关系：<strong>Entry = CacheHeader + byte[] data</strong></p>
+<ul>
+<li><p><code>writeHeader(OutputStream os)</code>:直接看其是如何将 CacheHeader 写到到文件中的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">writeHeader</span><span class="params">(OutputStream os)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		writeInt(os, CACHE_MAGIC);</span><br><span class="line">		writeString(os, key);</span><br><span class="line">		writeString(os, etag == <span class="keyword">null</span> ? <span class="string">""</span> : etag);</span><br><span class="line">		writeLong(os, serverDate);</span><br><span class="line">		writeLong(os, ttl);</span><br><span class="line">		writeLong(os, softTtl);</span><br><span class="line">		writeStringStringMap(responseHeaders, os);</span><br><span class="line">		os.flush();</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">	&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">		VolleyLog.d(<span class="string">"%s"</span>, e.toString());</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>readHeader(InputStream is)</code>和上面的 write 方法是相反的，怎么写的怎么读</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> CacheHeader <span class="title">readHeader</span><span class="params">(InputStream is)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">	CacheHeader entry = <span class="keyword">new</span> CacheHeader();</span><br><span class="line">	<span class="keyword">int</span> magic = readInt(is);</span><br><span class="line">	<span class="keyword">if</span> (magic != CACHE_MAGIC) &#123;</span><br><span class="line">		<span class="comment">// don't bother deleting, it'll get pruned eventually</span></span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> IOException();</span><br><span class="line">	&#125;</span><br><span class="line">	entry.key = readString(is);</span><br><span class="line">	entry.etag = readString(is);</span><br><span class="line">	<span class="keyword">if</span> (entry.etag.equals(<span class="string">""</span>)) &#123;</span><br><span class="line">		entry.etag = <span class="keyword">null</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	entry.serverDate = readLong(is);</span><br><span class="line">	entry.ttl = readLong(is);</span><br><span class="line">	entry.softTtl = readLong(is);</span><br><span class="line">	entry.responseHeaders = readStringStringMap(is);</span><br><span class="line">	<span class="keyword">return</span> entry;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里有一个很有意思的<strong>写缓存文件的技巧</strong>，因为这里涉及到了写 int，long，String，那么如何去写呢？ 方法是：如果你写的是 int，那么就用 4 字节来表示，如果是 long，那么就用 8 字节来表示，这样在读的时候，只要是读 int，那么直接向后读 4 个字节，然后拼装成 int 即可；至于字符串，统一将其转换成 UTF8 格式的字节数据，并得到数组长度，首先写入 long 类型的长度，然后再将字节数组写入，在读取的时候先读取 8 字节的 long 值，得到后续字节数组的长度，然后在读取后面相应长度的字节数组，转换为字符串即可。</p>
+</li>
+</ul>
+</li>
+<li><p><code>public synchronized void initialize()</code>初始化上面的 map，遍历缓存文件夹，读取每个缓存文件，然后不断的调用 CacheHeader 的 readHeader 方法读取 CacheHeader，并添加到 map 中</p>
+</li>
+<li><p><code>public synchronized void put(String key, Entry entry)</code>首先调用 CacheHeader 的 writeHeader 方法将数据写入缓存文件，在将 data 数据额外写入缓存文件；同时将该 entry 对应的 entryHeader 添加到 map 中；</p>
+</li>
+<li><p><code>public synchronized Entry get(String key)</code>先从 map 中通过 key 得到 CacheHeader，在根据 key 得到缓存文件名（将 key 的字符串均分为前后两部分，前半部分的 hashCode 和后半部分的 hashCode 拼接起来），然后读取缓存文件中的 data 数据，和 CacheHeader 组合起来得到 Entry。</p>
+</li>
+<li><p><code>public synchronized void remove(String key)</code>先从 map 中删除掉 key 对应的数据，然后删除缓存文件中对应的文件</p>
+</li>
+<li><p><code>public synchronized void clear()</code>：清空缓存，可以在应用的设置中提供这一项。有一个对应的 ClearCacheRequest，专门负责清空缓存。</p>
+</li>
+</ul>
+<h1 id="CacheDispatcher-线程"><a href="#CacheDispatcher-线程" class="headerlink" title="CacheDispatcher 线程"></a>CacheDispatcher 线程</h1><h2 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h2><p>CacheDispatcher 线程是会不断的执行读缓存的操作，如果能读到缓存，那么将数据用 ResponseDelivery 发送到 UI 线程，否则将 request 提交给 NetworkDispatcher 来处理。</p>
+<p>首先看其构造方法，传入了在 RequestQueue 中创建的 mCacheQueue, mNetworkQueue, mCache, mDelivery 四个变量。注意这个 mCache 是在 RequestQueue 的构造方法中传入的第一个参数 Cache。也就是说 CacheDispatcher 内部只有这几个成员变量。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">CacheDispatcher</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        BlockingQueue&lt;Request&gt; cacheQueue, BlockingQueue&lt;Request&gt; networkQueue,</span></span></span><br><span class="line"><span class="function"><span class="params">        Cache cache, ResponseDelivery delivery)</span> </span>&#123;</span><br><span class="line">    mCacheQueue = cacheQueue;</span><br><span class="line">    mNetworkQueue = networkQueue;</span><br><span class="line">    mCache = cache;</span><br><span class="line">    mDelivery = delivery;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="run-方法"><a href="#run-方法" class="headerlink" title="run 方法"></a>run 方法</h2><p>接下来看一下其 run 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (DEBUG) VolleyLog.v(<span class="string">"start new dispatcher"</span>);</span><br><span class="line">    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Make a blocking call to initialize the cache.</span></span><br><span class="line">    mCache.initialize();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// Get a request from the cache triage queue, blocking until</span></span><br><span class="line">            <span class="comment">// at least one is available.</span></span><br><span class="line">            <span class="keyword">final</span> Request request = mCacheQueue.take();</span><br><span class="line">            request.addMarker(<span class="string">"cache-queue-take"</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// If the request has been canceled, don't bother dispatching it.</span></span><br><span class="line">            <span class="keyword">if</span> (request.isCanceled()) &#123;</span><br><span class="line">                request.finish(<span class="string">"cache-discard-canceled"</span>);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Attempt to retrieve this item from cache.</span></span><br><span class="line">            Cache.Entry entry = mCache.get(request.getCacheKey());</span><br><span class="line">            <span class="keyword">if</span> (entry == <span class="keyword">null</span>) &#123;</span><br><span class="line">                request.addMarker(<span class="string">"cache-miss"</span>);</span><br><span class="line">                <span class="comment">// Cache miss; send off to the network dispatcher.</span></span><br><span class="line">                mNetworkQueue.put(request);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// If it is completely expired, just send it to the network.</span></span><br><span class="line">            <span class="keyword">if</span> (entry.isExpired()) &#123;</span><br><span class="line">                request.addMarker(<span class="string">"cache-hit-expired"</span>);</span><br><span class="line">                request.setCacheEntry(entry);</span><br><span class="line">                mNetworkQueue.put(request);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// We have a cache hit; parse its data for delivery back to the request.</span></span><br><span class="line">            request.addMarker(<span class="string">"cache-hit"</span>);</span><br><span class="line">            Response&lt;?&gt; response = request.parseNetworkResponse(</span><br><span class="line">                    <span class="keyword">new</span> NetworkResponse(entry.data, entry.responseHeaders));</span><br><span class="line">            request.addMarker(<span class="string">"cache-hit-parsed"</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!entry.refreshNeeded()) &#123;</span><br><span class="line">                <span class="comment">// Completely unexpired cache hit. Just deliver the response.</span></span><br><span class="line">                mDelivery.postResponse(request, response);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// Soft-expired cache hit. We can deliver the cached response,</span></span><br><span class="line">                <span class="comment">// but we need to also send the request to the network for</span></span><br><span class="line">                <span class="comment">// refreshing.</span></span><br><span class="line">                request.addMarker(<span class="string">"cache-hit-refresh-needed"</span>);</span><br><span class="line">                request.setCacheEntry(entry);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Mark the response as intermediate.</span></span><br><span class="line">                response.intermediate = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Post the intermediate response back to the user and have</span></span><br><span class="line">                <span class="comment">// the delivery then forward the request along to the network.</span></span><br><span class="line">                mDelivery.postResponse(request, response, <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            mNetworkQueue.put(request);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            <span class="comment">// Not much we can do about this.</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            <span class="comment">// We may have been interrupted because it was time to quit.</span></span><br><span class="line">            <span class="keyword">if</span> (mQuit) &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第 4 行，设置当前线程的优先级为：Process.THREAD_PRIORITY_BACKGROUND，标准后台线程，相对来说优先级还是比较低的。</p>
+<p>第 7 行，因为这里是 Cache，需要先进行一些初始化，这里调用了 Cache 的 initialize 方法，内部逻辑在上面已经说过了。</p>
+<p>第 9 行，死循环，表明该线程不一直不断的从 mCacheQueue 中取 request</p>
+<p>第 13 行，从 BlockingQueue 中取出一个 request，如果没有的话，就会被阻塞，也不会占用系统资源，赞。</p>
+<p>第 17 行，如果该请求在执行之前，又被其他线程调用了 cancle 方法，那么就取消该 request 的执行。</p>
+<p>第 23 行，从缓存中查看是否有该 request 的缓存，如果不存在，表明是一个新的请求，那么直接将该请求添加到 mNetworkQueue 中，下面的逻辑不用执行，重新从 BlockingQueue 中取 request</p>
+<p>第 32 行，能走到这一行，表明缓存不为空，判断该缓存是否已经过期，这里判断的标准是：<code>this.ttl &lt; System.currentTimeMillis();</code>现在 HTTP1.1 的版本里面保存的都是存活时间，而不是绝对时间，但是考虑到我们的客户端可能会退出，所以无法用时间段来统计，这里还是转换成相对于客户端的绝对时间，再和当前时间进行比较。如果缓存过期了，那么需要将该 request 添加到 mNetworkQueue 中重新进行网络请求，但是在此之前，还要把缓存中的一些信息(“If-None-Match”&lt;=&gt;”etag”，”If-Modified-Since”&lt;=&gt;”serverDate”)附加到 request 中</p>
+<p>第 41 行，能走到这一步，说明我们的缓存命中并且是可用的，此时需要把缓存中的数据读取出来，包装成 Response</p>
+<p><code>Response&lt;?&gt; response = request.parseNetworkResponse(new NetworkResponse(entry.data, entry.responseHeaders));</code></p>
+<p>第 45 行，虽然现在缓存已被转换为 Response，但是还要进行一步新鲜度验证，但是这一步新鲜度验证时多余的，因为 Entry 中的 softTtl 和 ttl 的值是相同的，而前面已经验证了是否过期，所以这一步是多余的，直接使用 ResponseDelivery 分发响应，关于响应的分发，请参阅<a href>Volley 源码解析-线程切换</a></p>
+<p>如果不是新鲜的，那么首先将该 response 分发到 UI 线程显示，同时立即执行网络请求，获取最新的响应。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/22/Volley源码解析-请求队列/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zachaxy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zachaxy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/05/22/Volley源码解析-请求队列/" itemprop="url">Volley源码解析-请求队列</a></h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-22T19:23:17+08:00">
+                2017-05-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,640
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="整体理解"><a href="#整体理解" class="headerlink" title="整体理解"></a>整体理解</h1><p><a href="https://zachaxy.github.io/2017/05/20/Volley%E6%A1%86%E6%9E%B6%E8%AF%A6%E8%A7%A3-%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/#自定义请求">上一节</a>，我们介绍了 Volley 的基本使用，再次回顾一下其整体流程：</p>
+<ol>
+<li>创建 RequestQueue 队列</li>
+<li>创建 XXXRequest</li>
+<li>将 2 中创建的 request 添加到 1 中创建的 RequestQueue 队列中</li>
+</ol>
+<p>整个流程就这么简单，添加到 RequestQueue 队列之后，队列中的请求就会自动被执行，我们只需要等待请求中的回调方法被调用即可。那么其内部是如何实现的呢？猜想：后台一定有一个子线程，不断的轮询 RequestQueue，如果其中有请求，那么就会执行网络请求，因为这是在子线程中执行，所以不会阻塞 UI 线程，等服务器有响应后，执行请求中的回调。所以如果让我们来设计一套网络请求框架的话，最基本的一定是这个思路。</p>
+<p>那还等什么，马上打开源码验证一下我们的猜想对不对吧！等等，似乎还少了什么，有可能会出现这种情况，如果我们重复的执行某一个相同的请求（eg：不断的打开相同的图片），图片资源一般在短时间内很少改变的，如果我们重复执行网络请求，似乎不是很合理，所以对于相同的网络请求（相同的 url），我们应该将结果缓存起来，这样也符合 http 协议中缓存的思想，这样就避免消耗过多的流量。</p>
+<p>那么接下来，我们就按照 Volley 使用的三步流程开始，进入源码，剖析 Volley 的内部流程，首先介绍的是创建请求队列：</p>
+<h1 id="创建-RequestQueue-队列"><a href="#创建-RequestQueue-队列" class="headerlink" title="创建 RequestQueue 队列"></a>创建 RequestQueue 队列</h1><p>在介绍 RequestQueue 队列之前，这里先介绍几个关键的类，以便于我们更好的理解 Volley。</p>
+<ul>
+<li><strong>HttpStack：</strong>处理 Http 请求，返回请求结果。目前 Volley 中有基于 HttpURLConnection 的<code>HurlStack</code>和 基于 Apache HttpClient 的<code>HttpClientStack</code>。关于 HttpStack 的详细理解，请参考<a href>Volley 源码解析-网络</a></li>
+<li><strong>Volley：</strong>Volley 对外暴露的 API，通过 newRequestQueue 方法新建并启动一个请求队列<code>RequestQueue</code>。</li>
+<li><strong>Request：</strong>表示一个请求的抽象类。<code>StringRequest</code>、<code>JsonRequest</code>、<code>ImageRequest</code> 都是它的子类，表示某种类型的请求。</li>
+<li><strong>ResponseDelivery：</strong>返回结果分发接口，目前只有基于<code>ExecutorDelivery</code>的在入参 handler 对应线程内进行分发。</li>
+<li><strong>Network：</strong>调用<code>HttpStack</code>处理请求，并将结果转换为可被<code>ResponseDelivery</code>处理的<code>NetworkResponse</code>。</li>
+<li><strong>Cache：</strong>缓存请求结果，Volley 默认使用的是基于 sdcard 的<code>DiskBasedCache</code>。<code>NetworkDispatcher</code>得到请求结果后判断是否需要存储在 Cache，<code>CacheDispatcher</code>会从 Cache 中取缓存结果。</li>
+</ul>
+<p>创建请求队列是我们在应用程序中是这样调用的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RequestQueue mQueue = Volley.newRequestQueue(context);</span><br></pre></td></tr></table></figure>
+
+<p>其内部调用的 Volley 类中的静态方法，源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> RequestQueue <span class="title">newRequestQueue</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> newRequestQueue(context, <span class="keyword">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们默认值传入了第一个参数 Context，第二个参数 HttpStack 默认为 null，接下来调用下面的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> RequestQueue <span class="title">newRequestQueue</span><span class="params">(Context context, HttpStack stack)</span> </span>&#123;</span><br><span class="line">    File cacheDir = <span class="keyword">new</span> File(context.getCacheDir(), DEFAULT_CACHE_DIR);</span><br><span class="line"></span><br><span class="line">    String userAgent = <span class="string">"volley/0"</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        String packageName = context.getPackageName();</span><br><span class="line">        PackageInfo info = context.getPackageManager().getPackageInfo(packageName, <span class="number">0</span>);</span><br><span class="line">        userAgent = packageName + <span class="string">"/"</span> + info.versionCode;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NameNotFoundException e) &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (stack == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= <span class="number">9</span>) &#123;</span><br><span class="line">            stack = <span class="keyword">new</span> HurlStack();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// Prior to Gingerbread, HttpUrlConnection was unreliable.</span></span><br><span class="line">            <span class="comment">// See: http://android-developers.blogspot.com/2011/09/androids-http-clients.html</span></span><br><span class="line">            stack = <span class="keyword">new</span> HttpClientStack(AndroidHttpClient.newInstance(userAgent));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Network network = <span class="keyword">new</span> BasicNetwork(stack);</span><br><span class="line">    Cache cache = <span class="keyword">new</span> DiskBasedCache(cacheDir);</span><br><span class="line"></span><br><span class="line">    RequestQueue queue = <span class="keyword">new</span> RequestQueue(cache, network);</span><br><span class="line">    queue.start();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> queue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第 2 行，创建一个文件夹，保存网络的请求缓存，默认路径是在：“/data/data/com.xxx.xxx（当前包）/cache/volley/”</p>
+<p>第 4 行，创建了 User Agent，其默认值是：”volley/0”，接下来获取本应用的包名，如果可以获取到，那么将 User Agent 设置为：App 的 packageName/versionCode，这个 User Agent 用来设置 http 请求头的 User-Agent 字段。</p>
+<p>第 12 行，因为我们传入的 HttpStack 为 null，所以就根据当前系统的版本(即 API Level &gt;= 9)，采用基于 HttpURLConnection 的 HurlStack，如果小于 9，采用基于 HttpClient 的 HttpClientStack。我们知道在 Android 中默认有两种。关于为何在不同的版本使用不同的 HttpStack，参考  <a href="http://blog.csdn.net/guolin_blog/article/details/12452307" target="_blank" rel="noopener">Android 访问网络，使用 HttpURLConnection 还是 HttpClient？</a>，关于 HttpStack 的详细讲解，请参考<a href>Volley 源码解析-网络</a></p>
+<p>第 22 行，创建了一个 NetWork 对象，其实 NetWork 是一个接口，其实现类只有 BasicNetwork；简单介绍一下 NetWork 接口，其内部只有一个方法 performRequest，而实现类 BasicNetwork 其内部调用 HttpStack 处理请求来实现 NetWork 中的方法，并将结果转换为可被 ResponseDelivery 处理的 NetworkResponse。</p>
+<p>第 23 行，创建了一个 Cache 对象，其实 Cache 也是一个接口，其实现类只有 DiskBasedCache；简单介绍一下 Cache，Volley 默认使用的是基于 sdcard 的 DiskBasedCache。Cache 接口中包含了对于缓存文件中初始化，添加缓存，超找缓存，删除缓存等常用操作。并不执行网络请求。</p>
+<p>第 25 行，终于看到了 RequestQueue 的创建了，其构造方法将上面创建的 Cache 和 Network 的实例传入，<strong>注意这里传入的是父类引用（接口），也就是说执行网络请求或者缓存读取的业务逻辑都是以接口的形式来提供的，所以后面的编码都是基于接口的，而不针对具体实现类，从而达到了高扩展性。</strong></p>
+<p>在 Volley 中的静态方法 newRequestQueue 中，创建 RequestQueue 的方法是使用了<code>new RequestQueue(cache, network)</code>，那么进入源码看一下其是如何创建的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">RequestQueue</span><span class="params">(Cache cache, Network network)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(cache, network, DEFAULT_NETWORK_THREAD_POOL_SIZE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">RequestQueue</span><span class="params">(Cache cache, Network network, <span class="keyword">int</span> threadPoolSize)</span> </span>&#123;</span><br><span class="line">  	<span class="keyword">this</span>(cache, network, threadPoolSize,<span class="keyword">new</span> ExecutorDelivery(<span class="keyword">new</span> Handler(Looper.getMainLooper())));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">RequestQueue</span><span class="params">(Cache cache, Network network, <span class="keyword">int</span> threadPoolSize,ResponseDelivery delivery)</span> </span>&#123;</span><br><span class="line">	mCache = cache;</span><br><span class="line">	mNetwork = network;</span><br><span class="line">	mDispatchers = <span class="keyword">new</span> NetworkDispatcher[threadPoolSize];</span><br><span class="line">	mDelivery = delivery;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>源码中创建队列是使用的 RequestQueue 最简单的构造方法，通过一些列不断的调用，最终调用了四个参数的方法，这里先关注一下<strong>ResponseDelivery</strong>这个类，该类的作用是将网络请求的结果或者从缓存读取数据的结果分发到主线程。具体实现在后面分析。</p>
+<p>不要被 RequestQueue 的类名所迷惑，RequestQueue 本身并不是一个队列，而是其内部包含了若干队列，这些队列分别有不同的作用，具体内部队列在下一节介绍；</p>
+<p>第 26 行，执行了 queue 的 start 方法，这里轻描淡写的一句 start 确包含了整个 Volley 框架的所有业务流程。先简单说一下 start 内部的流程，RequestQueue 中其实包含了两种线程，一种用来执行网络请求，一种用来从本地文件中读取缓存，这两种线程不断的从 RequestQueue 中取出 request，然后执行该 request。这个 start 方法内部其实就是将这两类线程运行起来。</p>
+<p>第 28 行，返回最终创建的 RequestQueue。</p>
+<h1 id="向-RequestQueue-中添加请求"><a href="#向-RequestQueue-中添加请求" class="headerlink" title="向 RequestQueue 中添加请求"></a>向 RequestQueue 中添加请求</h1><p>虽然我们创建了 RequestQueue 队列之后，其内部的线程就已经开启了，这里先不讨论细节，在接下来开启线程的部分讨论。因为创建了队列后，队列中并没有 request，所以不会执行任何操作。这里先看一下我们使用 Volley 的第三步，向队列中添加请求，调用的是 RequestQueue 中的 add 方法：</p>
+<p>在介绍 add 方法之前，这里还有两个重要的变量需要介绍一下，分别是：mCacheQueue 和 mNetworkQueue；这是两个优先级队列，是 RequestQueue 的成员变量，其直接在 RequestQueue 创建的时候进行初始化：</p>
+<p>这里设计为优先级队列，主要是考虑到我们的 request 是有优先级的，有的请求可能想立即被执行，那么就将其优先级调大一些，从而获得优先执行权。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The cache triage queue. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> PriorityBlockingQueue&lt;Request&gt; mCacheQueue =</span><br><span class="line">    <span class="keyword">new</span> PriorityBlockingQueue&lt;Request&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">/** The queue of requests that are actually going out to the network. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> PriorityBlockingQueue&lt;Request&gt; mNetworkQueue =</span><br><span class="line">    <span class="keyword">new</span> PriorityBlockingQueue&lt;Request&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>同时还有两个成员变量，mWaitingRequests 和 mCurrentRequests；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Queue&lt;Request&gt;&gt; mWaitingRequests = <span class="keyword">new</span> HashMap&lt;String, Queue&lt;Request&gt;&gt;();</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Set&lt;Request&gt; mCurrentRequests = <span class="keyword">new</span> HashSet&lt;Request&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>上述四个变量的作用：</p>
+<ul>
+<li><strong>mCacheQueue</strong>：</li>
+<li><strong>mNetworkQueue</strong>：保存需要真正执行网络请求的 request</li>
+<li><strong>mWaitingRequests</strong>：</li>
+<li><strong>mCurrentRequests</strong>：HashSet，用来保存添加到 RequestQueue 中的请求，只要该请求还没有响应，就一直在 mCurrentRequests 中保存。</li>
+</ul>
+<p>接下来我们进入 add 方法中看一下其具体的流程：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Request <span class="title">add</span><span class="params">(Request request)</span> </span>&#123;</span><br><span class="line">	<span class="comment">// Tag the request as belonging to this queue and add it to the set of current requests.</span></span><br><span class="line">	request.setRequestQueue(<span class="keyword">this</span>);</span><br><span class="line">	<span class="keyword">synchronized</span> (mCurrentRequests) &#123;</span><br><span class="line">		mCurrentRequests.add(request);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Process requests in the order they are added.</span></span><br><span class="line">	request.setSequence(getSequenceNumber());</span><br><span class="line">	request.addMarker(<span class="string">"add-to-queue"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// If the request is uncacheable, skip the cache queue and go straight to the network.</span></span><br><span class="line">	<span class="keyword">if</span> (!request.shouldCache()) &#123;</span><br><span class="line">		mNetworkQueue.add(request);</span><br><span class="line">		<span class="keyword">return</span> request;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Insert request into stage if there's already a request with the same cache key in flight.</span></span><br><span class="line">	<span class="keyword">synchronized</span> (mWaitingRequests) &#123;</span><br><span class="line">		String cacheKey = request.getCacheKey();</span><br><span class="line">		<span class="keyword">if</span> (mWaitingRequests.containsKey(cacheKey)) &#123;</span><br><span class="line">			<span class="comment">// There is already a request in flight. Queue up.</span></span><br><span class="line">			Queue&lt;Request&gt; stagedRequests = mWaitingRequests.get(cacheKey);</span><br><span class="line">			<span class="keyword">if</span> (stagedRequests == <span class="keyword">null</span>) &#123;</span><br><span class="line">				stagedRequests = <span class="keyword">new</span> LinkedList&lt;Request&gt;();</span><br><span class="line">			&#125;</span><br><span class="line">			stagedRequests.add(request);</span><br><span class="line">			mWaitingRequests.put(cacheKey, stagedRequests);</span><br><span class="line">			<span class="keyword">if</span> (VolleyLog.DEBUG) &#123;</span><br><span class="line">				VolleyLog.v(<span class="string">"Request for cacheKey=%s is in flight, putting on hold."</span>, cacheKey);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="comment">// Insert 'null' queue for this cacheKey, indicating there is now a request in</span></span><br><span class="line">			<span class="comment">// flight.</span></span><br><span class="line">			mWaitingRequests.put(cacheKey, <span class="keyword">null</span>);</span><br><span class="line">			mCacheQueue.add(request);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> request;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第 2 行，该 request 与当前 RequestQueue 进行关联绑定，标识该 request 是被添加到哪个 RequestQueue 中的。</p>
+<p>第 5 行，将 request 添加到 mCurrentRequests 队列中。只要该请求还没有响应，就一直在 mCurrentRequests 中保存。</p>
+<p>第 9、10 行，对添加进来的 request 设置一个序列号，作为区分不同的请求。addMarker 方法也会在后面的源码中经常遇到，其实就是为当前的 request 添加一个状态的描述，此时添加的描述为”add-to-queue”，表明该请求才刚被添加进来，还未执行。</p>
+<p>第 13 行，判断该 request 是否是可以缓存的，如果我们不做特殊设置，所有的 request 默认都是可以缓存的，这样做是为了减少流量的使用。当然如果你的应用对实时性要求很高，每次请求都要获取服务器最新的数据，那么可以将调用<code>request.setShouldCache(false);</code>取消缓存，这样的话，该 request 就会被添加到 mNetworkQueue 队列中，那么 RequestQueue 的 add 方法就结束了</p>
+<p>第 19 行，能走到这一步，说明 request 是可以被缓存的，那么首先获取该 request 的 getCacheKey 方法，该方法简单的返回了该请求的 url，接下来就判断 mWaitingRequests(HashMap)中是否存在以该 request 的 url 作为 key 的值，这里分两种情况来说，如果当前 request 是一个全新的请求，那么 mWaitingRequests 中肯定不存在该 key 的，所以走 else 分支，如果存在，那么说明我们之前执行过相同的请求，走 if 分支；接下来分别看一下这两个分支</p>
+<p>第 31 行，这是一个全新的请求，那么在 mWaitingRequests 中，将该 request 的 url 作为 key 添加进去，但是其 value 设置 null，并将该 request 添加到 mCacheQueue 中。</p>
+<p>第 21 行，这不是一个新的请求，之前执行过。那么拿到该 key 对应的 value，其 value 值是一个<code>LinkedList&lt;Request&gt;</code>,然后将该请求添加到这个 value 中。这里要注意的是：如果是第二次执行这个请求，会走到该 if 分支，但是从 mWaitingRequests 中获取 value 时是空的，因为第一次执行该请求时，走的是 else 分支，当时只是把 key 添加进来了，value 是空的，所以如果是第二次执行的话，获取的是一个空的 LinkedList，此时需要重新创建一个 LinkedList，并将自己添加进去，那么及诶按来如果是第三次，第四次等添加该请求时，就可以直接拿到 LinkedList，然后直接添加进去即可。</p>
+<p><strong>总结</strong></p>
+<p>request 被添加到 RequestQueue 中时，所经历的过程：</p>
+<p><img src="http://oi8e3sh89.bkt.clouddn.com/image/%E6%A1%86%E6%9E%B6/Volley%E5%86%85%E9%83%A8%E6%B5%81%E7%A8%8B.png" alt></p>
+<h1 id="开启请求队列中的线程"><a href="#开启请求队列中的线程" class="headerlink" title="开启请求队列中的线程"></a>开启请求队列中的线程</h1><p>前面我们讲解了 RequestQueue 的创建时，调用了其 start 方法，这个方法虽然只有一句，但是其内部却是整个框架的核心，一起来看一下 start 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    stop();  <span class="comment">// Make sure any currently running dispatchers are stopped.</span></span><br><span class="line">    <span class="comment">// Create the cache dispatcher and start it.</span></span><br><span class="line">    mCacheDispatcher = <span class="keyword">new</span> CacheDispatcher(mCacheQueue, mNetworkQueue, mCache, mDelivery);</span><br><span class="line">    mCacheDispatcher.start();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Create network dispatchers (and corresponding threads) up to the pool size.</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mDispatchers.length; i++) &#123;</span><br><span class="line">        NetworkDispatcher networkDispatcher = <span class="keyword">new</span> NetworkDispatcher(mNetworkQueue, mNetwork,mCache, mDelivery);</span><br><span class="line">        mDispatchers[i] = networkDispatcher;</span><br><span class="line">        networkDispatcher.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里涉及到两个重要的线程，我们在文章刚一开始根据 Volley 的使用方法，猜想其内部实现时也说到了，Volley 内部一定有一个线程不断的从 RequestQueue 中出请求，然后执行该请求。同时提供了缓存机制，就需要另一个线程从本地缓存中去取缓存。这分别对应了两个线程调度器：<strong>CacheDispatcher</strong>和<strong>NetworkDispatcher</strong>。</p>
+<p>这里先说一下这两个调度器的作用：</p>
+<ul>
+<li><strong>CacheDispatcher：</strong>（extends Thread），用于调度处理走缓存的请求。启动后会不断从缓存请求队列中取请求处理，队列为空则等待，请求处理结束则将结果传递给<code>ResponseDelivery</code>去执行后续处理。当结果未缓存过、缓存失效或缓存需要刷新的情况下，该请求都需要重新进入<code>NetworkDispatcher</code>去调度处理。</li>
+<li><strong>NetworkDispatcher</strong>：（extends Thread），用于调度处理走网络的请求。启动后会不断从网络请求队列中取请求处理，队列为空则等待，请求处理结束则将结果传递给<code>ResponseDelivery</code>去执行后续处理，并判断结果是否要进行缓存。</li>
+</ul>
+<p>那么在 start 方法中：</p>
+<p>第 3 行，首先创建了一个 mCacheDispatcher 线程的实例，然后让该线程运行起来。</p>
+<p>第 8 行，创建了 4 个 NetworkDispatcher 的线程实例，然后让着 4 个线程运行起来。这里为什么是 4 个，这是因为在创建 RequestQueue 的时候使用的是最简单的构造方法，只传入了 Cache 和 Network 两个参数。而 threadPoolSize 的参数使用了默认的 4，如果你想改变，可以使用 RequestQueue 三个参数的构造方法，第三个参数来指定 NetworkDispatcher 线程的数量。</p>
+<p>目前总共 5 个线程就这样运行起来了，后面会用两个章节来分别讲解 Volley 中的网络请求（Network）和缓存（Cache）相关的部分，敬请期待。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/20/Volley框架详解-基本使用/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -838,604 +1248,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/13/手写JVM系列-9-指令集/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/13/手写JVM系列-9-指令集/" itemprop="url">手写JVM系列(9)-指令集</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-13T23:03:42+08:00">
-                2017-05-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  3,199
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p>编译之后的 Java 方法以字节码的形式存储在 class 文件中。前面已经初步实现了 Java 虚拟机栈、帧、操作数栈和局部变量表等运行时数据区。那么 JVM 是如何操作局部变量表和操作数栈中的数据呢？这就涉及到了 JVM 的字节码指令集。这一节对 JVM 的字节码指令集做一个介绍，本节所实现的指令位于<a href="https://github.com/zachaxy/JVM" target="_blank" rel="noopener">项目</a>的 instructions 包下。</p>
-</blockquote>
-<h1 id="字节码简介"><a href="#字节码简介" class="headerlink" title="字节码简介"></a>字节码简介</h1><p>字节码是运行在虚拟机上的机器码,每一个类或者接口都会被 Java 编译器编译成一个 class 文件，类或接口的方法信息就放在 class 文件的 method_info 结构中。如果方法不是抽象的，也不是本地方法，方法的 Java 代码就会被编译器编译成字节码（即使方法是空的，编译器也会生成一条 return 语句），存放在 method_info 结构的<strong>Code 属性</strong>中。 ==&gt; 字节码一般来说是针对方法中的步骤的；</p>
-<h1 id="指令简介"><a href="#指令简介" class="headerlink" title="指令简介"></a>指令简介</h1><p>字节码中存放编码后的 Java 虚拟机指令。</p>
-<p><strong>指令 = 操作码 + 操作数（如果有的话）</strong></p>
-<ul>
-<li>操作码（Opcode）：一个字节长度，代表着某种特定操作含义。</li>
-<li>操作数（Operands）：操作码后面需要跟零到多个代表该操作码所需的参数。</li>
-</ul>
-<p>所以 Java 虚拟机使用的是<strong>变长指令</strong></p>
-<p>如果把指令想象成函数的话，操作数就是它的参数。每条指令都以一个单字节的操作码（opcode）开头。由于只使用一字节表示操作码，显而易见，Java 虚拟机最多只能支持 256（2^8 ）条指令。</p>
-<p>Java 虚拟机规范已经定义了 205 条指令，操作码分别是 0（0x00）到 202（0xCA）、254（0xFE）和 255（0xFF）。这 205 条指令构成了 Java 虚拟机的指令集（instruction set）。</p>
-<p>字节码指令是一种具有鲜明特点，优劣势都很突出的指令集架构。</p>
-<p>缺点：由于 Class 文件格式放弃了将编译后操作数长度对齐，那么如果处理那些超过一个字节的数据时，不得不在运行时从字节中重建出具体数据，eg：将一个 16 位无符号整数用两字节（byte1，byte2）存储起来，那么在读取该 16 位整数时，需要这样转换：<code>( byte1 &lt;&lt; 8 ) | byte2</code>，这导致解释执行操作码时损失了一些性能。</p>
-<p>优点：放弃了操作数长度对其，意味着可以省略很多填充和间隔符号，尽可能获取短小精干的编译代码（小数据量，高效传输）</p>
-<h1 id="操作码的数据类型"><a href="#操作码的数据类型" class="headerlink" title="操作码的数据类型"></a>操作码的数据类型</h1><p>为了让编码后的字节码更加紧凑，很多操作码本身就隐含了操作数，比如把常数 0 推入操作数栈的指令是 iconst_0。</p>
-<p><strong>操作数栈</strong>和<strong>局部变量表</strong>只存放数据的值，并不记录数据类型。结果就是：<strong>指令必须知道自己在操作什么类型的数据。</strong>这一点也直接反映在了操作码的助记符上。</p>
-<p>例如：</p>
-<p>iadd 指令就是对 int 值进行加法操作；</p>
-<p>dstore 指令把操作数栈顶的 double 值弹出，存储到局部变量表中；</p>
-<p>areturn 从方法中返回引用值。</p>
-<p>也就是说，如果某类指令可以操作不同类型的变量，则助记符的<strong>第一个字母表示变量类型</strong>。</p>
-<table>
-<thead>
-<tr>
-<th>助记符首字母</th>
-<th>数据类型</th>
-<th>例子</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>a</td>
-<td>reference</td>
-<td>aload、astore、areturn</td>
-</tr>
-<tr>
-<td>b</td>
-<td>byte/boolean</td>
-<td>bipush、baload</td>
-</tr>
-<tr>
-<td>c</td>
-<td>char</td>
-<td>caload、castore</td>
-</tr>
-<tr>
-<td>d</td>
-<td>double</td>
-<td>dload、dstore、dadd</td>
-</tr>
-<tr>
-<td>f</td>
-<td>float</td>
-<td>fload、fstore、fadd</td>
-</tr>
-<tr>
-<td>i</td>
-<td>int</td>
-<td>iload、istore、iadd</td>
-</tr>
-<tr>
-<td>l</td>
-<td>long</td>
-<td>lload、lstore、ladd</td>
-</tr>
-<tr>
-<td>s</td>
-<td>short</td>
-<td>sipush、sastore</td>
-</tr>
-</tbody></table>
-<p>并非每个基本数据类型都有对应的操作码，从上图可以看到大部指令都没有直接支持 byte、char、short、boolean，编译器会在编译器或者运行期将 byte 和 short 类型的数据<strong>带符号扩展</strong>为相应的 int 类型，将 boolean 和 char 类型数据<strong>零位扩展</strong>为相应的 int 类型。因此，大多数对于 byte、char、short、boolean 的操作，实际上都是使用相应的 int 类型作为运算类型。</p>
-<h1 id="指令的分类"><a href="#指令的分类" class="headerlink" title="指令的分类"></a>指令的分类</h1><p>因为使用一字节表示操作码，所以 Java 虚拟机最多只能支持 256（2^8 ）条指令。</p>
-<p>Java 虚拟机规范已经定义了 205 条指令，操作码分别是 0（0x00）到 202（0xCA）、254（0xFE）和 255（0xFF）。这 205 条指令构成了 Java 虚拟机的指令集（instruction set）。</p>
-<p>Java 虚拟机规范把已经定义的 205 条指令按用途分成了 11 类：</p>
-<ol>
-<li>常量（constants）指令</li>
-<li>加载（loads）指令</li>
-<li>存储（stores）指令</li>
-<li>操作数栈（stack）指令</li>
-<li>数学（math）指令</li>
-<li>转换（conversions）指令</li>
-<li>比较（comparisons）指令</li>
-<li>控制（control）指令</li>
-<li>引用（references）指令</li>
-<li>扩展（extended）指令</li>
-<li>保留（reserved）指令</li>
-</ol>
-<p>注:保留指令共有 3 条。其中一条是留给调试器的，用于实现断点，操作码是<code>202（0xCA）</code>，助记符是<code>breakpoint</code>。另外两条留给<code>Java</code>虚拟机实现内使用，操作码分别是<code>254（0xFE）</code>和<code>266（0xFF）</code>，助记符是<code>impdep1</code>和<code>impdep2</code>。这三条指令不允许出现在 class 文件中。</p>
-<p>接下来这上述的 11 类指令做一个简单的介绍，并在每种类别的指令中跳出几个有代表性的进行简要说明。</p>
-<h1 id="常量指令"><a href="#常量指令" class="headerlink" title="常量指令"></a>常量指令</h1><p>常量指令把常量<strong>推入操作数栈顶</strong>。常量可以来自三个地方：隐含在操作码里、操作数和运行时常量池。</p>
-<h2 id="nop-指令"><a href="#nop-指令" class="headerlink" title="nop 指令"></a>nop 指令</h2><p>nop 指令是最简单的一条指令，因为它什么也不做。</p>
-<h2 id="const-系列指令"><a href="#const-系列指令" class="headerlink" title="const 系列指令"></a>const 系列指令</h2><p>这一系列指令把隐含在操作码中的常量值<strong>推入操作数栈顶</strong>。几个具体的例子如下：</p>
-<ul>
-<li><p>aconst_null 指令把 null 引用推入操作数栈顶</p>
-</li>
-<li><p>dconst_0 指令把 double 型 0 推入操作数栈顶</p>
-</li>
-<li><p>iconst_m1 指令把 int 型 -1 推入操作数栈顶</p>
-<p>​</p>
-</li>
-</ul>
-<h2 id="bipush-和-sipush-指令"><a href="#bipush-和-sipush-指令" class="headerlink" title="bipush 和 sipush 指令"></a>bipush 和 sipush 指令</h2><p>bipush 指令从<strong>操作数</strong>中获取一个 byte 型整数，扩展成 int 型，然后<strong>推入栈顶</strong>。</p>
-<p>sipush 指令从<strong>操作数</strong>中获取一个 short 型整数，扩展成 int 型，然后<strong>推入栈顶</strong>。</p>
-<h1 id="加载指令"><a href="#加载指令" class="headerlink" title="加载指令"></a>加载指令</h1><p>加载指令从局部变量表获取变量，然后推入操作数栈顶。加载指令共 33 条，按照所操作变量的类型可以分为 6 类:</p>
-<ol>
-<li>aload 系列指令操作引用类型变量</li>
-<li>dload 系列操作 double 类型变量</li>
-<li>fload 系列操作 float 变量</li>
-<li>iload 系列操作 int 变量</li>
-<li>lload 系列操作 long 变量</li>
-<li>xaload 操作数组</li>
-</ol>
-<h1 id="存储指令"><a href="#存储指令" class="headerlink" title="存储指令"></a>存储指令</h1><p>和加载指令刚好相反，存储指令把变量从操作数栈顶弹出，然后存入局部变量表。</p>
-<h1 id="栈指令"><a href="#栈指令" class="headerlink" title="栈指令"></a>栈指令</h1><p>直接对<strong>操作数栈</strong>进行操作，栈指令并不关心变量类型（但是可以确定不是 long 和 double，因为这两种类型占用两个 Slot，所以这里虽然不管类型，但是可以确定是占用了一个 Slot）。共 9 条：</p>
-<ul>
-<li>pop 和 pop2 指令将栈顶变量弹出</li>
-<li>dup 系列指令复制栈顶变量</li>
-<li>swap 指令交换栈顶的两个变量</li>
-</ul>
-<h1 id="数学指令"><a href="#数学指令" class="headerlink" title="数学指令"></a>数学指令</h1><p>数学指令大致对应 Java 语言中的加、减、乘、除等数学运算符。</p>
-<p>数学指令共 37 条，包括：</p>
-<ul>
-<li>算术指令</li>
-<li>位移指令</li>
-<li>布尔运算指令</li>
-<li>自增指令(eg:i++)</li>
-</ul>
-<h2 id="算术指令"><a href="#算术指令" class="headerlink" title="算术指令"></a>算术指令</h2><ol>
-<li>加法（add）指令</li>
-<li>减法（sub）指令</li>
-<li>乘法（mul）指令</li>
-<li>除法（div）指令</li>
-<li>求余（rem）指令</li>
-<li>取反（neg）指令</li>
-</ol>
-<h2 id="位移指令"><a href="#位移指令" class="headerlink" title="位移指令"></a>位移指令</h2><ol>
-<li><p>左移</p>
-</li>
-<li><p>右移</p>
-<ol>
-<li>算术右移（有符号右移）</li>
-<li>逻辑右移（无符号右移）</li>
-</ol>
-<p>​</p>
-</li>
-</ol>
-<h2 id="布尔运算指令"><a href="#布尔运算指令" class="headerlink" title="布尔运算指令"></a>布尔运算指令</h2><p>布尔运算指令只能操作 int 和 long 变量：</p>
-<ol>
-<li>按位与（and）</li>
-<li>按位或（or）</li>
-<li>按位异或（xor）</li>
-</ol>
-<h2 id="iinc-指令"><a href="#iinc-指令" class="headerlink" title="iinc 指令"></a>iinc 指令</h2><p>iinc 指令给局部变量表中的 int 变量增加常量值，局部变量表索引和常量值都由指令的操作数提供。</p>
-<h1 id="类型转换指令"><a href="#类型转换指令" class="headerlink" title="类型转换指令"></a>类型转换指令</h1><p>类型转换指令可以分为 4 种：</p>
-<ul>
-<li>i2x 系列指令把 int 变量强制转换成其他类型</li>
-<li>l2x 系列指令把 long 变量强制转换成其他类型</li>
-<li>f2x 系列指令把 float 变量强制转换成其他型</li>
-<li>d2x 系列指令把 double 变量强制转换成其他类型</li>
-</ul>
-<p>注意:引用类型转换对应的是 checkcast 指令,在后面的章节会出现。</p>
-<h1 id="比较指令"><a href="#比较指令" class="headerlink" title="比较指令"></a>比较指令</h1><p>比较指令可以分为两类：</p>
-<ul>
-<li>将比较结果推入操作数栈顶。</li>
-<li>根据比较结果跳转。</li>
-</ul>
-<h2 id="lcmp-指令"><a href="#lcmp-指令" class="headerlink" title="lcmp 指令"></a>lcmp 指令</h2><p>用于比较 long 变量,把栈顶的两个 long 变量弹出，进行比较，然后把比较结果（int 型 0、1 或 -1）推入栈顶。</p>
-<h2 id="fcmp-指令"><a href="#fcmp-指令" class="headerlink" title="fcmp 指令"></a>fcmp 指令</h2><p>指令和 lcmp 指令很像，但是除了比较的变量类型不同以外，还有一个重要的区别:由于浮点数计算有可能产生 NaN（Not a Number）值，所以比较两个浮点数时，除了大于、等于、小于之外， 还有第 4 种结果：<strong>无法比较</strong></p>
-<p>fcmpg 和 fcmpl 指令的区别就在于对第 4 种结果的定义;<br>当两个 float 变量中至少有一个是 NaN 时，用 fcmpg 指令比较的结果是 1，而用 fcmpl 指令比较的结果是 -1。</p>
-<h2 id="dcmp-指令"><a href="#dcmp-指令" class="headerlink" title="dcmp 指令"></a>dcmp 指令</h2><p>dcmpg 和 dcmpl 指令用来比较 double 变量,这条指令和 fcmp 指令只是比较的变量类型不同。</p>
-<h2 id="if-lt-cond-gt-指令"><a href="#if-lt-cond-gt-指令" class="headerlink" title="if&lt;cond&gt;指令"></a><code>if&lt;cond&gt;</code>指令</h2><p><code>if&lt;cond&gt;</code>指令把操作数栈顶的 int 变量弹出，然后跟 0 进行比较，满足条件则跳转。假设从栈顶弹出的变量是 x，则指令执行跳转操作的条件如下：具体判定之后如何跳转,现在先不讨论;</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ifeq：x==0</span><br><span class="line">ifne：x！=0</span><br><span class="line">iflt：x&lt;0</span><br><span class="line">ifle：x&lt;=0</span><br><span class="line">ifgt：x&gt;0</span><br><span class="line">ifge：x&gt;=0</span><br></pre></td></tr></table></figure>
-
-<h2 id="if-icmp-lt-cond-gt-指令"><a href="#if-icmp-lt-cond-gt-指令" class="headerlink" title="if_icmp&lt;cond&gt;指令"></a><code>if_icmp&lt;cond&gt;指令</code></h2><p><code>if_icmp&lt;cond&gt;</code>指令把栈顶的两个 int 变量弹出，然后进行比较，满足条件则跳转。跳转条件和 if<cond>指令类似。</cond></p>
-<h2 id="if-acmp-lt-cond-gt-指令"><a href="#if-acmp-lt-cond-gt-指令" class="headerlink" title="if_acmp&lt;cond&gt;指令"></a><code>if_acmp&lt;cond&gt;指令</code></h2><p>把栈顶的两个引用弹出，根据引用是否相同进行跳转。</p>
-<h1 id="控制指令"><a href="#控制指令" class="headerlink" title="控制指令"></a>控制指令</h1><p>分类:</p>
-<ul>
-<li>goto</li>
-</ul>
-<ul>
-<li>tableswitch</li>
-</ul>
-<ul>
-<li>lookupswitch</li>
-</ul>
-<h2 id="goto"><a href="#goto" class="headerlink" title="goto"></a>goto</h2><p>goto 指令进行无条件跳转,其操作码后是一个 int16 类型的操作数，所以需要读两个字节并转成成 int16 类型，该操作数即偏移 offset，那么接下来要执行的指令的位置为：<code>pc + offset</code></p>
-<h2 id="tableswitch"><a href="#tableswitch" class="headerlink" title="tableswitch"></a>tableswitch</h2><p>Java 语言中的 switch-case 语句有两种实现方式：如果 case 值可以编码成一个索引表(索引值是连续的)，则实现成 tableswitch 指令；否则实现成 lookupswitch 指令</p>
-<p>下面这个 Java 方法中的 switch-case 可以编译成 tableswitch 指令，代码如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">chooseNear</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line"><span class="keyword">switch</span> (i) &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">default</span>: <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>tableswitch 后跟的操作数是对应 case 分支的跳转 offset，其格式类似于：</p>
-<p>default 分支对应的跳转 defaultOffset，0 分支对应的索引 low(这里就是 0)，2 分支对应的索引 high(这里就是 2)，因为 0<del>2 分支对应的跳转是连续的，所以接下来分别对应 0</del>2 分支的跳转 offset。</p>
-<p>这里用一个数组存放最合适不过了，数组大小就是<code>high-low+1</code>，这里拿到一个分支跳转的 case 的索引 index，先判断 index 在不在 low 和 high 之间，如果不在，其 offset 就是 defaultOffset，否则就用从数组中找 <code>arr[index-low]</code>，拿到对应的 offset。</p>
-<h2 id="lookupswitch"><a href="#lookupswitch" class="headerlink" title="lookupswitch"></a>lookupswitch</h2><p>(索引值是非连续的)下面这个 Java 方法中的 switch-case 则需要编译成 lookupswitch 指令：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">chooseFar</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (i) &#123;</span><br><span class="line">  <span class="keyword">case</span> -<span class="number">100</span>: <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">100</span>: <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">default</span>: <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>因为这里的 case 语句并不是连续的，所以不能用数组来表示了，只能是一个 case 的索引，接下来该 case 对应的跳转。</p>
-<h1 id="扩展指令"><a href="#扩展指令" class="headerlink" title="扩展指令"></a>扩展指令</h1><h2 id="wide-指令"><a href="#wide-指令" class="headerlink" title="wide 指令"></a>wide 指令</h2><p>加载类指令、存储类指令、ret 指令和 iinc 指令需要按索引访问局部变量表，索引以 uint8 的形式存在字节码中。对于大部分方法来说，<strong>局部变量表大小一般都不会超过 256</strong>，所以用一字节来表示索引就够了。</p>
-<p>但是如果有方法的局部变量表超过这限制时,Java 虚拟机规范定义了 wide 指令来扩展前述指令。</p>
-<p>wide 指令改变其他指令的行为，modifiedInstruction 字段存放被改变的指令。</p>
-<h2 id="ifnull-ifnonnull-指令"><a href="#ifnull-ifnonnull-指令" class="headerlink" title="ifnull/ifnonnull 指令"></a>ifnull/ifnonnull 指令</h2><p>根据引用是否是 null 进行跳转，ifnull 和 ifnonnull 指令把栈顶的引用弹出。</p>
-<h2 id="goto-w-指令"><a href="#goto-w-指令" class="headerlink" title="goto_w 指令"></a>goto_w 指令</h2><p>goto_w 指令和 goto 指令的唯一区别就是索引从 2 字节变成了 4 字节。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://zachaxy.github.io/2017/05/12/手写JVM系列-8-线程私有的运行时数据/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zachaxy">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zachaxy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/12/手写JVM系列-8-线程私有的运行时数据/" itemprop="url">手写JVM系列(8)-运行时数据</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-12T22:47:02+08:00">
-                2017-05-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  3,561
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <blockquote>
-<p>前面介绍了如何搜索和解析 class 文件，如何解析 class 文件，那么接下来就要开始实现 JVM 了，这一节我们讨论并初步实现运行时数据区（run-time data area），为接下来编写字节码解释器做准备。本节所有的<a href="https://github.com/zachaxy/JVM" target="_blank" rel="noopener">代码</a>均位于 runtimedata 包下。</p>
-</blockquote>
-<h1 id="运行时数据区概述"><a href="#运行时数据区概述" class="headerlink" title="运行时数据区概述"></a>运行时数据区概述</h1><p>运行时数据区可以分为两类：</p>
-<ul>
-<li>多线程共享:在 Java 虚拟机启动时创建好，在 Java 虚拟机退出时销毁。<ul>
-<li>类数据，其存放在方法区(逻辑上来说,方法区也是堆中的一部分)<ul>
-<li>字段</li>
-<li>方法信息</li>
-<li>方法字节码</li>
-<li>运行时常量池</li>
-</ul>
-</li>
-<li>类实例(对象)=&gt;堆(堆由垃圾收集器定期清理，所以程序员不需要关心对象空间的释放)</li>
-</ul>
-</li>
-<li>线程私有:创建线程时才创建，线程退出时销毁。其主要作用是辅助执行 Java 字节码<ul>
-<li>pc 寄存器：存放当前正在执行的 Java 虚拟机指令的地址，如果当前执行的是 native 方法，则 pc 的值 JVM 没有明确定义。</li>
-<li>Java 虚拟机栈<ul>
-<li>栈帧<ul>
-<li>局部变量表</li>
-<li>操作数</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p> 在任一时刻，某一线程肯定是在执行某个方法。这个方法叫作该线程的<strong>当前方法</strong>；</p>
-<p>执行该方法的帧叫作线程的<strong>当前帧</strong>；</p>
-<p>声明该方法的类叫作<strong>当前类</strong>。</p>
-<p>如果当前方法是<strong>Java 方法</strong>，则 pc 寄存器中存放当前正在执行的 Java 虚拟机指令的地址，否则，当前方法是本地方法，pc 寄存器中的值没有明确定义。</p>
-<p><img src="https://geosmart.github.io/2016/03/07/JVM%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E4%B8%8E%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%BC%82%E5%B8%B8/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA.jpg" alt="运行时数据区示意图"></p>
-<p>堆可以是连续空间，也可以不连续。堆的大小可以固定，也可以在运行时按需扩展。</p>
-<p>Java 命令提供了-Xms 和-Xmx 两个非标准选项，用来调整堆的初始大小和最大大小。如果没有进行指定,那么使用默认大小;</p>
-<p>虚拟机实现者可以使用任何垃圾回收算法管理堆，甚至完全不进行垃圾收集也是可以的。</p>
-<h1 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h1><p>Java 虚拟机可以操作两类数据：</p>
-<ul>
-<li>基本类型:变量中存放数据本身。</li>
-<li>引用类型:变量中存放的是对象引用，真正的对象数据是在堆里分配的。</li>
-</ul>
-<p>这里所说的变量包括 类变量（静态字段）、实例变量（非静态字段）、数组元素、方法的参数和局部变量等</p>
-<p>引用类型可以进一步分为 3 种：</p>
-<ul>
-<li>类类型:指向类实例</li>
-<li>接口类型:指向实现了该接口的类或数组实例</li>
-<li>数组类型类:指向数组实例 </li>
-</ul>
-<p>引用类型有一个特殊的值——null，表示该引用不指向任何对象。</p>
-<p><strong>操作数栈和局部变量表只存放数据的值,并不记录数据类型。具体操作的是什么类型的数据,反映在操作符上,eg:iadd:就是对 int 值进行加法操作.</strong></p>
-<p>关于字节码和指令集的具体讲解在<a href="https://zachaxy.github.io/2017/05/13/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-9-%E6%8C%87%E4%BB%A4%E9%9B%86/">手写JVM系列(9)-指令集</a>中介绍。</p>
-<p>基于 Java 虚拟机只能操作上面两种数据，并且在<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-6-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B1%9E%E6%80%A7%E8%A1%A8/#Code">属性表</a>的 Code 属性一节中介绍过，局部变量是存放在 Slot 中的，所以这里定义一个 Slot 类，里面存放上面所述的两种变量：基本类型和引用类型。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Slot</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> num;</span><br><span class="line">    <span class="keyword">public</span> Zobject ref;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Slot</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>对于基本类型，使用定义的 num 变量，对于引用类型，使用 Zobject 变量，因为现在还没有涉及到实现类和对象的实现，所以这里自己定义了一个类 Zobject 来代表引用。等到后面章节中，会具体讲解实现类和对象的实现方式。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Zobject</span> </span>&#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> 暂时为空实现  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="实现线程私有的运行时数据区"><a href="#实现线程私有的运行时数据区" class="headerlink" title="实现线程私有的运行时数据区"></a>实现线程私有的运行时数据区</h1><h2 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h2><p>既然是要实现线程私有的运行时数据区，那么就要先实现线程类，这里定义 Zthread 类代表线程。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Zthread</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> pc;</span><br><span class="line">    Zstack stack; <span class="comment">//Stack 结构体（Java 虚拟机栈）的引用;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Zthread</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//默认栈的大小是 1024,也就是说可以存放 1024 个栈帧</span></span><br><span class="line">        stack = <span class="keyword">new</span> Zstack(<span class="number">1024</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getPc</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPc</span><span class="params">(<span class="keyword">int</span> pc)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pc = pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pushFrame</span><span class="params">(Zframe frame)</span> </span>&#123;</span><br><span class="line">        stack.push(frame);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Zframe <span class="title">popFrame</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> stack.pop();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Zframe <span class="title">getCurrentFrame</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> stack.top();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Zframe <span class="title">createFrame</span><span class="params">(<span class="keyword">int</span> maxLocals, <span class="keyword">int</span> maxStack)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Zframe(<span class="keyword">this</span>, maxLocals, maxStack);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这里只关注其中的成员变量。我们知道线程中私有的数据包括：PC 和虚拟机栈。PC 使用一个整数保存，虚拟机栈使用了我们自定义的一个 Zstack 类，下面是其具体实现。</p>
-<h2 id="Java-虚拟机栈"><a href="#Java-虚拟机栈" class="headerlink" title="Java 虚拟机栈"></a>Java 虚拟机栈</h2><p>Java 虚拟机规范对 Java 虚拟机栈的约束非常宽松。虚拟机栈可以是连续的空间，也可以不连续可以是固定大小，也可以在运行时动态扩展。Java 提供了-Xss 选项来设置 Java 虚拟机栈大小。</p>
-<p>如果 Java 虚拟机栈有大小限制，且执行线程所需的栈空间超出了这个限制，会导致 StackOverflowError 异常抛出。</p>
-<p>如果 Java 虚拟机栈可以动态扩展，但是内存已经耗尽，会导致 OutOfMemoryError 异常抛出。</p>
-<p>这里我们用经典的链表（linked list）数据结构来实现 Java 虚拟机栈，这样栈就可以按需使用内存空间，而且弹出的帧也可被及时回收。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Zstack</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> maxSize;    <span class="comment">//虚拟机栈中所包含栈帧的最大容量</span></span><br><span class="line">    <span class="keyword">int</span> size;       <span class="comment">//当前虚拟机栈中包含帧的数量</span></span><br><span class="line">    <span class="keyword">private</span> Zframe _top; <span class="comment">//栈顶的帧</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Zstack</span><span class="params">(<span class="keyword">int</span> maxSize)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.maxSize = maxSize;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//新添加一个栈帧,将这个栈帧设置为 top,当然如果当前栈之前有元素,那么将要 push 进的 frame 的 lower 是指为之前的 top,当前 frame 变为 top;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">push</span><span class="params">(Zframe frame)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (size &gt; maxSize) &#123;</span><br><span class="line">            <span class="comment">//throw new RuntimeException("java.lang.StackOverflowError");</span></span><br><span class="line">            <span class="comment">//如果栈已经满了，按照 Java 虚拟机规范，应该抛出 StackOverflowError 异常</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> StackOverflowError();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (_top != <span class="keyword">null</span>) &#123;</span><br><span class="line">            frame.lower = _top; <span class="comment">// frame 中保存前一个帧的引用,使得当前帧被 push 的时,前一个帧顶上去;</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        _top = frame;</span><br><span class="line">        size++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">Zframe <span class="title">pop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (_top == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> EmptyStackException();</span><br><span class="line">        &#125;</span><br><span class="line">        Zframe tmp = _top;</span><br><span class="line">        _top = tmp.lower;</span><br><span class="line">        tmp.lower = <span class="keyword">null</span>;  <span class="comment">//tmp 是带 pop 出的栈帧,既然要 pop 出来,那么将其 lower 设置为 null,不在持有栈中的帧,避免内存泄露;</span></span><br><span class="line">        size--;</span><br><span class="line">        <span class="keyword">return</span> tmp;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">Zframe <span class="title">top</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (_top == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> EmptyStackException();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> _top;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>其中：maxSize 字段保存栈的容量（最多可以容纳多少帧），size 字段保存栈的当前大小，_top 字段保存栈顶指针。</p>
-<p>push（）方法把帧推入栈顶，如果栈已经满了，按照 Java 虚拟机规范，应该抛出 StackOverflowError 异常。</p>
-<p>pop（）方法把栈顶帧弹出，如果此时栈是空的，肯定是我们的虚拟机有 bug，这里我们手动抛出了一个 EmptyStackException 异常。</p>
-<p>top（）方法只是返回栈顶帧，但并不弹出。</p>
-<h2 id="栈帧"><a href="#栈帧" class="headerlink" title="栈帧"></a>栈帧</h2><p>上面的虚拟机栈是用单向链表实现的，栈中每一个元素都是栈帧，这里我们定义一个 Zframe 类，具体实现如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Zframe</span> </span>&#123;</span><br><span class="line">    Zframe lower;       <span class="comment">//当前帧的 前一帧的引用;相当于单向链表的前一个指针</span></span><br><span class="line">    LocalVars localVars;    <span class="comment">//局部变量表的引用;</span></span><br><span class="line">    OperandStack operandStack;  <span class="comment">//操作数栈的引用;</span></span><br><span class="line">    Zthread thread;</span><br><span class="line">    <span class="keyword">int</span> nextPC;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> 2017/5/4 0004</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Zframe</span><span class="params">(Zthread thread, <span class="keyword">int</span> maxLocals, <span class="keyword">int</span> maxStack)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.thread = thread;</span><br><span class="line">        localVars = <span class="keyword">new</span> LocalVars(maxLocals);</span><br><span class="line">        operandStack = <span class="keyword">new</span> OperandStack(maxStack);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> LocalVars <span class="title">getLocalVars</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> localVars;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> OperandStack <span class="title">getOperandStack</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> operandStack;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Zthread <span class="title">getThread</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> thread;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getNextPC</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> nextPC;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setNextPC</span><span class="params">(<span class="keyword">int</span> nextPC)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.nextPC = nextPC;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>lower 字段用来实现链表数据结构，保存的是栈中前一个栈帧的引用，相当于链表中的 next 指针，这样当栈顶的帧出栈时，栈顶帧把其持有的 lower 帧设置为当前栈顶帧。</p>
-<p>localVars 字段保存局部变量表引用。</p>
-<p>operandStack 字段保存操作数栈引用。</p>
-<p>在构造方法中传入了局部变量表大小和操作数栈深度，这两个值是由编译器预先计算好的，存储在 class 文件 method_info 结构的 Code 属性中。</p>
-<h2 id="局部变量表"><a href="#局部变量表" class="headerlink" title="局部变量表"></a>局部变量表</h2><p>局部变量表是按索引访问的，那么我们自然也是用数组来实现。根据 Java 虚拟机规范，这个数组的每个元素至少可以容纳一个 int 或引用值，两个连续的元素可以容纳一个 long 或 double 值。这就是我们之前讲的属性表中 Code 属性中的<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-6-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B1%9E%E6%80%A7%E8%A1%A8/#Code">Slot</a>。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Slot</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> num;</span><br><span class="line">    <span class="keyword">public</span> Zobject ref;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Slot</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>操作局部变量表和操作数栈的指令都是隐含类型信息的。下面给 LocalVars 类型定义一些方法，用来存取不同类型的变量。</p>
-<ul>
-<li>int 变量最简单，直接存取即可。</li>
-<li>float 变量可以先转成 int 类型，然后按 int 变量来处理。</li>
-<li>long 变量则需要拆成两个 int 变量（需要注意的点是将两个 int 合并成一个 long 的方式，具体处理方式见下面的源码 getLong）。</li>
-<li>double 变量可以先转成 long 类型，然后按照 long 变量来处理。</li>
-<li>引用值，也比较简单，直接存取即可。</li>
-</ul>
-<p>下面给出 LocalVars 中存取变量或引用的方法</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LocalVars</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Slot[] localVars; <span class="comment">//局部变量表,JVM 规定其按照索引访问,所以将其设置为数组</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">LocalVars</span><span class="params">(<span class="keyword">int</span> maxLocals)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (maxLocals &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            localVars = <span class="keyword">new</span> Slot[maxLocals];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"maxLocals&lt;0"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//提供了对 int,float,long,double,引用的存取,这里要注意的是 long 和 double 是占用 8 字节的,所以使用了局部变量表中的两个槽位分别存储前四字节和后四字节</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setInt</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">int</span> val)</span> </span>&#123;</span><br><span class="line">        Slot slot = <span class="keyword">new</span> Slot();</span><br><span class="line">        slot.num = val;</span><br><span class="line">        localVars[index] = slot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getInt</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> localVars[index].num;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setFloat</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">float</span> val)</span> </span>&#123;</span><br><span class="line">        Slot slot = <span class="keyword">new</span> Slot();</span><br><span class="line">        slot.num = Float.floatToIntBits(val);</span><br><span class="line">        localVars[index] = slot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">float</span> <span class="title">getFloat</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Float.intBitsToFloat(localVars[index].num);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setLong</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">long</span> val)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//先存低 32 位</span></span><br><span class="line">        Slot slot1 = <span class="keyword">new</span> Slot();</span><br><span class="line">        slot1.num = (<span class="keyword">int</span>) (val);</span><br><span class="line">        localVars[index] = slot1;</span><br><span class="line">        <span class="comment">//再存高 32 位</span></span><br><span class="line">        Slot slot2 = <span class="keyword">new</span> Slot();</span><br><span class="line">        slot2.num = (<span class="keyword">int</span>) (val &gt;&gt; <span class="number">32</span>);</span><br><span class="line">        localVars[index + <span class="number">1</span>] = slot2;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getLong</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> low = localVars[index].num;</span><br><span class="line">        <span class="keyword">long</span> high = localVars[index + <span class="number">1</span>].num;</span><br><span class="line">        <span class="keyword">return</span> ((high &amp; <span class="number">0x000000ffffffffL</span>) &lt;&lt; <span class="number">32</span>) | (low &amp; <span class="number">0x00000000ffffffffL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDouble</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">double</span> val)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">long</span> bits = Double.doubleToLongBits(val);</span><br><span class="line">        setLong(index, bits);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">double</span> <span class="title">getDouble</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">long</span> bits = getLong(index);</span><br><span class="line">        <span class="keyword">return</span> Double.longBitsToDouble(bits);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setRef</span><span class="params">(<span class="keyword">int</span> index, Zobject ref)</span> </span>&#123;</span><br><span class="line">        Slot slot = <span class="keyword">new</span> Slot();</span><br><span class="line">        slot.ref = ref;</span><br><span class="line">        localVars[index] = slot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Zobject <span class="title">getRef</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> localVars[index].ref;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>注意到，我们这里并没有对 boolean、byte、short 和 char 类型定义存取方法，因为这些类型的值都是转换成 int 值类来处理的。</p>
-<h2 id="操作数栈"><a href="#操作数栈" class="headerlink" title="操作数栈"></a>操作数栈</h2><p>操作数栈的实现方式和局部变量表类似。操作数栈也是通过索引来访问的，操作数栈的大小是编译器已经确定的，所以依然可以用[]Slot 实现。这里有一个 size 字段是用于记录栈顶位置的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OperandStack</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> size;  <span class="comment">//初始值为 0,在运行中,代表当前栈顶的 index,还未使用,可以直接用,用完记得 size++;</span></span><br><span class="line">    <span class="keyword">private</span> Slot[] slots;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">OperandStack</span><span class="params">(<span class="keyword">int</span> maxStack)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (maxStack &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            slots = <span class="keyword">new</span> Slot[maxStack];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"maxStack&lt;0"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pushInt</span><span class="params">(<span class="keyword">int</span> val)</span> </span>&#123;</span><br><span class="line">        Slot slot = <span class="keyword">new</span> Slot();</span><br><span class="line">        slot.num = val;</span><br><span class="line">        slots[size] = slot;</span><br><span class="line">        size++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">popInt</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        size--;</span><br><span class="line">        <span class="keyword">return</span> slots[size].num;</span><br><span class="line">    &#125;</span><br><span class="line"> 	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>和局部变量表类似，需要定义一些方法从操作数栈中弹出，或者往其中推入各种类型的变量。这里只列举出最简单的对于 int 变量进行存取的的部分，对于其它类型的存取和局部变量表是一样的，就不在浪费篇幅了。这里要注意的一点是：每次存取数据，都要对 size 进行相应的加减操作。</p>
-<h2 id="局部变量表和操作数栈实例分析"><a href="#局部变量表和操作数栈实例分析" class="headerlink" title="局部变量表和操作数栈实例分析"></a>局部变量表和操作数栈实例分析</h2><p>以下面计算圆形周长的方法为例,观察局部变量和操作数栈的变化</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">float</span> <span class="title">circumference</span><span class="params">(<span class="keyword">float</span> r)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">float</span> pi = <span class="number">3.14f</span>;</span><br><span class="line">    <span class="keyword">float</span> area = <span class="number">2</span> * pi * r;</span><br><span class="line">    <span class="keyword">return</span> area;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>上述代码被 javac 编译成如下字节码:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">00 ldc #4</span><br><span class="line">02 fstore_1</span><br><span class="line">03 fconst_2</span><br><span class="line">04 fload_1</span><br><span class="line">05 fmul</span><br><span class="line">06 fload_0</span><br><span class="line">07 fmul</span><br><span class="line">08 fstore_2</span><br><span class="line">09 fload_2</span><br><span class="line">10 return</span><br></pre></td></tr></table></figure>
-
-<p>circumference（）方法的局部变量表大小是 3，操作数栈深度是 2;(执行方法所需的局部变量表大小和操作数栈深度是由编译器预先计算好的)</p>
-<p>假设调用该方法时传入的参数是 1.6f,那么执行该方法时，操作数栈和局部变量表的变化如下：</p>
-<p><img src="http://7xvxof.com1.z0.glb.clouddn.com/jvmgo_40.png" alt="circumference 方法执行过程"></p>
-<p>传递给它的参数是 1.6f，方法开始执行前，1.6 被保存在本地变量表的#0 位置，接下来开始执行字节码：</p>
-<p>首先是 ldc，它把 3.14f 推入栈顶</p>
-<p>接着是 fstore_1 指令，它把栈顶的 3.14f 弹出，放到#1 号局部变量中</p>
-<p>fconst_2 指令把 2.0f 推到栈顶</p>
-<p>fload_1 指令把#1 号局部变量推入栈顶</p>
-<p>fmul 指令执行浮点数乘法。它把栈顶的两个浮点数弹出，相乘，然后把结果推入栈顶</p>
-<p>fload_0 指令把#0 号局部变量推入栈顶</p>
-<p>fmul 继续乘法计算</p>
-<p>fstore_2 指令把操作数栈顶的 float 值弹出，放入#2 号局部变量表</p>
-<p>fload_2 指令把#2 号局部变量推入操作数栈顶</p>
-<p>最后 freturn 指令把操作数栈顶的 float 变量弹出，返回给方法调用者。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1490,7 +1302,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">66</span>
+                  <span class="site-state-item-count">68</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1503,7 +1315,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1570,7 +1382,7 @@
     
       <span class="post-meta-item-text">站点文章字数总计&#58;</span>
     
-    <span title="站点文章字数总计">148.9k</span>
+    <span title="站点文章字数总计">149.6k</span>
   
 </div>
 
