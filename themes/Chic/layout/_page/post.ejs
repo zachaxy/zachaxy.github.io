@@ -11,14 +11,21 @@
             <% if(theme.post_meta_enable){ %>
                 <div class="post-meta">
                     <% if(theme.post_author_enable && config.author){ %>
-                        Author: <a itemprop="author" rel="author" href="/"><%- config.author %></a>
+                        Author: <a itemprop="author" rel="author" href="/"><%- config.author %>&nbsp;&#124;&nbsp;</a>
                     <% } %>
 
                     <% if(page.date && theme.post_date_enable){ %>
                         <span class="post-time">
-                        Date: <a href="#"><%- date(page.date, theme.date_format)  %>&nbsp;&nbsp;<%- time(page.date, theme.time_format)%></a>
+                        Date: <a href="#"><%- date(page.date, theme.date_format)  %>&nbsp;&nbsp;<%- time(page.date, theme.time_format)%>&nbsp;&#124;&nbsp;</a>
                         </span>
                     <% } %>
+
+                    <% if(page.date){ %>
+                        <span class="post-count">
+                        Words: <a href="#"><%- symbolsCount(post)  %>&nbsp;&nbsp;&#124;&nbsp;&nbsp;about: <%- symbolsTime(post) %></a>
+                        </span>
+                    <% } %>
+
                     <% if(page.categories.length!==0 && theme.post_category_enable){ %>
                         <span class="post-category">
                     Category:

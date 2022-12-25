@@ -9,13 +9,13 @@ nav:
   About: /about
 
 # favicon
-favicon: /favicon.ico
+favicon: /image/favicon.ico
 
 # Profile
 nickname: Zachaxy
 
 ### this variable is MarkDown form.
-description: Lorem ipsum dolor sit amet, **consectetur adipiscing elit.** <br>Fusce eget urna vitae velit *eleifend interdum at ac* nisi.
+description: Ever youthful, ever weeping.
 avatar: /image/avatar.jpeg
 
 # main menu navigation
@@ -104,3 +104,9 @@ mathjax:
   import: demand # global or demand
   ## global: all pages will load mathjax,this will degrade performance and some grammers may be parsed wrong.
   ## demand: Recommend option,if your post need fomula, you can declare 'mathjax: true' in Front-matter
+
+
+symbols_count_time:
+  separated_meta: true
+  item_text_post: true
+  item_text_total: false

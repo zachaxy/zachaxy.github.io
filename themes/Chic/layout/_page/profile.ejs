@@ -5,6 +5,7 @@
         </div>
         <div class="nickname"><%- theme.nickname %></div>
         <div class="description"><%- markdown(theme.description) %></div>
+        <div class="count"><%- site.posts.length %>&nbsp;posts&nbsp;&#124;&nbsp;<%- symbolsCountTotal(site) %>&nbsp;words</div>
         <div class="links">
             <% if (theme.links !== undefined) { %>
                 <% for (var key in theme.links){ %>

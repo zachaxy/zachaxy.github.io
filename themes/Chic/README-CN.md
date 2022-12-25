@@ -71,7 +71,7 @@ nav:
   About: /about
 
 # favicon
-favicon: /favicon.ico
+favicon: favicon.ico
 
 # Profile
 nickname: Jeremy Bentham
