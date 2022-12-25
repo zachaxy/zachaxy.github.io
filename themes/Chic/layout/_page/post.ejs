@@ -22,7 +22,13 @@
 
                     <% if(page.date){ %>
                         <span class="post-count">
-                        Words: <a href="#"><%- symbolsCount(post)  %>&nbsp;&nbsp;&#124;&nbsp;&nbsp;about: <%- symbolsTime(post) %></a>
+                        Words: <a href="#"><%- symbolsCount(post)  %>&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    <% } %>
+
+                    <% if(page.date){ %>
+                        <span class="post-readtime">
+                        About: <a href="#"><%- symbolsTime(post) %></a>
                         </span>
                     <% } %>
 
