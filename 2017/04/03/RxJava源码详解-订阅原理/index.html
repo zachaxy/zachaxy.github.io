@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>RxJava源码详解-订阅原理 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">RxJava源码详解-订阅原理</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 3, 2017&nbsp;&nbsp;9:19:10&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">4.5k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">4 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="深入观察者与被观察者模式"><a href="#深入观察者与被观察者模式" class="headerlink" title="深入观察者与被观察者模式"></a>深入观察者与被观察者模式</h2><p>下面以一个经典的例子进行讲解:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建一个被观察者（开关）</span></span><br><span class="line"> Observable switcher=Observable.create(<span class="keyword">new</span> <span class="title class_">Observable</span>.OnSubscribe&lt;String&gt;()&#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">call</span><span class="params">(Subscriber&lt;? <span class="built_in">super</span> String&gt; subscriber)</span> &#123;</span><br><span class="line">            subscriber.onNext(<span class="string">&quot;On&quot;</span>);</span><br><span class="line">            subscriber.onNext(<span class="string">&quot;Off&quot;</span>);</span><br><span class="line">            subscriber.onNext(<span class="string">&quot;On&quot;</span>);</span><br><span class="line">            subscriber.onNext(<span class="string">&quot;On&quot;</span>);</span><br><span class="line">            subscriber.onCompleted();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"><span class="comment">//创建一个观察者（台灯）</span></span><br><span class="line"> Subscriber light=<span class="keyword">new</span> <span class="title class_">Subscriber</span>&lt;String&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onCompleted</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="comment">//被观察者的onCompleted()事件会走到这里;</span></span><br><span class="line">            Log.d(<span class="string">&quot;DDDDDD&quot;</span>,<span class="string">&quot;结束观察...\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onError</span><span class="params">(Throwable e)</span> &#123;</span><br><span class="line">                <span class="comment">//出现错误会调用这个方法</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onNext</span><span class="params">(String s)</span> &#123;</span><br><span class="line">            <span class="comment">//处理传过来的onNext事件</span></span><br><span class="line">            Log.d(<span class="string">&quot;DDDDD&quot;</span>,<span class="string">&quot;handle this---&quot;</span>+s)</span><br><span class="line">        &#125;</span><br><span class="line"><span class="comment">//订阅</span></span><br><span class="line">switcher.subscribe(light);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>针对上面的代码提出两个问题:</p>
+<ol>
+<li>被观察者中的Observable.OnSubscribe是什么，有什么用?</li>
+<li>call(subscriber)方法中，subscriber哪里来的?</li>
+<li>为什么只有在订阅之后，被观察者才会开始发送消息?</li>
+</ol>
+<h2 id="Observable-类深入"><a href="#Observable-类深入" class="headerlink" title="Observable 类深入"></a>Observable 类深入</h2><p>首先看一下OnSubscribe是什么?</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//前面也提到Acton1这个接口，内部只有一个待实现call()方法</span></span><br><span class="line"><span class="comment">//没啥特别，人畜无害</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Action1</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">Action</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">call</span><span class="params">(T t)</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//OnSubscribe继承了这个Action1接口,自己并没有增加新的方法;</span></span><br><span class="line"><span class="comment">//但是新增了 Subscriber 类的泛型要求,也就是说只能用在订阅者中</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">OnSubscribe</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">Action1</span>&lt;Subscriber&lt;? <span class="built_in">super</span> T&gt;&gt; &#123;</span><br><span class="line">      <span class="comment">// OnSubscribe仍然是个接口</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>前面也提到<code>Acton1</code>这个接口，内部只有一个待实现<code>call()</code>方法.<br><code>OnSubscribe </code>接口继承了这个<code> Action1</code> 接口,但是自己并没有增加新的方法;只是把泛型限定在了 <code>Subscriber</code>,也就是说必须传入观察者对象;<br>那么也就是说，<code>OnSubscribe</code>本质上也是和<code> Action1</code>一样的接口，只不过它专门用于<code>Observable</code>内部。</p>
+<p>那么将<code> OnSubscribe</code> 接口传入<code> Observable</code> 后,该接口干什么?</p>
+<p>答:用来触发事件的发生,在<code>call()</code>内部调用观察者的 <code>onNext()</code>方法!!!</p>
+<p>要注意的是在 <code>Observable</code> 被观察者的类中，<code>OnSubscribe</code>是它唯一的属性,<br>同时也是<code>Observable</code>构造函数中唯一必须传入的参数，也就是说，只要创建了<code>Observable</code>，那么内部也一定有一个 <code>OnSubscribe</code> 实体对象。</p>
+<p>当然,<code>Observable</code>是没有办法直接new的,我们只能通过create(),just()等等方法创建,这些方法背后去调用了<code>new Observable(onSubscribe)</code></p>
+<p>再来大体看一下 <code>Observable </code>这个类的骨架:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Observable</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="comment">//唯一的属性</span></span><br><span class="line">    <span class="keyword">final</span> OnSubscribe&lt;T&gt; onSubscribe;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//构造函数，因为protected，我们只能使用create函数</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">Observable</span><span class="params">(OnSubscribe&lt;T&gt; f)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.onSubscribe = f;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//create(onSubscribe) 内部调用构造函数。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; Observable&lt;T&gt; <span class="title function_">create</span><span class="params">(OnSubscribe&lt;T&gt; f)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Observable</span>&lt;T&gt;(RxJavaHooks.onCreate(f));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Observer-类深入"><a href="#Observer-类深入" class="headerlink" title="Observer 类深入"></a>Observer 类深入</h2><p>Observer是一个接口,其内部有三个方法:</p>
+<ul>
+<li>void onCompleted():处理被观察者发送完事件后的逻辑</li>
+<li>void onError(Throwable e):处理出错逻辑</li>
+<li>void onNext(T t):处理事件,有一个事件就执行一次</li>
+</ul>
+<p>顺便说一下 Subscriber,其实 Observer的实现类,但也是抽象的,主要是也实现了Subscription接口,所以相对于 Observer接口添加了一些新的方法,也有一些除了这两个接口之外自定义的方法,都自己实现了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Subscriber</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Observer</span>&lt;T&gt;, Subscription</span><br></pre></td></tr></table></figure>
+
+<p>看一下其中的主要方法:</p>
+<p>Observer中的方法:(Observer中的方法在Subscriber中均未实现,需要开发者自己实现,只有这个三个Subscriber没有实现)</p>
+<ul>
+<li>void onCompleted():处理被观察者发送完事件后的逻辑</li>
+<li>void onError(Throwable e):处理出错逻辑</li>
+<li>void onNext(T t):处理事件,有一个事件就执行一次</li>
+</ul>
+<p>Subscription中的方法:</p>
+<ul>
+<li>void unsubscribe():取消订阅,停止接受被观察者发来的消息;</li>
+<li>boolean isUnsubscribed():是否取消了订阅被观察者发的消息;</li>
+</ul>
+<p>Subscriber自身的方法:</p>
+<ul>
+<li><p>void add(Subscription s):添加一个订阅对象</p>
+</li>
+<li><p>void onStart():是一个空实现,开发者可以自己实现该方法,该方法被调用的时机是在被观察者与观察者产生订阅,但是此时被观察者还为发出任何消息</p>
+</li>
+</ul>
+<h2 id="subscribe-subscriber-方法深入"><a href="#subscribe-subscriber-方法深入" class="headerlink" title="subscribe(subscriber)方法深入"></a>subscribe(subscriber)方法深入</h2><p>当创建了 Observable 和 Observer 之后，调用subscribe(subscriber)方法产生订阅关系时，发生了什么呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//给被观察者传入了观察者对象</span></span><br><span class="line"><span class="comment">//这个方法是有返回值的,其类型是Subscription,熟悉吗?这是上面Subscriber对象实现的某一个接口;我们经常拿到这个引用,然后调用其unsubscribe()方法防止内存泄露啊!!!</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> Subscription <span class="title function_">subscribe</span><span class="params">(<span class="keyword">final</span> Observer&lt;? <span class="built_in">super</span> T&gt; observer)</span> &#123;</span><br><span class="line">   ....</span><br><span class="line">    <span class="comment">//调用了下面的方法,将observer类型包装成subscribe类型</span></span><br><span class="line">    <span class="keyword">return</span> subscribe(<span class="keyword">new</span> <span class="title class_">ObserverSubscriber</span>&lt;T&gt;(observer));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> Subscription <span class="title function_">subscribe</span><span class="params">(Subscriber&lt;? <span class="built_in">super</span> T&gt; subscriber)</span> &#123;</span><br><span class="line">    <span class="comment">//往下调用</span></span><br><span class="line">    <span class="keyword">return</span> Observable.subscribe(subscriber, <span class="built_in">this</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//其实最终是调用了这个方法</span></span><br><span class="line"><span class="keyword">static</span> &lt;T&gt; Subscription <span class="title function_">subscribe</span><span class="params">(Subscriber&lt;? <span class="built_in">super</span> T&gt; subscriber, Observable&lt;T&gt; observable)</span> &#123;</span><br><span class="line">   <span class="comment">//注:这个方法是在被观察者中的方法,执行订阅函数,那么此时被观察者就持有了观察者的引用了</span></span><br><span class="line">  <span class="comment">//也就是说现在被观察者可以调用观察者的任何方法了;</span></span><br><span class="line">  <span class="comment">//被观察者持有观察者的引用,这是整个观察者模型最关键的地方;</span></span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">//刚产生订阅关系的时候,这时被观察者还未发送消息,先执行观察者的onStart()方法</span></span><br><span class="line">    subscriber.onStart();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// add a significant depth to already huge call stacks.</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 在这里简单讲，对onSubscribe进行封装，不必紧张。</span></span><br><span class="line">      <span class="comment">//该方法的源码单纯的将 onSubscribe 对象返回了,什么也没做,所以你可以忽略这一步;</span></span><br><span class="line">        OnSubscribe onSubscribe=RxJavaHooks.onObservableStart(observable, observable.onSubscribe);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//这个才是重点！！！</span></span><br><span class="line">        <span class="comment">//这个调用的具体实现方法就是我们创建观察者时</span></span><br><span class="line">        <span class="comment">//写在Observable.create()中的call()呀</span></span><br><span class="line">        <span class="comment">//而调用了那个call(),就意味着事件开始发送了</span></span><br><span class="line">        onSubscribe.call(subscriber);</span><br><span class="line">        </span><br><span class="line">		<span class="comment">//源码中该方法的实现是:单纯的把subscriber返回了;</span></span><br><span class="line">      <span class="comment">//其实在真正使用时我们并不关心订阅函数的返回值,反正该方法中被观察者发送消息,观察者处理消息的逻辑已经执行了;</span></span><br><span class="line">        <span class="keyword">return</span> RxJavaHooks.onObservableReturn(subscriber);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> Subscriptions.unsubscribed();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>代码看到这里，我们就可以对上面三个问题做统一的回答了：</p>
+<ol>
+<li>onSubscribe是Observable内部唯一属性，是连接Observable和subscriber的关键，相当于连接台灯和开关的那根电线,主要是其内部的call()方法,在该方法中发送了消息;</li>
+<li>call(Subscriber&lt;? super String&gt; subscriber)中的subscriber，就是我们自己创建的那个观察者</li>
+<li>只有在订阅的时候，才会发生onSubscribe.call(subscriber)，进而才会开始调用onNext(),onComplete()等。</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1%E4%B9%8B%E7%BE%8E/"># 框架设计之美</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/04/03/RxJava%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3-%E6%93%8D%E4%BD%9C%E7%AC%A6%E5%8E%9F%E7%90%86/">RxJava源码详解-操作符原理</a>
+            
+            
+            <a class="next" rel="next" href="/2017/04/03/RxJava%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3-%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/">RxJava源码详解-基本使用</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

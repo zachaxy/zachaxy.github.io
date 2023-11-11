@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>理解各种字符编码 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">理解各种字符编码</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 15, 2018&nbsp;&nbsp;11:08:47&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">5.6k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">5 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>我们平时使用文本编辑器像 sublime，notepad++ 等，或者使用 IDE 写代码，都会发现其右下角有一个<code>Encoding</code>的标签，其值为<code>Unicode</code>,<code>UTF-8</code>,<code>GBK2312</code>等。那么这些编码有什么区别呢？要说清楚不同编码之间的区别和联系，就要从计算机的发展史来讲起了，本文设计到的关键内容如下：</p>
+<ul>
+<li>ASCII</li>
+<li>GRB2312</li>
+<li>GBK</li>
+<li>ANSI</li>
+<li>Unicode</li>
+<li>UTF-8</li>
+</ul>
+<span id="more"></span>
+
+<h1 id="ASCII"><a href="#ASCII" class="headerlink" title="ASCII"></a>ASCII</h1><p>计算机是美国人发明的，英语单词使用 26 个字母组合就可以表达了，在加上其对应的大写字母，<code>0~9</code>的数组，以及一些运算符号，只需 100 个左右的字符就就可以完全的表达说英语的国家的需求了，所以美国在设计的时候使用了 1 个 byte，也就是 8bit 的后 7 位，最高位恒为 0，这样就可以用<code>0~127</code>的序号与 128 个字符一一对应了，这就是标准的 ASCII(American Standard Code for Information Interchange，美国信息交换标准代码)</p>
+<p>本来使用标准的 ASCII 字符编码就已经能够满足美国人的需求了。但是随着计算机的普及，欧洲的一些发达国家也开始使用计算机了。这就出现了一个问题，像德国，法国等这些国家的文字很多字符是 ASCII 中没有的，而像基本的数字，标点符号等这些通用的，又已经存在于 ASCII 中，也是他们所需要的，这时有人想出了一个方法，就是扩展 ASCII，因为美国人只使用了一个字节的后 7 位，如果现在把最高位也用上，那么可表示的范围就从 0<del>127 扩展为 0</del>255 了，整整多出了 128 个字符。而之前<code>0~127</code>依然保持原来的含义，在<code>128~255</code>中，加入这些国家的所需的字符，就可以满足他们的需求了。但是注意：此时扩展后的 ASCII 已经不再是标准 ASCII 字符集了，而称为扩展 ASCII 字符集。扩展 ASCII 字符集并不是一个国际通用的标准，而是一个各自国家使用的标准，比如：编码为 130 的字符，在法语编码中代表了<code>é</code>，在希伯来语编码中却代表了字母<code>ג</code>等。当然<code>0~127</code>所表示的含义还是标准 ASCII 中定义的。只不过扩展 ASCII 编码成为了当时一些国家自己的标准。在一段时间内，大家都各自做各自的工作，相安无事。</p>
+<h1 id="GB2312"><a href="#GB2312" class="headerlink" title="GB2312"></a>GB2312</h1><p>终于，计算机普及到中国了，我们中国人都是用汉字来交流的，而不是使用拼音，所以我们也需要一套自己的编码机制。但是此时标准的 ASCII 编码完全不能满足我们的需求，因为没有汉字。当然已有的扩展 ASCII 字符集也没有哪一个可以满足我们的需求。如果我们也学西方国家一样，扩展 ASCII 字符集，形成我们自己的字符集可以吗？不行。因为汉字实在太多了，即使扩展 ASCII 编码，也只是多出来 128 个汉字，所以这个方案也走不通。</p>
+<p>注意，我们此时面临的情况是：刚刚引入了 PC，人们需要在电脑上使用中文交流，而不是英文。同时在标准 ASCII 中定义的字符，因为太基础了，所以这些本不属于汉字的符号，我们也要保留下来。带着这个需求，聪明的中国人想出了这样的解决方法：读取文件时一个字符一个字符的判断，如果该字符的值小于 128，那么表明该字符是标准 ASCII 中 的字符，直接显示即可。但是如果读取到第一个大于 128 的字符，那么我们此时不能直接翻译(也翻译不了，此时表明一个汉字的前半个字节)，要再读入下一个字符（注意，汉字的后半个字节也是大于 128 的，这就是 GB2312 定制的标准），将此时读到的这两个字符用来表示一个汉字（前一个表示高位，后一个表示低位，所凑成的数字，我们做一个一对一的映射，使用该数字表示一个汉字），这样我们就能表示大约 6000 个汉字了，这在当时可是极大的解决了人们的需求，因为即便中文汉字多达数万之很多，但是我们平时交流所常用的汉字也就几千个而已。我们把这种编码称为 GB2312。</p>
+<p>注意：在 GB2312 中，如果表示的是一个汉字，使用两个字节表示，而且高字节的范围是：<code>A1~F7</code>,低字节的范围是： <code>A1~FE</code>。</p>
+<h1 id="GBK"><a href="#GBK" class="headerlink" title="GBK"></a>GBK</h1><p>但是，随着计算机在中国的普及，使用计算机的人也越来越多，又出现了一个问题，之前用 GB2312 满足不了人们的使用需求了，因为有些很偏的姓氏并不在 GB2312 编码中，这就尴尬了，如果连自己的名字都显示不了，当然是不行的。所以需要一个包含更多汉字的编码方式。</p>
+<p>此时我们的需求是：包含尽可能更多的汉字，同时还要完全兼容 GB23121(因为 GB2312 已经开始使用了，如果完全抛弃 GB2312，推出一个全新的编码，那么在新电脑上打开别人之前用 GB2312 编码的文件，显示的就是乱码！)</p>
+<p>带着这个需求，我们推出了 GBK 编码：照旧一个字符一个字符的判断，如果当前是一个小于 128 的，还是按照标准 ASCII 来显示。如果此时读到一个大于 128 的字符，那么肯定是一个汉字了，但是此时不再想像 GB2312 那样，要求低字节也大于 128 了，从而扩充了编码范围，同时也实现了上面的需求。</p>
+<p>此时的 GBK，如果表示汉字，同样是两个字节，高字节的范围是： <code>81~FE</code>，低字节的范围是： <code>40~FE</code>。</p>
+<h1 id="ANSI"><a href="#ANSI" class="headerlink" title="ANSI"></a>ANSI</h1><p>随着计算机在整个世界的普及，同时每个国家的文字都有各自的特点，所以各个国家也像中国那样，指定自己国家的编码方式，例如日本也定制了自己的编码方式：Shift_JIS 编码。</p>
+<p>我们使用的计算机都是要安装操作系统的，以微软的 Windows 操作系统为例，相信大家在安装操作系统时，都会遇到选择语言那一栏，例如我们中国人安装时一般选择简体中文，这样我们进入界面后看到的就是中文版本。而 ANSI 编码就是在这时候确定的，具体来说，ANSI 并不是一个具体的编码，而是一种代指，如果你的操作系统选择的语言是简体中文，那么在该系统中，ANSI 所代表的就是 GBK 编码，如果你选择的语言环境是日文，那么 ANSI 代表的就是 Shift_JIS 编码。</p>
+<p>而且 ANSI 这个词值在 Windows 系统中出现，Mac 上并没有这种叫法，如果在 Windows 上一个文件被保存为 ANSI 编码，将该文件发送到 Mac 上，打开该文件时，就要使用该文件真正的编码方式，例如中文的 windows 系统，就使用 GBK 编码在 Mac 上打开该文件。</p>
+<h1 id="Unicode"><a href="#Unicode" class="headerlink" title="Unicode"></a>Unicode</h1><p>像之前所描述的，各个国家都有了能显示自己语言的编码方式，如果一个国家不与外界交流(像朝鲜)，自己关起门来玩，是完全没有问题的。但是在全球化的背景下，一个团队可能分散在世界的各个国家，他们使用的语言是不同的，但又需要交流，如果还按照其所在国家的编码方式相互传送文件，那么对方收到后，就必须知道发送方所发文件的编码格式，只有使用正确的编码打开文件才能看到正确的内容，否则打开一定是乱码。所以此时急切需要一个全球统一的编码方式，该编码要包含这个世界上所有的文字！<br>于是一种包含了世界各地绝大部分文字字符的通用字符集就应运而生了——Unicode 字符集，也叫做万国码。它为每种语言中的每个字符设定了统一并且唯一的二进制编码，以满足跨语言、跨平台进行文本转换、处理的要求。Unicode 的最新版本包括一百多万个字符。</p>
+<p>同时：Unicode 是兼容标准 ASCII 编码的，也就是说 Unicode 编码的<code>0~127</code>对应的字符依然和标准 ASCII 是一样的！</p>
+<p>但是要注意的是：Unicode 只是一个字符集，它只是定义了一百多万个一一对应的映射关系。哪个字符使用哪个编码都是唯一确定的。但是其并没有规定字符所对应的编码的二进制数据如何保存在文件中。eg：汉字<code>张</code>的 Unicode 是十六进制数 0x5F20，转换成二进制数为：101111100100000，有 15 位，但是并没有规定这个汉字是保存为 2 个字节，还是 3 个字节高位补零，这些在 Unicode 中都没有定义。</p>
+<p>如果直接按照 Unicode 对应的最短字节来保存，像上例中 15 位用 2byte 保存，这样可以吗？不可以，因为无法区分两个字符的边界，因为有的字的编码可能需要 20 位，那就需要 3 个字节来保存，从不同的字节处截断并解析，就可能得到不同的显示结果。</p>
+<p>而我们在 Windows 中使用记事本这样的文字编辑器保存时，可选的编码格式中却有 Unicode ，不是说 Unicdoe 没有规定存储形式吗，那为什么还要能保存为 Unicode 的形式，这里说的保存为 Unicode，其保存形式是 <code>UCS-2</code> 编码方式（即直接用两个字节存入字符的 Unicode 码，不足 16bit 的，高位补零）。使用两个字节很明显是无法表示所有国家的语言的，这只是 Unicode 的一个子集，其所表示字符是有限的，万幸的是在中文环境中保存为 Unicode 编码方式(其实是 USC-2 编码)，是可以表示大多数中文的。</p>
+<h1 id="UTF-8"><a href="#UTF-8" class="headerlink" title="UTF-8"></a>UTF-8</h1><p>上述 Unicode 编码已经确定了所有字符的一个映射关系，但是并没有规定其存储形式，因此出现了众多基于 Unicode 编码的存储实现方案，例如 UTF-8,UTF-16,UTF-32 等。其中使用最广房的还是 UTF-8。<br><strong>这里再强调一遍：UTF-8 是 Unicode 的一种实现方式！</strong></p>
+<p>UTF-8 的定义的存储规则不是简单的存储对应的二进制数据，高位补零的形式，而是将二进制数据拆分到不同的字节中，其具体定义为：</p>
+<ol>
+<li>对于单字节的符号，字节的第一位设为 0，后面 7 位为这个符号的 Unicode 码。因此对于英语字母，UTF-8 编码和 ASCII 码是相同的。</li>
+<li>对于 n 字节的符号（n &gt; 1），第一个字节的前 n 位都设为 1，第 n + 1 位设为 0，后面字节的前两位一律设为 10。剩下的没有提及的二进制位，全部为这个符号的 Unicode 码。</li>
+<li>针对上一点中未提及的 bit，将字符的 Unicode 二进制从低位向高位取出二进制数字，每次取 6 位，从后面的字节中填充，直到上面定义的第一个字节中，如果不能刚好填满，则在 1··0 后补 0。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Unicode 符号范围</th>
+<th>UTF-8 编码方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0000 0000-0000 007F</td>
+<td>0xxxxxxx</td>
+</tr>
+<tr>
+<td>0000 0080-0000 07FF</td>
+<td>110xxxxx 10xxxxxx</td>
+</tr>
+<tr>
+<td>0000 0800-0000 FFFF</td>
+<td>11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</td>
+</tr>
+<tr>
+<td>……</td>
+<td>……</td>
+</tr>
+</tbody></table>
+<p>那么在解读 UTF-8 时，也非常简单，如果一个字节的第一位是 0，则这个字节单独就是一个字符；如果第一位是 1，则连续有多少个 1，就表示当前字符占用多少个字节。</p>
+<p>如果上面的描述不是很明白的话，接下来补充一个例子，就能直观的理解 UTF-8 编码的实现了。<br>这里依然以<code>张</code>为例，其 Unicode 对应的 16 进制数为：0x5F20，二进制数位是：101111100100000<br>参考上面的表格，根据其所在的范围，发现其需要 3 个字节来存储，那么其对应格式是<code>1110xxxx 10xxxxxx 10xxxxxx</code>。然后，从<code>张</code>的最后一个二进制位开始，依次从后向前填入格式中的 x，多出的位补 0。这样就得到了，<code>张</code>的 UTF-8 编码是<code>11100101 10111100 10100000</code>，转换成十六进制就是 0x5F20</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文从计算机的普及历史，阐述了各个国家因为要表达自己语言的需求，而各自定义自己的编码。随后又在不同文字国家之间的的交流中出现了互不兼容的情况，最终生成了一个统一个编码 Unicode。并且目前使用最广泛的是 UTF-8 的编码，其实 Unicode 编码的具体实现方案。其实，扩展 ASCII，GB2312，GBK，Unicode。。。不管哪种编码方案，其都是兼容标准 ASCII 编码的，因为其定义的大多数字符都是世界通用的。</p>
+<p>同时，文件存储在硬盘中，我们看到的是真实的文字，但是实际存储在硬盘中的都是 0 和 1，相同的文字用不同的编码解析，所显示的内容完全不一样，当然很多时候是乱码。可是有时候我们用文本编辑器打开一个文件，并没有指定打开的编码方式，很多时候也能正确的显示内容，难道这么凑巧，这些文件都恰好是我们的文本编辑器默认打开文件的格式吗？其实并不是凑巧，而是我们所保存的文件，其真正存储的二进制形式，在前面几个字节都有标识位，来标识这是什么编码，文字编辑器在读取文件时，会先查看其开头的标示字节，根据不同的标示，使用对应的编码格式进行解码。<br>eg:</p>
+<ul>
+<li>UTF-8 文件开头的标示字节为：EF BB BF</li>
+<li>Unicode 文件(其实为 UCS-2)，开头的标示字节为：FF FE，这表明是小端存储，首先明确这是两字节的 Unicode 精简版的存储，按照正常的思维，两个字节就按照顺序存储就可以了，但是小端是对每一个字符所对应的两个字节，是按照相反的顺序来存储的，例如我们用记事本中输入<code>张</code>字，然后保存为 Unicode 编码。那么查看其文件中的二进制，发现其所包含的内容为：FF FE 20 5F，前两个字节就表示是 Unicode 的小端存储，后两个字节表示的是一个汉字，但是要反过来才能表示真正的汉字，因为<code>张</code> 的 Unicode 16 进制为：0x5F20。Unicode 默认是小端存储的。</li>
+<li>既然有小端存储，那么就有对应的大端存储，我们同样可以将文件保存为：<code>Unicode big endian</code>，这样的话，文件开头的标示符就是：FE FF，同样保存一个 <code>张</code> 的汉字，那么文件实际的内容为：FE FF 5F 20</li>
+<li>而对于像 GBK，GB2312 这样的文件，其开头是没有标示头的，直接保存的就是文件的内容。</li>
+</ul>
+<p>在开发中，建议各个团队都使用 UTF-8 编码，这样在发送数据，接收数据时，免去解决乱码的时间，IDE 都设置为 UTF-8 应该开发人员的一个共识吧。同时常用的文本编辑器(sublime，notepad，Atom 等)最好也设置为 UTF-8。</p>
+<p>GBK 编码存在的必要性：前面说了那么多 UTF-8 编码解决了乱码的问题，使得各个国家之间的交流无障碍，那为什么我们看到好多文件还是以 GBK 的形式存在呢？我想是因为 UTF-8 编码体积比较大，占电脑空间比较多，如果面向的使用人群绝大部分都是中国人，用 GBK 编码也可以，主要还是面向非开发人员吧。</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/23374078">Unicode 和 UTF-8 有何区别？</a><br><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html">字符编码笔记：ASCII，Unicode 和 UTF-8</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8E%9F%E6%9D%A5%E6%98%AF%E8%BF%99%E6%A0%B7/"># 计算机原来是这样</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/01/16/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-15-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E5%AE%9E%E7%8E%B0/">手写JVM系列(15)-字符串的实现</a>
+            
+            
+            <a class="next" rel="next" href="/2018/01/12/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-14-%E6%95%B0%E7%BB%84%E7%9A%84%E5%AE%9E%E7%8E%B0/">手写JVM系列(14)-数组的实现</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

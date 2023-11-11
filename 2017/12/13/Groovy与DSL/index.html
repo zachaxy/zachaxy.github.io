@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Groovy与DSL | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Groovy与DSL</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 13, 2017&nbsp;&nbsp;10:33:46&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">2.9k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>DSL：领域特定语言。常用于聚焦指定的领域或问题，这就要求 DSL 具备强大的表现力，同时在使用起来要简单。由于其使用简单的特性，DSL 通常不会像 Java，C++等语言将其应用于一般性的编程任务。</p>
+<p>由语言的难易程度，做一个简单的排序：配置文件 &lt; DSL &lt; 编程语言(eg:Java,C++…)</p>
+<ul>
+<li>配置文件是最简单的一种，常见的有用 xml 来进行配置项目，这需要预先定义好一些规范，只有按照预先定义好的规范书写配置文件，才能得到正确的解析。解析其实也是使用编程语言，通过读文件的形式，按照预先定义的规范，得到相应的配置。</li>
+<li>编程语言是最高级的，其本身可以实现条件判断，循环等这样的逻辑，这是配置文件很难实现的。但是很少有用编程语言来直接表述一项任务的，因为其缺乏像配置文件那样简介的语义。</li>
+<li>DSL 则介于两者之间，即有像配置文件那样清晰的语义，即很强的语义表现力，同时自身也具备一定的逻辑。</li>
+</ul>
+<p>然而 DSL 的应用领域非常有限，没有必要单独为其开发一款语言。就像 xml 中的配置文件是通过高级语言解析而来，我们也可以用高级语言解析 DSL 文件，执行相关的逻辑。但是与 xml 配置文件不同的是，xml 配置文件需要预先定义规范。而 DSL 不需要定义规范，其语法受到现有语言的约束，不用使用任何解析器，而是巧妙的讲语法映射到底层语言中的方法和属性，这样使得用户在使用起来可能意识不到自己正在使用的是一门更广泛的语言的语法。</p>
+<p>DSL 的两个显著特点：</p>
+<ul>
+<li>上下文相关</li>
+<li>流畅的调用</li>
+</ul>
+<p>鉴于 Groovy 动态特性和元编程能力，其很适合作为 DSL 底层的解析语言。接下来探讨在 Groovy 的基础上构建 DSL。</p>
+<p>对于 Groovy 来说，一个伟大的 DSL 产物就是新一代构建工具——Gradle。</p>
+<span id="more"></span>
+
+<h1 id="利用闭包实现上下文相关性"><a href="#利用闭包实现上下文相关性" class="headerlink" title="利用闭包实现上下文相关性"></a>利用闭包实现上下文相关性</h1><p>上下文：就是一个特定的语境，在这个语境下，大家没有必要一直重申这一语境前提，而是所有的逻辑都在这个前提下执行。<br>看如下 Groovy 代码：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">list = [<span class="number">1</span>,<span class="number">2</span>]</span><br><span class="line">list.add(<span class="number">3</span>)</span><br><span class="line">list.add(<span class="number">4</span>)</span><br><span class="line">println list.size()</span><br></pre></td></tr></table></figure>
+<p>在上面的代码中，每条语句都是针对 list 的，但是每条语句都重复声明了 list 的语境，未免有些啰嗦，于是 groovy 提供了 with()方法，用来设置上下文，上面的代码可以修改为：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">list = [<span class="number">1</span>,<span class="number">2</span>]</span><br><span class="line">list.with&#123;</span><br><span class="line">	add(<span class="number">3</span>)</span><br><span class="line">	add(<span class="number">4</span>)</span><br><span class="line">	println size()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里使用了闭包，将闭包中的语句的上下文路由到 list。原因是 with 中的闭包将其 delegate 设置到了调用 with 的对象上。</p>
+<p>同时注意到这里 with 的原型是 <code>with(closure)</code>，当一个方法的最后一个参数是闭包，同时我们传入的是一个匿名闭包时，那么其调用的方式就是上述 with 的形式，这不是方法的定义，而是方法的调用，只不过后面的闭包是作为方法的最后一个参数，单独拿出来了。单独拿出来比写在括号内，语法更加简洁。因为花括号后面在跟一个右括号总感觉破坏了代码的优美性。</p>
+<p>受到 Groovy 所提供的 with 的启发，我们也可以仿照 with 的实现方式，提供类似的上下文执行环境，实现我们的 DSL。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> addList(closure)&#123;</span><br><span class="line">	list = []</span><br><span class="line">	closure.delegate = list</span><br><span class="line">	closure()</span><br><span class="line">	list</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用 addList 提供的上下文特性，想 list 中添加元素</span></span><br><span class="line">list = addList()&#123;</span><br><span class="line">    add(<span class="number">1</span>)</span><br><span class="line">    add(<span class="number">2</span>)</span><br><span class="line">    add(<span class="number">3</span>)</span><br><span class="line">    size()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">println list</span><br></pre></td></tr></table></figure>
+
+<p>通过将闭包的代理进行配置，自然就提供了一个统一的上下文环境，这样我们在闭包中调用的任何方法，都是基于之前设置的代理的，这一方法在 gradle 中是很常见的。</p>
+<h1 id="Groovy-针对流畅性的先天优势"><a href="#Groovy-针对流畅性的先天优势" class="headerlink" title="Groovy 针对流畅性的先天优势"></a>Groovy 针对流畅性的先天优势</h1><p>流畅性可以提高代码的可读性，使代码自然流动。</p>
+<p>Groovy 所具备的天然的优势有：</p>
+<ul>
+<li>动态类型和可选类型</li>
+<li>动态加载，操作和执行脚本的灵活性</li>
+<li>分类和 ExpandoMetaClass 可以扩展已有类的功能</li>
+<li>闭包为执行提供很好的上下文</li>
+<li>操作符的重载可以使我们自由的定义操作符</li>
+</ul>
+<h2 id="灵活的方法调用语法"><a href="#灵活的方法调用语法" class="headerlink" title="灵活的方法调用语法"></a>灵活的方法调用语法</h2><p>如果方法是<strong>有返回值</strong>的，那么在调用时可以不使用点符号(.) 而是用空格将调用者和方法分开，就能在返回的这个实例上进行连续的调用</p>
+<h2 id="灵活的括号语法"><a href="#灵活的括号语法" class="headerlink" title="灵活的括号语法"></a>灵活的括号语法</h2><p>当调用的方法需要参数时，Groovy 不要求使用括号，若有多个参数，那么参数之间依然使用逗号分隔；如果不需要参数，那么方法的调用必须显示的使用括号。</p>
+<h2 id="让无参数的方法调用也不需要括号"><a href="#让无参数的方法调用也不需要括号" class="headerlink" title="让无参数的方法调用也不需要括号"></a>让无参数的方法调用也不需要括号</h2><p>为了和有参数的方法调用时不使用括号的语法，统一风格，我们设法让无参数的方法调用也不需要括号。当然这个功能是 Groovy 自身不支持的。直接这样调用，Groovy 会认为这是在访问一个属性，那么我们结合 Groovy 中对属性的访问就是对 getXXX 的访问，将无参数的方法名改成 getXXX 的形式，即可实现“调用无参数的方法不需要括号”的语法！</p>
+<p>结合刚刚提到的三点，我们设计一个 DSL 计算器：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">value = <span class="number">0</span></span><br><span class="line"><span class="keyword">def</span> getClear() &#123; value = <span class="number">0</span>&#125;</span><br><span class="line"><span class="keyword">def</span> add(number) &#123; value += number &#125;</span><br><span class="line"><span class="keyword">def</span> getTotal() &#123; println <span class="string">&quot;Total is #value&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//接下来开始使用这一简介的 DSL</span></span><br><span class="line">clear</span><br><span class="line">add <span class="number">2</span></span><br><span class="line">add <span class="number">5</span></span><br><span class="line">total</span><br></pre></td></tr></table></figure>
+
+<p>由上面的 groovy 创建的简易加法器的 DSL，可以感受到其强大的流畅性。我们在调用时，甚至都可能意识不到这是代码，而是一些配置文件或者普通的文字描述，但这确实是 Groovy 代码。</p>
+<p>接下来提供一组这样的数据，进一步解读 DSL。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jump fast,forward turn right move ahead</span><br></pre></td></tr></table></figure>
+
+<p>上面的依旧是 Groovy 代码，首先是 jump 方法的调用，其接受两个参数 fast 和 forward，该方法的返回值类型上有一个 turn 方法，其接受一个 right 参数，同时方法的返回值类型上有一个 move 方法，其接受一个 ahead 参数。这就是 DSL 强大的表现力。其底层就可以用之前讲到的 Groovy 特性提供技术支持。</p>
+<h2 id="MOP-与-DSL"><a href="#MOP-与-DSL" class="headerlink" title="MOP 与 DSL"></a>MOP 与 DSL</h2><p>接下来使用 MOP 中的方法合成</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">detailInfo = [:]</span><br><span class="line"><span class="keyword">def</span> methodMissing(String name,args)&#123;</span><br><span class="line">    detailInfo[name] = args</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> introduce(closure)&#123;</span><br><span class="line">    closure.delegate = <span class="variable language_">this</span></span><br><span class="line">    closure()</span><br><span class="line">    println <span class="string">&quot;hello,everyone&quot;</span></span><br><span class="line">    detailInfo.each&#123;</span><br><span class="line">        key,value -&gt;</span><br><span class="line">            println <span class="string">&quot;My $key is $value&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">introduce&#123;</span><br><span class="line">    name <span class="string">&quot;zx&quot;</span></span><br><span class="line">    age <span class="number">18</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，利用 Groovy 的 MOP 能力，设计与执行 DSL 将变得非常容易。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Groovy/"># Groovy</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/01/03/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-11-%E7%BA%BF%E7%A8%8B%E5%85%B1%E4%BA%AB%E7%9A%84%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE/">手写JVM系列(11)-线程共享的运行时数据</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/12/MOP%E6%80%BB%E7%BB%93/">MOP总结</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Volley源码解析-缓存 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Volley源码解析-缓存</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 23, 2017&nbsp;&nbsp;14:48:12&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">7.3k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">7 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="Cache-接口"><a href="#Cache-接口" class="headerlink" title="Cache 接口"></a>Cache 接口</h1><p>我们再来回顾一下一个 Request 被添加到 RequestQueue 后，首先是被添加到 mCacheQueue 中，而不是添加到 mNetworkQueue，因为这个请求可能之前执行过，先看一下缓存中有没有，如果没有或者过期，那么再将该请求从 mCacheQueue 中移除，并添加到 mNetworkQueue。</p>
+<p>那么 Cache 中保存了哪些信息呢？</p>
+<p>代码过多这里就不贴出来了，首先作为缓存，肯定要指定一个缓存文件夹以及其保存的位置，接着每个缓存最好是以键值对的形式存在，使用 HashMap 结构来保存，这样才能快速的通过 key 查找 value，key 对应的是一个 request 的 url，value 对应的是 request 得到的 response；</p>
+<p>接下来，response 中需要保存哪些数据呢？首先肯定要保存响应体中的数据，使用字节数组保存。同时还应该保存这个请求的 Etag，有效时长等和 HTTP 缓存相关的字段，以及其它的响应头信息，这些信息被封装在一个 Entry 的类中，该类是 Cache 接口中的静态内部类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Entry</span> &#123;</span><br><span class="line">    <span class="comment">/** The data returned from cache. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">byte</span>[] data;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** ETag for cache coherency. */</span></span><br><span class="line">    <span class="keyword">public</span> String etag;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Date of this response as reported by the server. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> serverDate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** TTL for this record. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> ttl;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Soft TTL for this record. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> softTtl;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Immutable response headers as received from server; must be non-null. */</span></span><br><span class="line">    <span class="keyword">public</span> Map&lt;String, String&gt; responseHeaders = Collections.emptyMap();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** True if the entry is expired. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isExpired</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.ttl &lt; System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** True if a refresh is needed from the original data source. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">refreshNeeded</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.softTtl &lt; System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="DiskBasedCache"><a href="#DiskBasedCache" class="headerlink" title="DiskBasedCache"></a>DiskBasedCache</h2><p>前面讲了 Cache 的整体实现思路，接下来设计到具体如何读写缓存，这就用到了 Cache 的实现类 DiskBasedCache</p>
+<p>这里只列出方法名和内部实现流程，就不一行一行的写了，因为太多了！！！</p>
+<ul>
+<li><p><code>private final Map&lt;String, CacheHeader&gt; mEntries = new LinkedHashMap&lt;String, CacheHeader&gt;(16, .75f, true)</code>是整个缓存的 map</p>
+</li>
+<li><p><code>CacheHeader</code>是map 中保存的 value，DiskBasedCache 中的静态内部类，是缓存文件中内容的一个概述，不包含 Cache 中 Entry 类中的 data 数据，因为这是要读取到内存中的，如果带上响应体数据，那么会占用很大一部分内存。</p>
+<p> Cache.Entry 和 DiskBasedCache.CacheHeader 之间的关系：<strong>Entry &#x3D; CacheHeader + byte[] data</strong></p>
+<ul>
+<li><p><code>writeHeader(OutputStream os)</code>:直接看其是如何将 CacheHeader 写到到文件中的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">writeHeader</span><span class="params">(OutputStream os)</span> &#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		writeInt(os, CACHE_MAGIC);</span><br><span class="line">		writeString(os, key);</span><br><span class="line">		writeString(os, etag == <span class="literal">null</span> ? <span class="string">&quot;&quot;</span> : etag);</span><br><span class="line">		writeLong(os, serverDate);</span><br><span class="line">		writeLong(os, ttl);</span><br><span class="line">		writeLong(os, softTtl);</span><br><span class="line">		writeStringStringMap(responseHeaders, os);</span><br><span class="line">		os.flush();</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">	&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">		VolleyLog.d(<span class="string">&quot;%s&quot;</span>, e.toString());</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>readHeader(InputStream is)</code>和上面的 write 方法是相反的，怎么写的怎么读</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> CacheHeader <span class="title function_">readHeader</span><span class="params">(InputStream is)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">	<span class="type">CacheHeader</span> <span class="variable">entry</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CacheHeader</span>();</span><br><span class="line">	<span class="type">int</span> <span class="variable">magic</span> <span class="operator">=</span> readInt(is);</span><br><span class="line">	<span class="keyword">if</span> (magic != CACHE_MAGIC) &#123;</span><br><span class="line">		<span class="comment">// don&#x27;t bother deleting, it&#x27;ll get pruned eventually</span></span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IOException</span>();</span><br><span class="line">	&#125;</span><br><span class="line">	entry.key = readString(is);</span><br><span class="line">	entry.etag = readString(is);</span><br><span class="line">	<span class="keyword">if</span> (entry.etag.equals(<span class="string">&quot;&quot;</span>)) &#123;</span><br><span class="line">		entry.etag = <span class="literal">null</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	entry.serverDate = readLong(is);</span><br><span class="line">	entry.ttl = readLong(is);</span><br><span class="line">	entry.softTtl = readLong(is);</span><br><span class="line">	entry.responseHeaders = readStringStringMap(is);</span><br><span class="line">	<span class="keyword">return</span> entry;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里有一个很有意思的<strong>写缓存文件的技巧</strong>，因为这里涉及到了写 int，long，String，那么如何去写呢？ 方法是：如果你写的是 int，那么就用 4 字节来表示，如果是 long，那么就用 8 字节来表示，这样在读的时候，只要是读 int，那么直接向后读 4 个字节，然后拼装成 int 即可；至于字符串，统一将其转换成 UTF8 格式的字节数据，并得到数组长度，首先写入 long 类型的长度，然后再将字节数组写入，在读取的时候先读取 8 字节的 long 值，得到后续字节数组的长度，然后在读取后面相应长度的字节数组，转换为字符串即可。</p>
+</li>
+</ul>
+</li>
+<li><p><code>public synchronized void initialize()</code>初始化上面的 map，遍历缓存文件夹，读取每个缓存文件，然后不断的调用 CacheHeader 的 readHeader 方法读取 CacheHeader，并添加到 map 中</p>
+</li>
+<li><p><code>public synchronized void put(String key, Entry entry)</code>首先调用 CacheHeader 的 writeHeader 方法将数据写入缓存文件，在将 data 数据额外写入缓存文件；同时将该 entry 对应的 entryHeader 添加到 map 中；</p>
+</li>
+<li><p><code>public synchronized Entry get(String key)</code>先从 map 中通过 key 得到 CacheHeader，在根据 key 得到缓存文件名（将 key 的字符串均分为前后两部分，前半部分的 hashCode 和后半部分的 hashCode 拼接起来），然后读取缓存文件中的 data 数据，和 CacheHeader 组合起来得到 Entry。</p>
+</li>
+<li><p><code> public synchronized void remove(String key)</code>先从 map 中删除掉 key 对应的数据，然后删除缓存文件中对应的文件</p>
+</li>
+<li><p><code>public synchronized void clear()</code>：清空缓存，可以在应用的设置中提供这一项。有一个对应的 ClearCacheRequest，专门负责清空缓存。</p>
+</li>
+</ul>
+<h1 id="CacheDispatcher-线程"><a href="#CacheDispatcher-线程" class="headerlink" title="CacheDispatcher 线程"></a>CacheDispatcher 线程</h1><h2 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h2><p>CacheDispatcher 线程是会不断的执行读缓存的操作，如果能读到缓存，那么将数据用 ResponseDelivery 发送到 UI 线程，否则将 request 提交给 NetworkDispatcher 来处理。</p>
+<p>首先看其构造方法，传入了在 RequestQueue 中创建的 mCacheQueue, mNetworkQueue, mCache, mDelivery 四个变量。注意这个 mCache 是在 RequestQueue 的构造方法中传入的第一个参数 Cache。也就是说 CacheDispatcher 内部只有这几个成员变量。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">CacheDispatcher</span><span class="params">(</span></span><br><span class="line"><span class="params">        BlockingQueue&lt;Request&gt; cacheQueue, BlockingQueue&lt;Request&gt; networkQueue,</span></span><br><span class="line"><span class="params">        Cache cache, ResponseDelivery delivery)</span> &#123;</span><br><span class="line">    mCacheQueue = cacheQueue;</span><br><span class="line">    mNetworkQueue = networkQueue;</span><br><span class="line">    mCache = cache;</span><br><span class="line">    mDelivery = delivery;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="run-方法"><a href="#run-方法" class="headerlink" title="run 方法"></a>run 方法</h2><p>接下来看一下其 run 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (DEBUG) VolleyLog.v(<span class="string">&quot;start new dispatcher&quot;</span>);</span><br><span class="line">    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Make a blocking call to initialize the cache.</span></span><br><span class="line">    mCache.initialize();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// Get a request from the cache triage queue, blocking until</span></span><br><span class="line">            <span class="comment">// at least one is available.</span></span><br><span class="line">            <span class="keyword">final</span> <span class="type">Request</span> <span class="variable">request</span> <span class="operator">=</span> mCacheQueue.take();</span><br><span class="line">            request.addMarker(<span class="string">&quot;cache-queue-take&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// If the request has been canceled, don&#x27;t bother dispatching it.</span></span><br><span class="line">            <span class="keyword">if</span> (request.isCanceled()) &#123;</span><br><span class="line">                request.finish(<span class="string">&quot;cache-discard-canceled&quot;</span>);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Attempt to retrieve this item from cache.</span></span><br><span class="line">            Cache.<span class="type">Entry</span> <span class="variable">entry</span> <span class="operator">=</span> mCache.get(request.getCacheKey());</span><br><span class="line">            <span class="keyword">if</span> (entry == <span class="literal">null</span>) &#123;</span><br><span class="line">                request.addMarker(<span class="string">&quot;cache-miss&quot;</span>);</span><br><span class="line">                <span class="comment">// Cache miss; send off to the network dispatcher.</span></span><br><span class="line">                mNetworkQueue.put(request);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// If it is completely expired, just send it to the network.</span></span><br><span class="line">            <span class="keyword">if</span> (entry.isExpired()) &#123;</span><br><span class="line">                request.addMarker(<span class="string">&quot;cache-hit-expired&quot;</span>);</span><br><span class="line">                request.setCacheEntry(entry);</span><br><span class="line">                mNetworkQueue.put(request);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// We have a cache hit; parse its data for delivery back to the request.</span></span><br><span class="line">            request.addMarker(<span class="string">&quot;cache-hit&quot;</span>);</span><br><span class="line">            Response&lt;?&gt; response = request.parseNetworkResponse(</span><br><span class="line">                    <span class="keyword">new</span> <span class="title class_">NetworkResponse</span>(entry.data, entry.responseHeaders));</span><br><span class="line">            request.addMarker(<span class="string">&quot;cache-hit-parsed&quot;</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!entry.refreshNeeded()) &#123;</span><br><span class="line">                <span class="comment">// Completely unexpired cache hit. Just deliver the response.</span></span><br><span class="line">                mDelivery.postResponse(request, response);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// Soft-expired cache hit. We can deliver the cached response,</span></span><br><span class="line">                <span class="comment">// but we need to also send the request to the network for</span></span><br><span class="line">                <span class="comment">// refreshing.</span></span><br><span class="line">                request.addMarker(<span class="string">&quot;cache-hit-refresh-needed&quot;</span>);</span><br><span class="line">                request.setCacheEntry(entry);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Mark the response as intermediate.</span></span><br><span class="line">                response.intermediate = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Post the intermediate response back to the user and have</span></span><br><span class="line">                <span class="comment">// the delivery then forward the request along to the network.</span></span><br><span class="line">                mDelivery.postResponse(request, response, <span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            mNetworkQueue.put(request);</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            <span class="comment">// Not much we can do about this.</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            <span class="comment">// We may have been interrupted because it was time to quit.</span></span><br><span class="line">            <span class="keyword">if</span> (mQuit) &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第 4 行，设置当前线程的优先级为：Process.THREAD_PRIORITY_BACKGROUND，标准后台线程，相对来说优先级还是比较低的。</p>
+<p>第 7 行，因为这里是 Cache，需要先进行一些初始化，这里调用了 Cache 的 initialize 方法，内部逻辑在上面已经说过了。</p>
+<p>第 9 行，死循环，表明该线程不一直不断的从 mCacheQueue 中取 request</p>
+<p>第 13 行，从 BlockingQueue 中取出一个 request，如果没有的话，就会被阻塞，也不会占用系统资源，赞。</p>
+<p>第 17 行，如果该请求在执行之前，又被其他线程调用了 cancle 方法，那么就取消该 request 的执行。</p>
+<p>第 23 行，从缓存中查看是否有该 request 的缓存，如果不存在，表明是一个新的请求，那么直接将该请求添加到 mNetworkQueue 中，下面的逻辑不用执行，重新从 BlockingQueue 中取 request</p>
+<p>第 32 行，能走到这一行，表明缓存不为空，判断该缓存是否已经过期，这里判断的标准是：<code>this.ttl &lt; System.currentTimeMillis();</code>现在 HTTP1.1 的版本里面保存的都是存活时间，而不是绝对时间，但是考虑到我们的客户端可能会退出，所以无法用时间段来统计，这里还是转换成相对于客户端的绝对时间，再和当前时间进行比较。如果缓存过期了，那么需要将该 request 添加到 mNetworkQueue 中重新进行网络请求，但是在此之前，还要把缓存中的一些信息(“If-None-Match”&lt;&#x3D;&gt;”etag”，”If-Modified-Since”&lt;&#x3D;&gt;”serverDate”)附加到 request 中</p>
+<p>第 41 行，能走到这一步，说明我们的缓存命中并且是可用的，此时需要把缓存中的数据读取出来，包装成 Response</p>
+<p><code>Response&lt;?&gt; response = request.parseNetworkResponse(new NetworkResponse(entry.data, entry.responseHeaders));</code></p>
+<p>第 45 行，虽然现在缓存已被转换为 Response，但是还要进行一步新鲜度验证，但是这一步新鲜度验证时多余的，因为 Entry 中的 softTtl 和 ttl 的值是相同的，而前面已经验证了是否过期，所以这一步是多余的，直接使用 ResponseDelivery 分发响应，关于响应的分发，请参阅<a href="">Volley 源码解析-线程切换</a></p>
+<p>如果不是新鲜的，那么首先将该 response 分发到 UI 线程显示，同时立即执行网络请求，获取最新的响应。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1%E4%B9%8B%E7%BE%8E/"># 框架设计之美</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/24/%E6%B5%B7%E9%87%8F%E6%95%B0%E6%8D%AE%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF/">海量数据场景下的解决思路</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/22/Volley%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-%E8%AF%B7%E6%B1%82%E9%98%9F%E5%88%97/">Volley源码解析-请求队列</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

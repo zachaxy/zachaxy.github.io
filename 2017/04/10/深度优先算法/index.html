@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>深度优先算法 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">深度优先算法</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 10, 2017&nbsp;&nbsp;17:08:48&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.3k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>DFS（Depth First Search）深度优先搜索，为每个顶点设立一个“访问标志”。首先将图中每个顶点的访问标志设为 FALSE, 之后搜索图中每个顶点，如果未被访问，则以该顶点为起始点，进行遍历。</p>
+<p>若当前访问的顶点的邻接顶点有未被访问的，则任选一个访问之。反之，退回到最近访问过的顶点；直到与起始顶点相通的全部顶点都访问完毕；</p>
+</blockquote>
+<p>在使用<code>DFS</code>时,可能有两种情景,一种是使用<code>邻接矩阵</code>,一种是使用<code>邻接链表</code>;</p>
+<p>使用<code>邻接矩阵</code>的表示形式,其实只需要一半的空间就可以了,因为<code>edges[i][j]</code>和<code>edges[j][i]</code>的值是相同的(这里只考虑无向图)</p>
+<p>情景一:</p>
+<blockquote>
+<p>给出了一个图,图中有九个顶点,分别为A~I,那么用深度遍历的方法,得到A到I的一条路径;</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">   <span class="keyword">private</span> <span class="type">int</span> <span class="variable">number</span> <span class="operator">=</span> <span class="number">9</span>;  <span class="comment">//其实是个9*9的数组;</span></span><br><span class="line">   <span class="keyword">private</span> <span class="type">boolean</span>[] flag;</span><br><span class="line">   <span class="keyword">private</span> String[] vertexs = &#123;<span class="string">&quot;A&quot;</span>, <span class="string">&quot;B&quot;</span>, <span class="string">&quot;C&quot;</span>, <span class="string">&quot;D&quot;</span>, <span class="string">&quot;E&quot;</span>, <span class="string">&quot;F&quot;</span>, <span class="string">&quot;G&quot;</span>, <span class="string">&quot;H&quot;</span>, <span class="string">&quot;I&quot;</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//联通图,如果为1,表示二者相连,为0表示不相连;</span></span><br><span class="line">   <span class="keyword">private</span> <span class="type">int</span>[][] edges = &#123;</span><br><span class="line">           &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>&#125;,</span><br><span class="line">           &#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>&#125;,</span><br><span class="line">           &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>&#125;,</span><br><span class="line">           &#123;<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>&#125;,</span><br><span class="line">           &#123;<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>&#125;,</span><br><span class="line">           &#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>&#125;,</span><br><span class="line">           &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>&#125;,</span><br><span class="line">           &#123;<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>&#125;,</span><br><span class="line">           &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>&#125;</span><br><span class="line">   &#125;;</span><br><span class="line"></span><br><span class="line">   <span class="comment">//DFS深度优先递归</span></span><br><span class="line">   <span class="keyword">void</span> <span class="title function_">DFSTraverse</span><span class="params">()</span> &#123;</span><br><span class="line">       flag = <span class="keyword">new</span> <span class="title class_">boolean</span>[number];  <span class="comment">//标记数组,用来标记是否有</span></span><br><span class="line">       <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; number; i++) &#123;</span><br><span class="line">           <span class="keyword">if</span> (flag[i] == <span class="literal">false</span>) &#123;<span class="comment">// 当前顶点没有被访问</span></span><br><span class="line">               DFS(i);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">       flag[i] = <span class="literal">true</span>;<span class="comment">// 第i个顶点被访问</span></span><br><span class="line">       System.out.print(vertexs[i] + <span class="string">&quot; &quot;</span>);</span><br><span class="line">       <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; number; j++) &#123;</span><br><span class="line">           <span class="keyword">if</span> (flag[j] == <span class="literal">false</span> &amp;&amp; edges[i][j] == <span class="number">1</span>) &#123;</span><br><span class="line">               DFS(j);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>结果:</p>
+<p>A B C D E F G H I</p>
+</blockquote>
+<p>分析:通过连通图矩阵分析可知,顺序是:A-&gt;B-&gt;C-&gt;D-&gt;E-&gt;F-&gt;G-&gt;H 到了H之后走不下去了,回溯,G,F,E,D,到D的时候才有了直指I的路径;</p>
+<p>情景二:走迷宫问题;</p>
+<blockquote>
+<p>给出一个二维数组,用来表示一个迷宫,如果<code>dp[i][j]=1</code>则表示前是一面墙,如果是0,则表示是一条路,那么求从左上角到右下角的最短路径;</p>
+</blockquote>
+<p>解决思路依然是使用深度优先遍历,但是要注意的是,现在的节点数不是在一维的,而是二维的,</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span>[][] arr = &#123;</span><br><span class="line">        &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>&#125;,</span><br><span class="line">        &#123;<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>&#125;,</span><br><span class="line">        &#123;<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>&#125;,</span><br><span class="line">        &#123;<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>&#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="type">boolean</span>[][] dp = <span class="keyword">new</span> <span class="title class_">boolean</span>[arr.length][arr[<span class="number">0</span>].length]; <span class="comment">//默认全是false;如果访问过标记为true;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="type">int</span> <span class="variable">min</span> <span class="operator">=</span> Integer.MAX_VALUE;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> ArrayList&lt;Pair&gt; path = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;Pair&gt;();</span><br><span class="line"><span class="keyword">static</span> ArrayList&lt;Pair&gt; path0 = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;Pair&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">//如果你想要找路径的的长度,并且把路径打印出来,那么就使用深度优先;</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">dfs</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> j, <span class="type">int</span> count)</span> &#123;</span><br><span class="line">    path.add(<span class="keyword">new</span> <span class="title class_">Pair</span>(i, j));</span><br><span class="line">    <span class="comment">//深度优先</span></span><br><span class="line">    dp[i][j] = <span class="literal">true</span>;<span class="comment">//先将自己设置为true;然后再找四周的;</span></span><br><span class="line">    count++;</span><br><span class="line">    <span class="keyword">if</span> (i == arr.length - <span class="number">1</span> &amp;&amp; j == arr[<span class="number">0</span>].length - <span class="number">1</span>) &#123;</span><br><span class="line">        min = Math.min(min, count);</span><br><span class="line">        path0.clear();</span><br><span class="line">        path0.addAll(path);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//上</span></span><br><span class="line">    <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; !dp[i - <span class="number">1</span>][j] &amp;&amp; arr[i - <span class="number">1</span>][j] == <span class="number">0</span>) &#123;</span><br><span class="line">        dfs(i - <span class="number">1</span>, j, count);</span><br><span class="line">        path.remove(path.size() - <span class="number">1</span>);</span><br><span class="line">        dp[i - <span class="number">1</span>][j] = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//下</span></span><br><span class="line">    <span class="keyword">if</span> (i + <span class="number">1</span> &lt; arr.length &amp;&amp; !dp[i + <span class="number">1</span>][j] &amp;&amp; arr[i + <span class="number">1</span>][j] == <span class="number">0</span>) &#123;</span><br><span class="line">        dfs(i + <span class="number">1</span>, j, count);</span><br><span class="line">        path.remove(path.size() - <span class="number">1</span>);</span><br><span class="line">        dp[i + <span class="number">1</span>][j] = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//左</span></span><br><span class="line">    <span class="keyword">if</span> (j &gt; <span class="number">0</span> &amp;&amp; !dp[i][j - <span class="number">1</span>] &amp;&amp; arr[i][j - <span class="number">1</span>] == <span class="number">0</span>) &#123;</span><br><span class="line">        dfs(i, j - <span class="number">1</span>, count);</span><br><span class="line">        path.remove(path.size() - <span class="number">1</span>);</span><br><span class="line">        dp[i][j - <span class="number">1</span>] = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//右</span></span><br><span class="line">    <span class="keyword">if</span> (j + <span class="number">1</span> &lt; arr[<span class="number">0</span>].length &amp;&amp; !dp[i][j + <span class="number">1</span>] &amp;&amp; arr[i][j + <span class="number">1</span>] == <span class="number">0</span>) &#123;</span><br><span class="line">        dfs(i, j + <span class="number">1</span>, count);</span><br><span class="line">        path.remove(path.size() - <span class="number">1</span>);</span><br><span class="line">        dp[i][j + <span class="number">1</span>] = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Pair</span> &#123;</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line">    <span class="type">int</span> j;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Pair</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> j)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.i = i;</span><br><span class="line">        <span class="built_in">this</span>.j = j;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> i + <span class="string">&quot;&lt;&gt;&quot;</span> + j;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    dfs(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    System.out.println(min);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>要注意的是:这里使用了大量的static的全局变量path0,还有一个临时的全局变量path,临时的path是每次走时的路径,如果走到了终点,就和之前的最短路径比较,如果本次路径更短,那么就将path0设置为本次路径;</p>
+<p>还有在遍历了一个位置之后,要把其标志位还原为false,这是因为你按照某个方向进行深度遍历下去,发现此路不通,或者不是最优解,那么你就需要按照原路回退,回退的意思就是把之前访问的flag设置为flase;同时临时路径path也要将本次访问的节点删除;</p>
+</blockquote>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%AE%97%E6%B3%95/"># 算法</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/04/10/%E5%B9%BF%E5%BA%A6%E4%BC%98%E5%85%88%E7%AE%97%E6%B3%95/">广度优先算法</a>
+            
+            
+            <a class="next" rel="next" href="/2017/04/03/RxJava%E6%BA%90%E7%A0%81%E8%AF%A6%E8%A7%A3-%E7%BA%BF%E7%A8%8B%E5%88%87%E6%8D%A2%E5%8E%9F%E7%90%86/">RxJava源码详解-线程切换原理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

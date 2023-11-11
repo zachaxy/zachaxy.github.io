@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Groovy 相对 Java 的一些新玩意 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Groovy 相对 Java 的一些新玩意</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 5, 2017&nbsp;&nbsp;20:03:55&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="Groovy-是轻量级的-Java"><a href="#Groovy-是轻量级的-Java" class="headerlink" title="Groovy 是轻量级的 Java"></a>Groovy 是轻量级的 Java</h1><ul>
+<li>方法，闭包中 return 语句是可选的，如果没有 return，则默认返回方法、闭包的最后一条语句的值</li>
+<li>方法和类默认的修饰符都是 public</li>
+<li>Groovy 不强迫我们捕获自己不关系的异常，这些异常会被传递给方法的调用者</li>
+<li>静态方法中也可以使用 this 来引用当前的静态类 Class 对象。</li>
+<li>提供安全导航操作符 <code>?.</code> 来避免对象非空的判断<span id="more"></span></li>
+</ul>
+<h1 id="GDK-一瞥"><a href="#GDK-一瞥" class="headerlink" title="GDK 一瞥"></a>GDK 一瞥</h1><p>Java 平台的核心优势是其 Java 开发包(JDK)。Groovy 并没有抛开 Java 单独做一套新的类和库，而是在以后的 JDK 的各种类中添加便捷的方法，这些拓展成为<a target="_blank" rel="noopener" href="http://docs.groovy-lang.org/latest/html/groovy-jdk/overview-summary.html">GDK</a>。<br>其中有一些常用的类，均有不错的扩充</p>
+<ul>
+<li>String</li>
+<li>Integer</li>
+<li>File</li>
+<li>List</li>
+<li>Map</li>
+<li>……</li>
+</ul>
+<h1 id="实现循环的集中方式"><a href="#实现循环的集中方式" class="headerlink" title="实现循环的集中方式"></a>实现循环的集中方式</h1><p>以下均以实现打印 0~9 的循环为例</p>
+<ol>
+<li>for(i in 0..9) { println i }</li>
+<li>0.upto(9) { println “$it” }</li>
+<li>10.times { println “$it” }</li>
+</ol>
+<h1 id="更为简洁的-JavaBean"><a href="#更为简洁的-JavaBean" class="headerlink" title="更为简洁的 JavaBean"></a>更为简洁的 JavaBean</h1><p>在 groovy 的 bean 对象中，定义的属性当然可以用 <code>foo.bar</code>的方式来访问，但是这样的访问方式并不是直接访问的 bar 这个变量，而是访问的 getBar&#x2F;setBar 方法。<br>只要在类中声明了一个属性，groovy 就会默默地为我们生成对应的 get 和 set 方法，如果该属性是 final 类型，那么只有 get 方法。我们当然也可以自己手动去实现对应的 get&#x2F;set 方法来实现更丰富的内容。</p>
+<p>在<code>foo.bar</code>访问属性的情况下，将 bar 的修饰符改为 private，其实是没有什么意义的，因为这里并不直接访问该变量，因此要对 bar 变量进行一定的保护，手动覆盖对应 getBar&#x2F;setBar 方法，修改该方法的权限，已达到保护属性的目的。</p>
+<p>我们甚至可以不定义属性。假如类中包含一个 getBar()的方法，那么我们在调用该方法时可以使用 <code>foo.bar</code>，但是注意，仅仅实现了 get 方法，只能读取，不能用该方式赋值，如果要进行形如 <code>foo.bar = xxx</code>形式的赋值，那么类中必须要对应一个 setBar() 方法。</p>
+<h1 id="使用具名参数对-JavaBean-初始化"><a href="#使用具名参数对-JavaBean-初始化" class="headerlink" title="使用具名参数对 JavaBean 初始化"></a>使用具名参数对 JavaBean 初始化</h1><p>如果一个 Bean 对象中含有多个属性，对其属性不同的赋值可能需要提供多种不同参数组合的构造方法，而在 groovy 中却可以便捷的实现。<br>前提：该类必须有一个无参构造器(没有定义构造器，当然会自动生成一个无参构造器)。如果定义了一个有参构造器，那么编译器便不会提供无参构造器了，需要我们手动提供一个无参构造器。<br>使用：new Foo(property1:value1,property2:value2,property3:value3);<br>只需以键值对的方式传入你想赋值的属性的名称和值即可。该语句会在执行完无参构造器之后，对传入的属性依次执行 set 操作。</p>
+<h1 id="灵活的方法参数规则"><a href="#灵活的方法参数规则" class="headerlink" title="灵活的方法参数规则"></a>灵活的方法参数规则</h1><h2 id="规则一：方法的第一个形参默认可能是-map"><a href="#规则一：方法的第一个形参默认可能是-map" class="headerlink" title="规则一：方法的第一个形参默认可能是 map"></a>规则一：方法的第一个形参默认可能是 map</h2><p>对于以下的方法定义：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> bar(a,b,c)&#123;</span><br><span class="line">	println <span class="string">&quot;received $a $b $c&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为 groovy 的动态类型的语言，在定义方法时可以不指定形参类型，而在使用时动态推断。该方法会调用该对象的 toString 方法。<br>那么在使用该方法时，如果传入的参数个数多于 3，而且多出的实现是键值对，那么 Groovy 会假设该方法的第一个形参是 map 类型，然后将实参列表中的所有键值对都放到一个 map 中，作为第一个参数传入，然后将剩下的参数按照形参一一对应，进行传参。</p>
+<p>这里要注意的问题有两个：</p>
+<ol>
+<li>该规则会把所有的键值对都收集起来，即使键值对可能在实参传入的时候，并不是连续的，也没有关系，groovy 依然能识别。然后在将其余的实参依次对应第二个，第三个…形参</li>
+<li>按照该规则，可能将键值对全部收集之后，剩下的参数可能与方法定义的参数个数就不匹配了，因为我们在传参时，本想将第二个参数也传入键值对的 map 的，但是不可以。因此在方法定义和使用时应多注意。</li>
+</ol>
+<h2 id="规则二：可选形参"><a href="#规则二：可选形参" class="headerlink" title="规则二：可选形参"></a>规则二：可选形参</h2><p>一个简单的例子：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> bar(a,b=<span class="number">10</span>)&#123;</span><br><span class="line">	<span class="keyword">return</span> a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> bar(<span class="number">1</span>,<span class="number">1</span>) == <span class="number">2</span></span><br><span class="line"><span class="keyword">assert</span> bar(<span class="number">1</span>) == <span class="number">11</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="规则三：变长参数"><a href="#规则三：变长参数" class="headerlink" title="规则三：变长参数"></a>规则三：变长参数</h2><p>groovy 中有两种形式支持方法的变长参数：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用 ... 这也是 Java 本身支持的一种形式</span></span><br><span class="line"><span class="keyword">def</span> bar(<span class="type">int</span> a,<span class="type">int</span> ... b)&#123;</span><br><span class="line">	println <span class="string">&quot;$a and $b&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果形参的最后一个参数为数组，那么除了第一个参数被赋值给 a 之外，后面的实参均被当做变长参数的实参传入到 b 数组中</span></span><br><span class="line"><span class="keyword">def</span> bar(<span class="type">int</span> a,<span class="type">int</span> b[])&#123;</span><br><span class="line">	println <span class="string">&quot;$a and $b&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里要注意的是：如果在调用该方法时，想发送数组而不是离散值时，要注意：groovy 会把形如 [1,2,3] 这种形式的数组当做 List，而不是数组，因此在传入时需要显式的传入 <code>[1,2,3] as int[]</code></p>
+<h1 id="方法可以返回多个值"><a href="#方法可以返回多个值" class="headerlink" title="方法可以返回多个值"></a>方法可以返回多个值</h1><p>Java 中，方法至多可以返回一个值，但是 groovy 中可以返回多个值。因为 groovy 的动态性，可以将多个返回值放到数组中，而不用去管具体类型(Java 中数组中的值类型必须一致)。</p>
+<p>那么接下来要解决方法的返回值接收的问题。groovy 是这样处理的：将多个变量以逗号分隔，放在圆括号中，置于方法返回的左侧即可</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> f2()&#123;</span><br><span class="line">    [<span class="string">&#x27;abc&#x27;</span>,<span class="number">1</span>]</span><br><span class="line">&#125;</span><br><span class="line">(name,age) = f2()</span><br></pre></td></tr></table></figure>
+
+<p>当()中变量与返回值的数量不一致时：如果有多余的变量，那么被置为 null；如果有多余的值，那么多余的值被丢弃。</p>
+<h1 id="操作符重载"><a href="#操作符重载" class="headerlink" title="操作符重载"></a>操作符重载</h1><p>groovy 中的操作符是可以重载的，groovy 已经将操作符和预设的方法进行了<a target="_blank" rel="noopener" href="http://docs.groovy-lang.org/latest/html/documentation/#Operator-Overloading">绑定</a>，只要我们的类中实现了对应的方法（不用实现任何借口），该类的对象就可以调用对应的操作符了。</p>
+<p>因此在给类中的方法起名时还是谨慎的好，以免恰好对应了操作符映射的方法名，产生不必要的麻烦。</p>
+<p>在 gradle 中比较常用的操作符是 <code>&lt;&lt;</code>，其对应的方法名为 leftShift，其含义类似于 <code>append</code>，向对象中追加成员。</p>
+<h1 id="自动装箱"><a href="#自动装箱" class="headerlink" title="自动装箱"></a>自动装箱</h1><p>在 groovy2.0 之前，基本类型都被当做对象处理。<br>在 groovy2.0 之后，基本类型只有在必要时才会被看做对象，eg：调用 Integer 的方法，将基本类型传递给对象引用。除此之外，Groovy 会在字节码级别将其保留为基本类型，已达到提升性能的目的。</p>
+<h1 id="使用-groovy-代码生成变换"><a href="#使用-groovy-代码生成变换" class="headerlink" title="使用 groovy 代码生成变换"></a>使用 groovy 代码生成变换</h1><p>groovy 中提供了很多注解帮助我们生成对应代码，简化我们的开发流程。这里简单提一下最常用的 <code>@Immutable</code> 注解，该注解用来修饰类<br>一旦用该注解标记了一个类，那么该类的所有字段都将自动标记为 final，并额外为我们创建一个唯一构造器，其参数就是类中声明字段的顺序。</p>
+<h1 id="groovy-的缺陷"><a href="#groovy-的缺陷" class="headerlink" title="groovy 的缺陷"></a>groovy 的缺陷</h1><ol>
+<li>groovy 的<code>==</code>等价于 Java 的 equals 方法，如果想比较两个引用是否相同，groovy 中提供的方法是 <code>is()</code></li>
+<li>Java 中可以在方法内部用<code>&#123;&#125;</code>包起一块代码，用来定义一个新的作用域，而这样的语法在 groovy 中被认为是在定义闭包，导致编译无法通过</li>
+<li>分号并不总是可选的！<br>  看下面这样一个例子：  <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span>&#123;</span><br><span class="line">	<span class="keyword">def</span> bar = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">	&#123;</span><br><span class="line">		println <span class="string">&quot;I&#x27;am instance initializer&quot;</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  原本想在 Foo 类中定义一个对象的初始代码块，但是这样的结构被认为是依附在属性上的一部分，因为前面的 bar 在定义结束后并没有加分号，因此如果遇到这种情况，需要在 bar 定义结束后以分号结尾。<br>  当然，如果是静态代码块就不会有这个问题了。</li>
+</ol>
+<h1 id="more"><a href="#more" class="headerlink" title="more"></a>more</h1><p>更多内容请参考<a target="_blank" rel="noopener" href="http://docs.groovy-lang.org/latest/html/documentation/">官方文档</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Groovy/"># Groovy</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/06/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E9%97%AD%E5%8C%85%E4%B8%AD%E7%9A%84%E5%A7%94%E6%89%98/">深入理解闭包中的委托</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/05/hexo%E6%90%AD%E5%BB%BA%E6%94%B9%E8%89%AF/">hexo搭建改良</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

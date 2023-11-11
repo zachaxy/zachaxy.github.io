@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>01背包问题 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">01背包问题</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 30, 2017&nbsp;&nbsp;17:25:18&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">4.1k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">4 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="01背包问题"><a href="#01背包问题" class="headerlink" title="01背包问题"></a>01背包问题</h1><blockquote>
+<p>有n个物品，每个物品的重量为weight[i]，每个物品的价值为value[i]。现在有一个背包，它所能容纳的重量为total，问：当你面对这么多有价值的物品时，你的背包所能带走的最大价值是多少？</p>
+</blockquote>
+<span id="more"></span>
+
+<ul>
+<li>n:物品数量</li>
+<li>weight[] :每个物品的重量</li>
+<li>value[]: 每个物品的价值</li>
+<li>total:背包的最大承重</li>
+</ul>
+<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><p>使用一个<code>dp[n + 1][weight + 1]</code>数组,其中<code>dp[i][j]</code>表示如果背包重量是<code>j</code>的情况下,使用前<code>i</code>个物品的最优解,</p>
+<p>那么<code>dp[i][j]</code>的值如何确定呢?</p>
+<p>首先:确定当前最大的承重是<code>j</code>,那么用不用物品<code>i</code>呢?</p>
+<p>如果使用,<code>dp[i][j] = dp[i-1][j-w[i]]+v[i]</code></p>
+<p>如果不使用<code>i</code>,那么<code>dp[i][j] = dp[i-1][j]</code></p>
+<p>所以<code>dp[i][j]</code>的值就是上述两者的最大值;</p>
+<h2 id="初步实现"><a href="#初步实现" class="headerlink" title="初步实现"></a>初步实现</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">f1</span><span class="params">()</span> &#123;  </span><br><span class="line">  <span class="type">Scanner</span> <span class="variable">in</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);  </span><br><span class="line">  <span class="keyword">while</span> (in.hasNext()) &#123;  </span><br><span class="line">    <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> in.nextInt();  <span class="comment">//背包数量;</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">weight</span> <span class="operator">=</span> in.nextInt();  <span class="comment">//重量;</span></span><br><span class="line">    <span class="type">int</span>[] v = <span class="keyword">new</span> <span class="title class_">int</span>[n + <span class="number">1</span>];  <span class="comment">//value;</span></span><br><span class="line">    <span class="type">int</span>[] w = <span class="keyword">new</span> <span class="title class_">int</span>[n + <span class="number">1</span>];  <span class="comment">//weight;</span></span><br><span class="line"><span class="comment">//我们这里都是用了一个+1的操作,就是说不从0开始计算了,而是从1开始计算,这样更容易理解吧;</span></span><br><span class="line">    <span class="type">int</span>[][] res = <span class="keyword">new</span> <span class="title class_">int</span>[n + <span class="number">1</span>][weight + <span class="number">1</span>];  <span class="comment">//结果集;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;=n; i++) &#123;  </span><br><span class="line">      w[i] = in.nextInt();  </span><br><span class="line">      v[i] = in.nextInt();  </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//初始化第一列</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;=n; i++) &#123;  </span><br><span class="line">      res[i][<span class="number">0</span>] = <span class="number">0</span>;  </span><br><span class="line">    &#125; </span><br><span class="line">    </span><br><span class="line">    <span class="comment">//初始化第一行;</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt;=weight; j++) &#123;  </span><br><span class="line">      res[<span class="number">0</span>][j] = <span class="number">0</span>;  </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">	<span class="comment">//开始规划</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">1</span>;i&lt;=n;i++) &#123;  </span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">1</span>; j &lt;= weight; j++) &#123;  <span class="comment">//这里k代表的是当前背包的重量;</span></span><br><span class="line">        res[i][j] = res[i - <span class="number">1</span>][j];    <span class="comment">//不用当前j</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (j &gt;= w[i]) &#123;  <span class="comment">//当前包的重量小于j,考虑很周到,如果当前包重量过大,也是不行的...</span></span><br><span class="line">          <span class="keyword">if</span> (res[i-<span class="number">1</span>][j - w[i]] + v[i] &gt; res[i-<span class="number">1</span>][j])  <span class="comment">//用当前i比不用更大,那么就用上;</span></span><br><span class="line">          &#123;  </span><br><span class="line">            res[i][j] = res[i-<span class="number">1</span>][j - w[i]] + v[i];    <span class="comment">//使用当前i;</span></span><br><span class="line">          &#125;     </span><br><span class="line">        &#125;  </span><br><span class="line">      &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">    System.out.println(res[n][weight]);  </span><br><span class="line">  &#125;  </span><br><span class="line">  in.close();  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="压缩空间"><a href="#压缩空间" class="headerlink" title="压缩空间"></a>压缩空间</h2><p>上面的实现方法用了一个二维数组,其实完全可以用一个一维数组来代替;</p>
+<blockquote>
+<p>这里有一个要注意的地方:编程思路和上面是一样的,也是两层循环,只不过现在从二维变成了一维,可是我们需要<code>dp[i][j] = dp[i-1][j-w[i]]+v[i]</code>的情况,如果内层循环也是从1开始计数的话,前面的值就被覆盖了,后面的值依赖前面的值,所以内层循环从右到左开始循环;</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">f2</span><span class="params">()</span> &#123;  </span><br><span class="line">  <span class="type">Scanner</span> <span class="variable">in</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);  </span><br><span class="line">  <span class="keyword">while</span> (in.hasNext()) &#123;  </span><br><span class="line">    <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> in.nextInt();  <span class="comment">//背包数量</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">weight</span> <span class="operator">=</span> in.nextInt();  <span class="comment">//背包承重</span></span><br><span class="line"></span><br><span class="line">    <span class="type">int</span>[] v = <span class="keyword">new</span> <span class="title class_">int</span>[n + <span class="number">1</span>];  <span class="comment">//values;</span></span><br><span class="line">    <span class="type">int</span>[] w = <span class="keyword">new</span> <span class="title class_">int</span>[n + <span class="number">1</span>];  <span class="comment">//weights;</span></span><br><span class="line">    <span class="type">int</span>[] res = <span class="keyword">new</span> <span class="title class_">int</span>[weight + <span class="number">1</span>];  <span class="comment">//结果集</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;=n; i++) &#123;  </span><br><span class="line">      w[i] = in.nextInt();  </span><br><span class="line">      v[i] = in.nextInt();  </span><br><span class="line">    &#125;  </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">1</span>;i&lt;=n;i++) &#123;  </span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> weight; k&gt;=<span class="number">0</span>; k--) &#123;  </span><br><span class="line">        <span class="keyword">if</span> (w[i] &lt;= k) &#123;  </span><br><span class="line">          <span class="keyword">if</span> (v[i] + res[k - w[i]] &gt; res[k])  </span><br><span class="line">          &#123;  </span><br><span class="line">            res[k] = v[i] + res[k - w[i]];  </span><br><span class="line">          &#125;  </span><br><span class="line"></span><br><span class="line">        &#125;  </span><br><span class="line">      &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">    System.out.println(res[weight]);  </span><br><span class="line">  &#125;  </span><br><span class="line">  in.close();  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="一个更简洁的写法"><a href="#一个更简洁的写法" class="headerlink" title="一个更简洁的写法"></a>一个更简洁的写法</h2><p>  注意传入进来的v和w是从0开始的,不是从1开始的了;上面使用的从1开始只是为了方便的说明问题,现在v和w都是从0开始的,只是res结果集还是使用的<code>total+1</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">f3</span><span class="params">(<span class="type">int</span>[] values, <span class="type">int</span>[] weights, <span class="type">int</span> maxWeight)</span> &#123;</span><br><span class="line"> </span><br><span class="line">  <span class="type">int</span>[] res = <span class="keyword">new</span> <span class="title class_">int</span>[maxWeight + <span class="number">1</span>];  <span class="comment">//动态规划数组;</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; values.length; i++) &#123;  <span class="comment">//遍历到第i个物品;</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> maxWeight; j &gt;= weights[i]; j--) &#123;  <span class="comment">//内层循环倒着来;注意人家的终止条件啊;</span></span><br><span class="line">      <span class="type">int</span> <span class="variable">takeValue</span> <span class="operator">=</span> values[i] + res[j - weights[i]];  <span class="comment">//使用当前i</span></span><br><span class="line">      <span class="keyword">if</span> (takeValue &gt; res[j]) &#123;  <span class="comment">//使用当前i的时候如果比不使用的时候大,那么将res[j]的位置替换成使用的情况;</span></span><br><span class="line">        res[j] = takeValue;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> res[ans.length - <span class="number">1</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="01背包的一个变形问题"><a href="#01背包的一个变形问题" class="headerlink" title="01背包的一个变形问题"></a>01背包的一个变形问题</h2><blockquote>
+<p>给定一个物品数组,每个物品都有一个价值,每个物品数量为1,再得定一个整数aim代表期望的价值,求组成aim的最小物品数量,如果组不成,那么返回-1;</p>
+</blockquote>
+<p><strong>使用二维数组的做法</strong></p>
+<p><code>dp[i][j]</code>代表的是<code>aim=j</code>的情况下,使用前面<code>i</code>种钱币的最优解;那么在接下来的规划中如何做呢?</p>
+<p>首先我们是把数组中的每个元素都初始化为<code>Integer.MAX_VALUE</code>了,那么<code>j</code>的情况下,考虑能不能使用<code>i</code>,如果<code>dp[i-1][j-v[i]]</code>不是最大值,那么就可以用上<code>j</code>,否则赋值为<code>dp[i-1][j]</code>;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">f4</span><span class="params">(<span class="type">int</span>[] arr, <span class="type">int</span> aim)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (arr == <span class="literal">null</span> || arr.length == <span class="number">0</span> || aim &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> arr.length;</span><br><span class="line">  <span class="type">int</span> <span class="variable">max</span> <span class="operator">=</span> Integer.MAX_VALUE;</span><br><span class="line">  <span class="type">int</span>[][] dp = <span class="keyword">new</span> <span class="title class_">int</span>[n][aim + <span class="number">1</span>]; <span class="comment">//创建dp数组</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">//和之前一样,初始化数组的第一行</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">1</span>; j &lt;= aim; j++) &#123;</span><br><span class="line">    dp[<span class="number">0</span>][j] = max;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//只给恰好等于的元素置为1;</span></span><br><span class="line">  <span class="keyword">if</span> (arr[<span class="number">0</span>] &lt;= aim) &#123;</span><br><span class="line">    dp[<span class="number">0</span>][arr[<span class="number">0</span>]] = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> <span class="variable">leftup</span> <span class="operator">=</span> <span class="number">0</span>; <span class="comment">// 左上角某个位置的值</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; n; i++) &#123; <span class="comment">//最外层从上到下遍历</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">1</span>; j &lt;= aim; j++) &#123; <span class="comment">//最内层从左到右遍历</span></span><br><span class="line">      leftup = max;</span><br><span class="line">      <span class="keyword">if</span> (j - arr[i] &gt;= <span class="number">0</span> &amp;&amp; dp[i - <span class="number">1</span>][j - arr[i]] != max) &#123; <span class="comment">//现在是上一行的,有值才赋值=&gt;保证只使用一次;</span></span><br><span class="line">        leftup = dp[i - <span class="number">1</span>][j - arr[i]] + <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      dp[i][j] = Math.min(leftup, dp[i - <span class="number">1</span>][j]);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> dp[n - <span class="number">1</span>][aim] != max ? dp[n - <span class="number">1</span>][aim] : -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>使用一维数组的做法</strong></p>
+<p>注意内层循环依然使用从右到左的方式;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">f5</span><span class="params">(<span class="type">int</span>[] arr, <span class="type">int</span> aim)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (arr == <span class="literal">null</span> || arr.length == <span class="number">0</span> || aim &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> arr.length;</span><br><span class="line">  <span class="type">int</span> <span class="variable">max</span> <span class="operator">=</span> Integer.MAX_VALUE;</span><br><span class="line">  <span class="type">int</span>[] dp = <span class="keyword">new</span> <span class="title class_">int</span>[aim + <span class="number">1</span>];</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">1</span>; j &lt;= aim; j++) &#123;</span><br><span class="line">    dp[j] = max;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (arr[<span class="number">0</span>] &lt;= aim) &#123;</span><br><span class="line">    dp[arr[<span class="number">0</span>]] = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">int</span> <span class="variable">leftup</span> <span class="operator">=</span> <span class="number">0</span>; <span class="comment">// 左上角某个位置的值</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> aim; j &gt; <span class="number">0</span>; j--) &#123;</span><br><span class="line">      leftup = max;</span><br><span class="line">      <span class="comment">// if (j - arr[i] &gt;= 0 &amp;&amp; dp[i][j - arr[i]] != max) //之前是只要 a[i][j-cur]上有值就赋值</span></span><br><span class="line">      <span class="keyword">if</span> (j - arr[i] &gt;= <span class="number">0</span> &amp;&amp; dp[j - arr[i]] != max) &#123;</span><br><span class="line">        leftup = dp[j - arr[i]] + <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      dp[j] = Math.min(leftup, dp[j]);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> dp[aim] != max ? dp[aim] : -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%AE%97%E6%B3%95/"># 算法</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/03/30/hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E8%BF%87%E7%A8%8B%E5%85%A8%E7%BA%AA%E5%BD%95/">hexo搭建博客过程全纪录</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

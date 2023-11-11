@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>深入理解闭包中的委托 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">深入理解闭包中的委托</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 6, 2017&nbsp;&nbsp;9:07:14&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>关于闭包的使用在<a target="_blank" rel="noopener" href="http://groovy-lang.org/closures.html">官方文档</a>中已经说明的很清楚了，这里再对闭包的委托机制进行说明，该机制对于 Groovy 开发，gradle 脚本编写非常重要！</p>
+<p>要理解闭包，那么就必须要了解闭包中的三个属性，该属性仅在闭包中可以使用！</p>
+<ol>
+<li>this：该属性指向定义闭包的类的实例对象</li>
+<li>owner：该属性和 this 类似，但是闭包中也可以定义闭包的，如果闭包 A 内定义了闭包 B，那么闭包 B 的 owner 指向的是其外部的闭包 A; 顾名思义,owner 指的是改闭包的 owner</li>
+<li>delegate：该值初始化时是和 owner 相同的，但是该值可以通过接口将其它对象赋值给 delegate，来实现方法的委托功能，这正是 groovy 精彩之处！</li>
+</ol>
+<span id="more"></span>
+
+
+
+<p>接下来以一组简单的示例了解一下这三个属性，以验证上面的说明</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//普通类</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Enclosing</span> &#123;</span><br><span class="line">    <span class="type">void</span> run() &#123;</span><br><span class="line">        <span class="keyword">def</span> whatIsThisObject = &#123; getThisObject() &#125;    <span class="comment">//1</span></span><br><span class="line">        <span class="keyword">assert</span> whatIsThisObject() == <span class="variable language_">this</span>             <span class="comment">//2</span></span><br><span class="line">        <span class="keyword">def</span> whatIsThis = &#123; <span class="variable language_">this</span> &#125;                     <span class="comment">//3</span></span><br><span class="line">        <span class="keyword">assert</span> whatIsThis() == <span class="variable language_">this</span>                   <span class="comment">//4</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">def</span> whatIsOwnerMethod = &#123; getOwner() &#125;      <span class="comment">//1</span></span><br><span class="line">        <span class="keyword">assert</span> whatIsOwnerMethod() == <span class="variable language_">this</span>          <span class="comment">//2</span></span><br><span class="line">        <span class="keyword">def</span> whatIsOwner = &#123; owner &#125;                 <span class="comment">//3</span></span><br><span class="line">        <span class="keyword">assert</span> whatIsOwner() == <span class="variable language_">this</span>                <span class="comment">//4</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//内部类</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">EnclosedInInnerClass</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Inner</span> &#123;</span><br><span class="line">        Closure c_this = &#123; <span class="variable language_">this</span> &#125;                         <span class="comment">//5</span></span><br><span class="line">        Closure c_owner = &#123; owner &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">void</span> run() &#123;</span><br><span class="line">        <span class="keyword">def</span> inner = <span class="keyword">new</span> Inner()</span><br><span class="line">        <span class="keyword">assert</span> inner.c_this() == inner                    <span class="comment">//6</span></span><br><span class="line">        <span class="keyword">assert</span> inner.c_owner() == inner</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//闭包嵌套定义</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NestedClosures</span> &#123;</span><br><span class="line">    <span class="type">void</span> run() &#123;</span><br><span class="line">        <span class="keyword">def</span> nestedClosures_this = &#123;</span><br><span class="line">            <span class="keyword">def</span> c_this = &#123; <span class="variable language_">this</span> &#125;                         <span class="comment">//7</span></span><br><span class="line">            c_this()</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">assert</span> nestedClosures_this() == <span class="variable language_">this</span>               <span class="comment">//8</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">def</span> nestedClosures_owner = &#123;</span><br><span class="line">            <span class="keyword">def</span> c_owner = &#123; owner &#125;                      <span class="comment">//7</span></span><br><span class="line">            c_owner()</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//owner 对应闭包，这就是 owner 和 this 的不同!!</span></span><br><span class="line">        <span class="keyword">assert</span> nestedClosures_owner() == nestedClosures_owner   <span class="comment">//8</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> Enclosing().run()</span><br><span class="line"><span class="keyword">new</span> EnclosedInInnerClass().run()</span><br><span class="line"><span class="keyword">new</span> NestedClosures().run()</span><br></pre></td></tr></table></figure>
+
+
+<p>通过上边了示例，我们应该对闭包中的这三个属性有了一个大致的了解，并且知道了在不同的情况下，这些属性指向的对象是什么。<br>之前在理解闭包的时候，看到了讲解都在说你可以把闭包理解成匿名函数 Lambdas，但是如果闭包仅仅是 Lambdas，那么有何必另起一个 Closure 的名称，而不直接叫 Lambdas 呢？<br>而且 Lambdas 中并不存在 this，owner，delegate 的概念，所以要记住 Closure 并不仅仅是 Lambdas，其还有比 Lambdas 更酷的功能。而这些所谓的酷功能正是由 this，owner，delegate 来实现的。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MyClass</span> &#123;</span><br><span class="line">  String myString1 = <span class="string">&quot;111&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> outerClosure = &#123;</span><br><span class="line">  	<span class="keyword">def</span> myString2 = <span class="string">&quot;222&quot;</span>;</span><br><span class="line">    println myString1;     <span class="comment">// outputs 111</span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">def</span> nestedClosure = &#123;</span><br><span class="line">       println myString1;  <span class="comment">// outputs 111</span></span><br><span class="line">       println myString2;  <span class="comment">// outputs 222,前面都是用的默认的 this,访问到外部的 111, 这个可以理解,但是 str2 也用的 this 是如何访问到的呢?</span></span><br><span class="line">    &#125;</span><br><span class="line">   </span><br><span class="line">    nestedClosure()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">MyClass myClass = <span class="keyword">new</span> MyClass()</span><br><span class="line"><span class="keyword">def</span> closure = <span class="keyword">new</span> MyClass().outerClosure</span><br><span class="line">closure()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>运行上面程序，可以发现，闭包内的 this 指向的定义该闭包的类的实例对象（即：上下文）。在闭包内引用的变量和方法都会绑定到 this，其负责处理任何方法调用，以及对任何属性的访问。如果 this 无法处理，则转向 owner，最后在转给 delegate，如果再找不到，那么就会抛出异常。这就是 groovy 提供的默认的策略 <code>this -&gt; owner -&gt; delegate</code></p>
+<p>当然该顺序也是可以改变的,可以通过闭包的 resolveStrategy 属性，指定不同的策略。</p>
+<ul>
+<li>Closure.OWNER_FIRST 是默认策略。如果属性或者方法存在于 owner 内，那么他可以被 owner 调用，如果不存在，则会尝试在 delegate 类中查找</li>
+<li>Closure.DELEGATE_FIRST 颠倒了默认逻辑：delegate 是第一优先级，其次才是 owner</li>
+<li>Closure.OWNER_ONLY 将仅仅在 owner 查找需要的属性或者方法：delegate 会被忽略</li>
+<li>Closure.DELEGATE_ONLY 将仅仅在 delegate 查找需要的属性或者方法：owner 会被忽略</li>
+<li>Closure.TO_SELF 可以被用于当开发人员需要使用先进的元数据编程技术和希望实现一个自定义的选择策略时：这个选择将不是 owner 或者 delegate,而仅仅是 closure 类自己。当我们实现了自己的 Closure 子类时，他才是有意义的。</li>
+</ul>
+<p>下面简单介绍一下其使用方法，以及效果</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">def</span> x = <span class="number">300</span></span><br><span class="line">    <span class="keyword">def</span> y = <span class="number">400</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> run() &#123;</span><br><span class="line">        <span class="keyword">def</span> data = [<span class="attr">x:</span> <span class="number">10</span>, <span class="attr">y:</span> <span class="number">20</span>]</span><br><span class="line">        <span class="keyword">def</span> cl = &#123; y = x + y &#125;</span><br><span class="line">        cl.delegate = data</span><br><span class="line">        cl()</span><br><span class="line">        println x</span><br><span class="line">        println y</span><br><span class="line">        println data</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> Test().run()</span><br></pre></td></tr></table></figure>
+<p>结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">300</span><br><span class="line">700</span><br><span class="line">[x:10, y:20]</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">def</span> x = <span class="number">300</span></span><br><span class="line">    <span class="keyword">def</span> y = <span class="number">400</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> run() &#123;</span><br><span class="line">        <span class="keyword">def</span> data = [<span class="attr">x:</span> <span class="number">10</span>, <span class="attr">y:</span> <span class="number">20</span>]</span><br><span class="line">        <span class="keyword">def</span> cl = &#123; y = x + y &#125;</span><br><span class="line">        cl.delegate = data</span><br><span class="line">        cl.resolveStrategy = Closure.DELEGATE_FIRST</span><br><span class="line">        cl()</span><br><span class="line">        println x <span class="comment">//这里不是在闭包中，访问的 x 当然还是成员变量了</span></span><br><span class="line">        println y</span><br><span class="line">        println data <span class="comment">// 主要是 data，在闭包中期访问的 x 和 y 均是 data 中，所以其 y 变成了 10+20；</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> Test().run()</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">300</span><br><span class="line">400</span><br><span class="line">[x:10, y:30]</span><br></pre></td></tr></table></figure>
+
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Groovy/"># Groovy</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/07/mac%E4%B8%8BAndroid-Studio%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/">mac下Android Studio快速上手</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/05/Groovy-%E7%9B%B8%E5%AF%B9-Java-%E7%9A%84%E4%B8%80%E4%BA%9B%E6%96%B0%E7%8E%A9%E6%84%8F/">Groovy 相对 Java 的一些新玩意</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

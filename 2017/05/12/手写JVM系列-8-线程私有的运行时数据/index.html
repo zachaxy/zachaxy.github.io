@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>手写JVM系列(8)-运行时数据 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">手写JVM系列(8)-运行时数据</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 12, 2017&nbsp;&nbsp;22:47:02&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">7.9k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">7 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>前面介绍了如何搜索和解析 class 文件，如何解析 class 文件，那么接下来就要开始实现 JVM 了，这一节我们讨论并初步实现运行时数据区（run-time data area），为接下来编写字节码解释器做准备。本节所有的<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM">代码</a>均位于 runtimedata 包下。</p>
+</blockquote>
+<h1 id="运行时数据区概述"><a href="#运行时数据区概述" class="headerlink" title="运行时数据区概述"></a>运行时数据区概述</h1><p>运行时数据区可以分为两类：</p>
+<ul>
+<li>多线程共享:在 Java 虚拟机启动时创建好，在 Java 虚拟机退出时销毁。<ul>
+<li>类数据，其存放在方法区(逻辑上来说,方法区也是堆中的一部分)<ul>
+<li>字段</li>
+<li>方法信息</li>
+<li>方法字节码</li>
+<li>运行时常量池</li>
+</ul>
+</li>
+<li>类实例(对象)&#x3D;&gt;堆(堆由垃圾收集器定期清理，所以程序员不需要关心对象空间的释放)</li>
+</ul>
+</li>
+<li>线程私有:创建线程时才创建，线程退出时销毁。其主要作用是辅助执行 Java 字节码<ul>
+<li>pc 寄存器：存放当前正在执行的 Java 虚拟机指令的地址，如果当前执行的是 native 方法，则 pc 的值 JVM 没有明确定义。</li>
+<li>Java 虚拟机栈<ul>
+<li>栈帧<ul>
+<li>局部变量表</li>
+<li>操作数</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p> 在任一时刻，某一线程肯定是在执行某个方法。这个方法叫作该线程的<strong>当前方法</strong>；</p>
+<p>执行该方法的帧叫作线程的<strong>当前帧</strong>；</p>
+<p>声明该方法的类叫作<strong>当前类</strong>。</p>
+<p>如果当前方法是<strong>Java 方法</strong>，则 pc 寄存器中存放当前正在执行的 Java 虚拟机指令的地址，否则，当前方法是本地方法，pc 寄存器中的值没有明确定义。</p>
+<p><img src="https://geosmart.github.io/2016/03/07/JVM%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E4%B8%8E%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%BC%82%E5%B8%B8/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA.jpg" alt="运行时数据区示意图"></p>
+<p>堆可以是连续空间，也可以不连续。堆的大小可以固定，也可以在运行时按需扩展。</p>
+<p>Java 命令提供了-Xms 和-Xmx 两个非标准选项，用来调整堆的初始大小和最大大小。如果没有进行指定,那么使用默认大小;</p>
+<p>虚拟机实现者可以使用任何垃圾回收算法管理堆，甚至完全不进行垃圾收集也是可以的。</p>
+<h1 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h1><p>Java 虚拟机可以操作两类数据：</p>
+<ul>
+<li>基本类型:变量中存放数据本身。</li>
+<li>引用类型:变量中存放的是对象引用，真正的对象数据是在堆里分配的。</li>
+</ul>
+<p>这里所说的变量包括 类变量（静态字段）、实例变量（非静态字段）、数组元素、方法的参数和局部变量等</p>
+<p>引用类型可以进一步分为 3 种：</p>
+<ul>
+<li>类类型:指向类实例</li>
+<li>接口类型:指向实现了该接口的类或数组实例</li>
+<li>数组类型类:指向数组实例</li>
+</ul>
+<p>引用类型有一个特殊的值——null，表示该引用不指向任何对象。</p>
+<p><strong>操作数栈和局部变量表只存放数据的值,并不记录数据类型。具体操作的是什么类型的数据,反映在操作符上,eg:iadd:就是对 int 值进行加法操作.</strong></p>
+<p>关于字节码和指令集的具体讲解在<a href="https://zachaxy.github.io/2017/05/13/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-9-%E6%8C%87%E4%BB%A4%E9%9B%86/">手写JVM系列(9)-指令集</a>中介绍。</p>
+<p>基于 Java 虚拟机只能操作上面两种数据，并且在<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-6-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B1%9E%E6%80%A7%E8%A1%A8/#Code">属性表</a>的 Code 属性一节中介绍过，局部变量是存放在 Slot 中的，所以这里定义一个 Slot 类，里面存放上面所述的两种变量：基本类型和引用类型。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Slot</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> num;</span><br><span class="line">    <span class="keyword">public</span> Zobject ref;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Slot</span><span class="params">()</span> &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于基本类型，使用定义的 num 变量，对于引用类型，使用 Zobject 变量，因为现在还没有涉及到实现类和对象的实现，所以这里自己定义了一个类 Zobject 来代表引用。等到后面章节中，会具体讲解实现类和对象的实现方式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Zobject</span> &#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> 暂时为空实现  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="实现线程私有的运行时数据区"><a href="#实现线程私有的运行时数据区" class="headerlink" title="实现线程私有的运行时数据区"></a>实现线程私有的运行时数据区</h1><h2 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h2><p>既然是要实现线程私有的运行时数据区，那么就要先实现线程类，这里定义 Zthread 类代表线程。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Zthread</span> &#123;</span><br><span class="line">    <span class="type">int</span> pc;</span><br><span class="line">    Zstack stack; <span class="comment">//Stack 结构体（Java 虚拟机栈）的引用;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Zthread</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">//默认栈的大小是 1024,也就是说可以存放 1024 个栈帧</span></span><br><span class="line">        stack = <span class="keyword">new</span> <span class="title class_">Zstack</span>(<span class="number">1024</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getPc</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setPc</span><span class="params">(<span class="type">int</span> pc)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.pc = pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pushFrame</span><span class="params">(Zframe frame)</span> &#123;</span><br><span class="line">        stack.push(frame);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Zframe <span class="title function_">popFrame</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> stack.pop();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Zframe <span class="title function_">getCurrentFrame</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> stack.top();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Zframe <span class="title function_">createFrame</span><span class="params">(<span class="type">int</span> maxLocals, <span class="type">int</span> maxStack)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zframe</span>(<span class="built_in">this</span>, maxLocals, maxStack);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里只关注其中的成员变量。我们知道线程中私有的数据包括：PC 和虚拟机栈。PC 使用一个整数保存，虚拟机栈使用了我们自定义的一个 Zstack 类，下面是其具体实现。</p>
+<h2 id="Java-虚拟机栈"><a href="#Java-虚拟机栈" class="headerlink" title="Java 虚拟机栈"></a>Java 虚拟机栈</h2><p>Java 虚拟机规范对 Java 虚拟机栈的约束非常宽松。虚拟机栈可以是连续的空间，也可以不连续可以是固定大小，也可以在运行时动态扩展。Java 提供了-Xss 选项来设置 Java 虚拟机栈大小。</p>
+<p>如果 Java 虚拟机栈有大小限制，且执行线程所需的栈空间超出了这个限制，会导致 StackOverflowError 异常抛出。</p>
+<p>如果 Java 虚拟机栈可以动态扩展，但是内存已经耗尽，会导致 OutOfMemoryError 异常抛出。</p>
+<p>这里我们用经典的链表（linked list）数据结构来实现 Java 虚拟机栈，这样栈就可以按需使用内存空间，而且弹出的帧也可被及时回收。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Zstack</span> &#123;</span><br><span class="line">    <span class="type">int</span> maxSize;    <span class="comment">//虚拟机栈中所包含栈帧的最大容量</span></span><br><span class="line">    <span class="type">int</span> size;       <span class="comment">//当前虚拟机栈中包含帧的数量</span></span><br><span class="line">    <span class="keyword">private</span> Zframe _top; <span class="comment">//栈顶的帧</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Zstack</span><span class="params">(<span class="type">int</span> maxSize)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.maxSize = maxSize;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//新添加一个栈帧,将这个栈帧设置为 top,当然如果当前栈之前有元素,那么将要 push 进的 frame 的 lower 是指为之前的 top,当前 frame 变为 top;</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">push</span><span class="params">(Zframe frame)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (size &gt; maxSize) &#123;</span><br><span class="line">            <span class="comment">//throw new RuntimeException(&quot;java.lang.StackOverflowError&quot;);</span></span><br><span class="line">            <span class="comment">//如果栈已经满了，按照 Java 虚拟机规范，应该抛出 StackOverflowError 异常</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">StackOverflowError</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (_top != <span class="literal">null</span>) &#123;</span><br><span class="line">            frame.lower = _top; <span class="comment">// frame 中保存前一个帧的引用,使得当前帧被 push 的时,前一个帧顶上去;</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        _top = frame;</span><br><span class="line">        size++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Zframe <span class="title function_">pop</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (_top == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">EmptyStackException</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">Zframe</span> <span class="variable">tmp</span> <span class="operator">=</span> _top;</span><br><span class="line">        _top = tmp.lower;</span><br><span class="line">        tmp.lower = <span class="literal">null</span>;  <span class="comment">//tmp 是带 pop 出的栈帧,既然要 pop 出来,那么将其 lower 设置为 null,不在持有栈中的帧,避免内存泄露;</span></span><br><span class="line">        size--;</span><br><span class="line">        <span class="keyword">return</span> tmp;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Zframe <span class="title function_">top</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (_top == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">EmptyStackException</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> _top;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中：maxSize 字段保存栈的容量（最多可以容纳多少帧），size 字段保存栈的当前大小，_top 字段保存栈顶指针。</p>
+<p>push（）方法把帧推入栈顶，如果栈已经满了，按照 Java 虚拟机规范，应该抛出 StackOverflowError 异常。</p>
+<p>pop（）方法把栈顶帧弹出，如果此时栈是空的，肯定是我们的虚拟机有 bug，这里我们手动抛出了一个 EmptyStackException 异常。</p>
+<p>top（）方法只是返回栈顶帧，但并不弹出。</p>
+<h2 id="栈帧"><a href="#栈帧" class="headerlink" title="栈帧"></a>栈帧</h2><p>上面的虚拟机栈是用单向链表实现的，栈中每一个元素都是栈帧，这里我们定义一个 Zframe 类，具体实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Zframe</span> &#123;</span><br><span class="line">    Zframe lower;       <span class="comment">//当前帧的 前一帧的引用;相当于单向链表的前一个指针</span></span><br><span class="line">    LocalVars localVars;    <span class="comment">//局部变量表的引用;</span></span><br><span class="line">    OperandStack operandStack;  <span class="comment">//操作数栈的引用;</span></span><br><span class="line">    Zthread thread;</span><br><span class="line">    <span class="type">int</span> nextPC;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> 2017/5/4 0004</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Zframe</span><span class="params">(Zthread thread, <span class="type">int</span> maxLocals, <span class="type">int</span> maxStack)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.thread = thread;</span><br><span class="line">        localVars = <span class="keyword">new</span> <span class="title class_">LocalVars</span>(maxLocals);</span><br><span class="line">        operandStack = <span class="keyword">new</span> <span class="title class_">OperandStack</span>(maxStack);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> LocalVars <span class="title function_">getLocalVars</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> localVars;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> OperandStack <span class="title function_">getOperandStack</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> operandStack;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Zthread <span class="title function_">getThread</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> thread;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getNextPC</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> nextPC;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setNextPC</span><span class="params">(<span class="type">int</span> nextPC)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.nextPC = nextPC;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>lower 字段用来实现链表数据结构，保存的是栈中前一个栈帧的引用，相当于链表中的 next 指针，这样当栈顶的帧出栈时，栈顶帧把其持有的 lower 帧设置为当前栈顶帧。</p>
+<p>localVars 字段保存局部变量表引用。</p>
+<p>operandStack 字段保存操作数栈引用。</p>
+<p>在构造方法中传入了局部变量表大小和操作数栈深度，这两个值是由编译器预先计算好的，存储在 class 文件 method_info 结构的 Code 属性中。</p>
+<h2 id="局部变量表"><a href="#局部变量表" class="headerlink" title="局部变量表"></a>局部变量表</h2><p>局部变量表是按索引访问的，那么我们自然也是用数组来实现。根据 Java 虚拟机规范，这个数组的每个元素至少可以容纳一个 int 或引用值，两个连续的元素可以容纳一个 long 或 double 值。这就是我们之前讲的属性表中 Code 属性中的<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-6-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B1%9E%E6%80%A7%E8%A1%A8/#Code">Slot</a>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Slot</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> num;</span><br><span class="line">    <span class="keyword">public</span> Zobject ref;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Slot</span><span class="params">()</span> &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>操作局部变量表和操作数栈的指令都是隐含类型信息的。下面给 LocalVars 类型定义一些方法，用来存取不同类型的变量。</p>
+<ul>
+<li>int 变量最简单，直接存取即可。</li>
+<li>float 变量可以先转成 int 类型，然后按 int 变量来处理。</li>
+<li>long 变量则需要拆成两个 int 变量（需要注意的点是将两个 int 合并成一个 long 的方式，具体处理方式见下面的源码 getLong）。</li>
+<li>double 变量可以先转成 long 类型，然后按照 long 变量来处理。</li>
+<li>引用值，也比较简单，直接存取即可。</li>
+</ul>
+<p>下面给出 LocalVars 中存取变量或引用的方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LocalVars</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Slot[] localVars; <span class="comment">//局部变量表,JVM 规定其按照索引访问,所以将其设置为数组</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">LocalVars</span><span class="params">(<span class="type">int</span> maxLocals)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (maxLocals &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            localVars = <span class="keyword">new</span> <span class="title class_">Slot</span>[maxLocals];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>(<span class="string">&quot;maxLocals&lt;0&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//提供了对 int,float,long,double,引用的存取,这里要注意的是 long 和 double 是占用 8 字节的,所以使用了局部变量表中的两个槽位分别存储前四字节和后四字节</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setInt</span><span class="params">(<span class="type">int</span> index, <span class="type">int</span> val)</span> &#123;</span><br><span class="line">        <span class="type">Slot</span> <span class="variable">slot</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Slot</span>();</span><br><span class="line">        slot.num = val;</span><br><span class="line">        localVars[index] = slot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getInt</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> localVars[index].num;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setFloat</span><span class="params">(<span class="type">int</span> index, <span class="type">float</span> val)</span> &#123;</span><br><span class="line">        <span class="type">Slot</span> <span class="variable">slot</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Slot</span>();</span><br><span class="line">        slot.num = Float.floatToIntBits(val);</span><br><span class="line">        localVars[index] = slot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">float</span> <span class="title function_">getFloat</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Float.intBitsToFloat(localVars[index].num);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setLong</span><span class="params">(<span class="type">int</span> index, <span class="type">long</span> val)</span> &#123;</span><br><span class="line">        <span class="comment">//先存低 32 位</span></span><br><span class="line">        <span class="type">Slot</span> <span class="variable">slot1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Slot</span>();</span><br><span class="line">        slot1.num = (<span class="type">int</span>) (val);</span><br><span class="line">        localVars[index] = slot1;</span><br><span class="line">        <span class="comment">//再存高 32 位</span></span><br><span class="line">        <span class="type">Slot</span> <span class="variable">slot2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Slot</span>();</span><br><span class="line">        slot2.num = (<span class="type">int</span>) (val &gt;&gt; <span class="number">32</span>);</span><br><span class="line">        localVars[index + <span class="number">1</span>] = slot2;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> <span class="title function_">getLong</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">low</span> <span class="operator">=</span> localVars[index].num;</span><br><span class="line">        <span class="type">long</span> <span class="variable">high</span> <span class="operator">=</span> localVars[index + <span class="number">1</span>].num;</span><br><span class="line">        <span class="keyword">return</span> ((high &amp; <span class="number">0x000000ffffffffL</span>) &lt;&lt; <span class="number">32</span>) | (low &amp; <span class="number">0x00000000ffffffffL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setDouble</span><span class="params">(<span class="type">int</span> index, <span class="type">double</span> val)</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">bits</span> <span class="operator">=</span> Double.doubleToLongBits(val);</span><br><span class="line">        setLong(index, bits);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">double</span> <span class="title function_">getDouble</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">bits</span> <span class="operator">=</span> getLong(index);</span><br><span class="line">        <span class="keyword">return</span> Double.longBitsToDouble(bits);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setRef</span><span class="params">(<span class="type">int</span> index, Zobject ref)</span> &#123;</span><br><span class="line">        <span class="type">Slot</span> <span class="variable">slot</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Slot</span>();</span><br><span class="line">        slot.ref = ref;</span><br><span class="line">        localVars[index] = slot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Zobject <span class="title function_">getRef</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> localVars[index].ref;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意到，我们这里并没有对 boolean、byte、short 和 char 类型定义存取方法，因为这些类型的值都是转换成 int 值类来处理的。</p>
+<h2 id="操作数栈"><a href="#操作数栈" class="headerlink" title="操作数栈"></a>操作数栈</h2><p>操作数栈的实现方式和局部变量表类似。操作数栈也是通过索引来访问的，操作数栈的大小是编译器已经确定的，所以依然可以用[]Slot 实现。这里有一个 size 字段是用于记录栈顶位置的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OperandStack</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> size;  <span class="comment">//初始值为 0,在运行中,代表当前栈顶的 index,还未使用,可以直接用,用完记得 size++;</span></span><br><span class="line">    <span class="keyword">private</span> Slot[] slots;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">OperandStack</span><span class="params">(<span class="type">int</span> maxStack)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (maxStack &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            slots = <span class="keyword">new</span> <span class="title class_">Slot</span>[maxStack];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>(<span class="string">&quot;maxStack&lt;0&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pushInt</span><span class="params">(<span class="type">int</span> val)</span> &#123;</span><br><span class="line">        <span class="type">Slot</span> <span class="variable">slot</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Slot</span>();</span><br><span class="line">        slot.num = val;</span><br><span class="line">        slots[size] = slot;</span><br><span class="line">        size++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">popInt</span><span class="params">()</span> &#123;</span><br><span class="line">        size--;</span><br><span class="line">        <span class="keyword">return</span> slots[size].num;</span><br><span class="line">    &#125;</span><br><span class="line"> 	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>和局部变量表类似，需要定义一些方法从操作数栈中弹出，或者往其中推入各种类型的变量。这里只列举出最简单的对于 int 变量进行存取的的部分，对于其它类型的存取和局部变量表是一样的，就不在浪费篇幅了。这里要注意的一点是：每次存取数据，都要对 size 进行相应的加减操作。</p>
+<h2 id="局部变量表和操作数栈实例分析"><a href="#局部变量表和操作数栈实例分析" class="headerlink" title="局部变量表和操作数栈实例分析"></a>局部变量表和操作数栈实例分析</h2><p>以下面计算圆形周长的方法为例,观察局部变量和操作数栈的变化</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">float</span> <span class="title function_">circumference</span><span class="params">(<span class="type">float</span> r)</span> &#123;</span><br><span class="line">    <span class="type">float</span> <span class="variable">pi</span> <span class="operator">=</span> <span class="number">3.14f</span>;</span><br><span class="line">    <span class="type">float</span> <span class="variable">area</span> <span class="operator">=</span> <span class="number">2</span> * pi * r;</span><br><span class="line">    <span class="keyword">return</span> area;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码被 javac 编译成如下字节码:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">00 ldc #4</span><br><span class="line">02 fstore_1</span><br><span class="line">03 fconst_2</span><br><span class="line">04 fload_1</span><br><span class="line">05 fmul</span><br><span class="line">06 fload_0</span><br><span class="line">07 fmul</span><br><span class="line">08 fstore_2</span><br><span class="line">09 fload_2</span><br><span class="line">10 return</span><br></pre></td></tr></table></figure>
+
+<p>circumference（）方法的局部变量表大小是 3，操作数栈深度是 2;(执行方法所需的局部变量表大小和操作数栈深度是由编译器预先计算好的)</p>
+<p>假设调用该方法时传入的参数是 1.6f,那么执行该方法时，操作数栈和局部变量表的变化如下：</p>
+<p><img src="http://7xvxof.com1.z0.glb.clouddn.com/jvmgo_40.png" alt="circumference 方法执行过程"></p>
+<p>传递给它的参数是 1.6f，方法开始执行前，1.6 被保存在本地变量表的#0 位置，接下来开始执行字节码：</p>
+<p>首先是 ldc，它把 3.14f 推入栈顶</p>
+<p>接着是 fstore_1 指令，它把栈顶的 3.14f 弹出，放到#1 号局部变量中</p>
+<p>fconst_2 指令把 2.0f 推到栈顶</p>
+<p>fload_1 指令把#1 号局部变量推入栈顶</p>
+<p>fmul 指令执行浮点数乘法。它把栈顶的两个浮点数弹出，相乘，然后把结果推入栈顶</p>
+<p>fload_0 指令把#0 号局部变量推入栈顶</p>
+<p>fmul 继续乘法计算</p>
+<p>fstore_2 指令把操作数栈顶的 float 值弹出，放入#2 号局部变量表</p>
+<p>fload_2 指令把#2 号局部变量推入操作数栈顶</p>
+<p>最后 freturn 指令把操作数栈顶的 float 变量弹出，返回给方法调用者。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JVM/"># JVM</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/13/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-9-%E6%8C%87%E4%BB%A4%E9%9B%86/">手写JVM系列(9)-指令集</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/12/LayoutInflater%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86/">LayoutInflater内部原理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

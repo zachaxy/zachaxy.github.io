@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>docker基本使用 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">docker基本使用</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 11, 2021&nbsp;&nbsp;10:03:46&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">5.3k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">5 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>Docker 是一个开源的应用容器引擎，基于 Go 语言 并遵从 Apache2.0 协议开源。Docker 可以让开发者打包他们的应用以及依赖包到一个轻量级、可移植的容器中，然后发布到任何流行的 Linux 机器上，也可以实现虚拟化。容器是完全使用沙箱机制，相互之间不会有任何接口（类似 iPhone 的 app）,更重要的是容器性能开销极低。</p>
+</blockquote>
+<span id="more"></span>
+
+
+<p>镜像 vs 容器 区别?  镜像只读, 运行起来就是一个容器</p>
+<p>docker 常用命令</p>
+<ul>
+<li>docker pull 镜像名&lt;:tags&gt;</li>
+<li>docker images 查看本地镜像</li>
+<li>docker run 镜像名&lt;:tags&gt;   —&gt; 创建容器(如果本地没有镜像,则会先进行拉取),启动应用</li>
+<li>docker ps —-&gt; 查看正在运行中的容器, 要查看所有的,则使用 ps -a </li>
+<li>docker rm &lt;-f&gt; 容器id   —&gt;  删除容器</li>
+<li>docker rmi 镜像id  –&gt; 直接删除镜像</li>
+</ul>
+<p>以创建 tomcat 容器为例, 创建好了之后, 原本 Tomcat 启动的是 8080 端口,但是在物理机上直接访问是不通的,需要进行端口映射</p>
+<p>&#x2F;&#x2F; 8000: 物理机的端口;  容器里面 tomcat 本来监听的端口 </p>
+<blockquote>
+<p>docker run -p 8000:8080 tomcat</p>
+</blockquote>
+<p>我没有启动起来…<br>有坑: <a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_45589050/article/details/104559125">https://blog.csdn.net/qq_45589050/article/details/104559125</a><br>需要改文件</p>
+<p>创建后台容器,以便可以打开多个窗口</p>
+<blockquote>
+<p>docker run -p 8000:8080 -d tomcat </p>
+</blockquote>
+<p>停止后台容器</p>
+<ol>
+<li>docker ps </li>
+<li>docker stop containerID</li>
+<li>docker rm containerID (没有 stop, 直接 rm ,会报错, 可以直接 -f)</li>
+</ol>
+<p>如何进入容器内部:<br>docker exec [-it] containerID  命令<br>-it: 采用交互式执行命令</p>
+<p>eg: docker exec -it 13e2e5fe23f1  &#x2F;bin&#x2F;bash<br>通过bash(容器内支持的,非 host 机器的命令)采用交互式命令,进入某容器内部</p>
+<p>退出当前容器命令:<br>exit</p>
+<p>docker run &#x3D; docker create + docker start<br>进入 running 状态</p>
+<ul>
+<li>docker kill : die -&gt; kill 进程终止, docker start 会重新创建进程</li>
+<li>docker stop : die -&gt; stop 进程还在, docker start 会恢复之前的进程</li>
+<li>docker restart : die -&gt; start -&gt; restart</li>
+<li>docker pause -&gt; paused   </li>
+<li>docker unpause -&gt; unpause -&gt; running</li>
+<li>oom -&gt; die (根据策略决定是否需要重启) -&gt; start &#x2F; stop</li>
+</ul>
+<p>基于以上的状态变化,好的习惯是使用 docker start&#x2F;stop 启动&#x2F;停止一个之前启动过的容器!!</p>
+<p>这里要注意:如果你启动的镜像里面没有要开启运行的服务,那么该镜像在 start 后会立即 stop, eg: 纯 centos 镜像, 像 tomcat 这样的镜像,默认启动后会自动启动 tomcat,所以可以一直运行,</p>
+<p>如果是纯 centos, 需要在启动的时候一直运行在后台,<a target="_blank" rel="noopener" href="https://www.chengxulvtu.com/docker-run-centos/">使用方法</a>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -it centos /bin/bash</span><br><span class="line">或</span><br><span class="line">docker run -itd --privileged centos /usr/sbin/init</span><br><span class="line">使用--privileged参数进入后,好像可以在内部启动服务,不使用的话,内部无法启动服务</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">docker attach &lt;container-id&gt;</span><br><span class="line">或</span><br><span class="line">docker exec -it &lt;container-id&gt;  /bin/bash</span><br></pre></td></tr></table></figure>
+<p>进入 centos 的 shell</p>
+<h1 id="Dockerfile-构建镜像"><a href="#Dockerfile-构建镜像" class="headerlink" title="Dockerfile 构建镜像"></a>Dockerfile 构建镜像</h1><p>按照命令生成镜像</p>
+<p>docker build -t 机构id(或个人id)&#x2F;镜像名&lt;:tags&gt; Dockerfile_DIR</p>
+<ul>
+<li>FROM: 设置基准镜像,  也可以 FROM scratch, 不依赖任何镜像,直接不写不行吗?</li>
+<li>MAINTAINER:维护者</li>
+<li>LABEL version &#x3D; “1.0”   无具体作用,就是用来做注释的,建议添加,以备使用</li>
+<li>LABEL description &#x3D; “描述描述”</li>
+<li>WORKDIR: 工作目录,其实每一个 docker 镜像运行起来之后,底层都是一个裁减迷你 linux(如果是使用别人制作好的镜像,eg:tomcat,其Dockerfile 肯定有 FROM centos 之类的引用的,只不过我们不用关心具体是什么 os,如果要我们自己只做,也是需要手动引入的,Docker不会默认帮你添加一个 mini Linux),需要设置该镜像运行起来后的具体目录 本质使用 shell 登录进来后的默认路径…(不要被 workdir 字面意思给骗了,这个在 docker 里面就是一个 cd 命令,++)</li>
+<li>ADD: 复制文件用的,用于在构建的时候,复制物理机文件到 docker 运行起来的目录中<br>ADD 还具备解压缩功能, ADD test.tar.gz &#x2F; 的含义是,将 test 解压到根路径</li>
+<li>COPY 纯拷贝命令,跟 ADD 类似, xxxx</li>
+<li>ENV JAVA_HOME &#x2F;user&#x2F;local&#x2F;jdk8  设置环境变量</li>
+<li>EXPOSE 80 对外暴露容器的 80 端口,这样启动容器的时候,就不用加 -p 端口映射选项了</li>
+</ul>
+<p>RUN: 在镜像构建时执行的命令,一个镜像一旦被构建成功后就是只读的,不能再修改了, 这个是为一可以在构建时修改内部文件的方式<br>RUN yum install -y vim #使用 shell命令格式,当前进程会创建子进程来执行该 shell 命令,执行完毕后子进程退出<br>RUN [“yum”, “install”, “-y”, “vim”] #exec 命令格式, 创建进程替换原有的进程,同时集成原有的 pid,执行完毕后直接退出进程; 不清楚用哪种,则用这种…</p>
+<p>ENTRYPOINT: 容器启动时执行的命令,省得你自己写脚本了…<br>写多个 ENTRYPOINT 命令,只有最后一个起作用..,也是推荐使用 exec 格式</p>
+<p>CMD: 容器启动后执行默认的命令或者参数; 同样推荐使用 exec 方式执行; 但是如果你启动 docker image 的时候命令中带了命令,则该命令不会被执行…<br>eg: docker run xxx ls  # 表明启动 xxx 镜像,并执行 ls 命令,这样的话,xxx的 Dockerfile 中的 CMD 则不会被执行..</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">mkdir my_docker_dir</span><br><span class="line">cd my_docker_dir</span><br><span class="line">echo &quot;hello&quot;&gt;&gt; index.html</span><br><span class="line"></span><br><span class="line">code Dockerfile </span><br><span class="line">FROM tomcat:latest   # 拉取最新 tomcat 镜像</span><br><span class="line">MAINTAINER zachaxy  # 维护者</span><br><span class="line">WORKDIR /user/local/tomcat/webapps # 切换工作目录(shell 登录后默认路径),没有则自动创建,建议使用绝对路径!!!</span><br><span class="line">ADD docker-web1 ./docker-web2  # 拷贝当前的 docker-web1 到以工作目录为 base_path 下的 docker-web2 目录下</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">docker build -t zachaxy/mywebapp:1.0 .   # 这里镜像名字你自己起,只要在 Dockerfile 目录中执行命令就行</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">docker image # 既可看到已创建的 image</span><br></pre></td></tr></table></figure>
+
+<p>启动 centos 的一个坑,必须要用 docker run -d  -it centos &#x2F;bin&#x2F;bash 的形式<br>否则 centos 一启动,容器就执行完自动退出了,我们必须以后台 + 命令行进入的方式,保证其稳定的运行,如果 centos 启动后默认启动了一个服务(eg:redies),则不用担心</p>
+<h1 id="镜像分层"><a href="#镜像分层" class="headerlink" title="镜像分层"></a>镜像分层</h1><ul>
+<li>镜像层 </li>
+<li>容器层</li>
+</ul>
+<p>Dockerfile 中的 FROM 设置基准镜像,回去远程下载,如果此时有另一个 Dockerfile 开头使用了同一个 docker 基准镜像,那么复用的是前一个</p>
+<h1 id="docker-之间的通信"><a href="#docker-之间的通信" class="headerlink" title="docker 之间的通信"></a>docker 之间的通信</h1><h2 id="单向通信"><a href="#单向通信" class="headerlink" title="单向通信"></a>单向通信</h2><p>eg: tomcat容器需要访问mysql容器来查询数据,而 mysql 则不需要访问 tomcat<br>docker 容器一旦创建,则由系统分配一个虚拟 ip, 仅仅是用来标识, 而且能确保同一台设备上,多个容器 ip 不同,默认多个容器之间是互通的(通过 ip 的方式互同),问题是容器每次启动后对应的 ip 不是固定的…</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name web tomcat</span><br><span class="line">docker run -d --name database mysql</span><br></pre></td></tr></table></figure>
+
+<p>启动容器的时候,通过–name 的方式,为容器命名,这样在 tomcat 内部访问 mysql 的时候,可以不用虚拟 ip,而是使用 database,就可以直接访问到 mysql 容器了</p>
+<p>ps:怎么知道 docker 容器的 ip?</p>
+<ul>
+<li>确实有这种机制,但是获取起来似乎非常麻烦 参考:<a target="_blank" rel="noopener" href="https://chinese.freecodecamp.org/news/how-to-get-a-docker-container-ip-address-explained-with-examples/">如何获取 Docker 容器的 IP 地址</a>,放弃吧,还是给容器命名吧,简单点…</li>
+</ul>
+<p>tomcat 单向访问 mysql 的方式:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name web --link database tomcat  </span><br></pre></td></tr></table></figure>
+<p>在启动 tomcat 的时候,额外添加一个 –link 的指示,就链接了mysql,这样在 tomcat 中就可以使用ping名字,可以直接 ping 通 mysql </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping database</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="双向通信"><a href="#双向通信" class="headerlink" title="双向通信"></a>双向通信</h2><p>使用网桥,完全虚拟出来的组件,每个 docker 容器都可以访问网络,正式因为网桥的存在.<br>那么只要将两个容器都绑定到网桥上,就可以互同了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker network ls</span><br></pre></td></tr></table></figure>
+<p>类型: bridge&#x2F;host&#x2F;null</p>
+<p>创建新的网桥:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker network create -d bridge my-bridge</span><br></pre></td></tr></table></figure>
+
+
+<p>将新建的网桥与创建的容器进行绑定,那么绑定在同一个网桥下的容器默认就是互通的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker network connect my-bridge web</span><br><span class="line">docker network connect my-bridge database</span><br></pre></td></tr></table></figure>
+
+<p>每创建一个网桥,其实就是创建了一个虚拟网卡,该虚拟网卡的作用就是作为网关,挂载在该网桥下的容器以该虚拟网卡作为网关,同时改虚拟网卡还承担了地址转换的功能,从而实现容器向物理网卡发送数据的功能和接受数据的功能</p>
+<h2 id="使用-volume-进行容器的数据共享"><a href="#使用-volume-进行容器的数据共享" class="headerlink" title="使用 volume 进行容器的数据共享"></a>使用 volume 进行容器的数据共享</h2><p>使用 docker 部署 tomcat 文件,多实例但是代码文件都是一样的,如何一改都改?<br>在宿主机开辟磁盘空间,实现多个容器共享磁盘.</p>
+<h3 id="创建挂载宿主机目录"><a href="#创建挂载宿主机目录" class="headerlink" title="创建挂载宿主机目录"></a>创建挂载宿主机目录</h3><p>创建挂载宿主机目录,每次启动其它容器时挂载该目录</p>
+<p>实例:<code>docker run --name 容器名 -v 宿主机共享路径:容器内映射路径 镜像名</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name web1 -v /usr/webapps:/usr/local/tomcat/webapps tomcat:latest</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>缺点: 每次启动都要这样设置有点麻烦啊…可以用entry_point 吗,不行,因为这个是 docker 本身的命令</p>
+</blockquote>
+<h3 id="创建共享容器"><a href="#创建共享容器" class="headerlink" title="创建共享容器"></a>创建共享容器</h3><p>创建一个共享容器,每次启动其它容器时,挂载该容器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker create --name webpage_share -v /usr/webapps:/usr/local/tomcat/webapps share_container /bin/true</span><br></pre></td></tr></table></figure>
+<p>创建容器,但是不运行,只是设置了挂载点,设置了容器名,作用是启动其它容器时挂载上去即可</p>
+<p>启动其它容器挂载共享容器:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run  --volumes-from webpage_share --name web1 -d tomcat</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>优点:路径统一,如果修改,只要修改共享容器的路径即可<br>缺点:路径统一,满足不了定制需求…</p>
+</blockquote>
+<h1 id="Docker-compose"><a href="#Docker-compose" class="headerlink" title="Docker-compose"></a>Docker-compose</h1><blockquote>
+<p>多容器一键部署,容器编排工具,通过 yml 文件定义</p>
+</blockquote>
+<p>docker-compose.yml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">version: &#x27;3.3&#x27;  # : 后面必须有空格, yml 的版本,一般默认 3.3 版本,用来解析 yml</span><br><span class="line">service:</span><br><span class="line">  db:  # 子节点,使用空格缩进,一般是两个空格; 同时给容器命名,类似单独启动容器时 --name 指定的名字</span><br><span class="line">    build: docker_file_path  # 表示对那个路径下的 Dockefile 进行创建</span><br><span class="line">    restart: always # 一旦容器意外退出,那么自动重启</span><br><span class="line">    environment: </span><br><span class="line">        xxxx: yyy   #配置环境变量,其实相当于单独启动容器时,额外的 -e 环境变量参数</span><br><span class="line">  app:</span><br><span class="line">    build: docker_file_path</span><br><span class="line">    depends_on:         # 有先后依赖关系,同时默认是互通的,不用设置网桥了...</span><br><span class="line">      - db</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;80:80&quot;  # 这只端口映射, 宿主机端口:容器端口</span><br><span class="line">    restart: always </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<p>构建compose,直接执行下面命令,会默认从当前路径寻找 docker-compose.yml 文件进行构建, -d 参数后台运行, 查看日志:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d logs  # 后台运行,但是打印日志</span><br></pre></td></tr></table></figure>
+
+
+<p>docker-compose down 移除容器</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%B7%A5%E5%85%B7/"># 工具</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2022/01/04/kotlin%E5%A7%94%E6%89%98%E6%9C%BA%E5%88%B6/">kotlin委托机制</a>
+            
+            
+            <a class="next" rel="next" href="/2021/06/12/kotlin%E4%B8%AD%E7%9A%84lambda/">kotlin中的lambda</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

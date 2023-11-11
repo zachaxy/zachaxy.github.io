@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Dijkstra算法 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Dijkstra算法</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 13, 2017&nbsp;&nbsp;15:12:38&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">4k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">4 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>Dijkstra算法,给出一个邻接矩阵和一个起始点,返回这个其实点到邻接矩阵中各个点的最短距离</p>
+<p>使用了广度优先搜索解决非负权有向图的单源最短路径问题，算法最终得到一个最短路径树（一个节点到其他所有节点的最短路径）。<br>该算法常用于路由算法或者作为其他图算法的一个子模块。主要特点是以起始点为中心向外层层扩展，直到扩展到终点为止。</p>
+</blockquote>
+<hr>
+<p>基本用法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Dijkstra</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">M</span> <span class="operator">=</span> Integer.MAX_VALUE; <span class="comment">//此路不通</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//邻接矩阵,单向连接;</span></span><br><span class="line">        <span class="type">int</span>[][] weight = &#123;</span><br><span class="line">                &#123;<span class="number">0</span>, <span class="number">10</span>, M, <span class="number">30</span>, <span class="number">100</span>&#125;,</span><br><span class="line">                &#123;M, <span class="number">0</span>, <span class="number">50</span>, M, M&#125;,</span><br><span class="line">                &#123;M, M, <span class="number">0</span>, M, <span class="number">10</span>&#125;,</span><br><span class="line">                &#123;M, M, <span class="number">20</span>, <span class="number">0</span>, <span class="number">60</span>&#125;,</span><br><span class="line">                &#123;M, M, M, M, <span class="number">0</span>&#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置起始点,这里将0设置为起始点,接下来要做的动作是寻找整个图中所有点距离0最近的距离;</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">start</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="comment">//最短路径的数组,长度为0,保存了0到n个点的最短距离,当然第一个值是0到0的距离,距离为0;</span></span><br><span class="line">        <span class="type">int</span>[] shortPath = dijkstra(weight, start);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//打印0到各点最近的距离;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; shortPath.length; i++)</span><br><span class="line">            System.out.println(<span class="string">&quot;从&quot;</span> + start + <span class="string">&quot;出发到&quot;</span> + i + <span class="string">&quot;的最短距离为：&quot;</span> + shortPath[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/***</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> weight 有向图的权重矩阵</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> start  一个起点编号start（从0编号，顶点存在数组中）</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 返回一个int[] 数组，表示从start到它的最短路径长度</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span>[] dijkstra(<span class="type">int</span>[][] weight, <span class="type">int</span> start) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> weight.length;         <span class="comment">//顶点个数</span></span><br><span class="line">        <span class="type">int</span>[] shortPath = <span class="keyword">new</span> <span class="title class_">int</span>[n];  <span class="comment">//保存start到其他各点的最短路径,最后作为返回值被返回;</span></span><br><span class="line">        String[] path = <span class="keyword">new</span> <span class="title class_">String</span>[n];  <span class="comment">//保存start到其他各点最短路径的字符串描述;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//初始化从start到各个节点的最优路径图</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            path[i] = start + <span class="string">&quot;--&gt;&quot;</span> + i;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//或者用一个boolean类型的数组表示,是否已经访问过;</span></span><br><span class="line">        <span class="type">int</span>[] visited = <span class="keyword">new</span> <span class="title class_">int</span>[n];   <span class="comment">//标记当前该顶点的最短路径是否已经求出,1表示已求出</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//初始化，第一个顶点已经求出</span></span><br><span class="line">        shortPath[start] = <span class="number">0</span>;</span><br><span class="line">        visited[start] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">//最外层循环,一共n个节点,要找到start节点到其他n-1个节点的最短距离,因此这里需要循环n-1次;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">1</span>; count &lt; n; count++) &#123;   <span class="comment">//要加入n-1个顶点</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> -<span class="number">1</span>;        <span class="comment">//选出一个距离初始顶点start最近的未标记顶点,暂时记为k;</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">dmin</span> <span class="operator">=</span> Integer.MAX_VALUE;  <span class="comment">//临时距离;</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">//内循环找到一个距离start最近的点;</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (visited[i] == <span class="number">0</span> &amp;&amp; weight[start][i] &lt; dmin) &#123;</span><br><span class="line">                    dmin = weight[start][i];</span><br><span class="line">                    k = i;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//至此已经找到了一个距离start的最短点;</span></span><br><span class="line">            <span class="comment">//将新选出的顶点标记为已求出最短路径，且到start的最短路径就是dmin</span></span><br><span class="line">            shortPath[k] = dmin;</span><br><span class="line">            visited[k] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//以k为中间点，修正从start到未访问各点的距离</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">                <span class="comment">//start不能到i;但是start可以到k,k可以到i,</span></span><br><span class="line">                <span class="keyword">if</span> (visited[i] == <span class="number">0</span> &amp;&amp; weight[k][i] != M &amp;&amp; weight[start][k] + weight[k][i] &lt; weight[start][i]) &#123;</span><br><span class="line">                    weight[start][i] = weight[start][k] + weight[k][i];</span><br><span class="line">                    path[i] = path[k] + <span class="string">&quot;--&gt;&quot;</span> + i;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//打印最短路径们;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;从&quot;</span> + start + <span class="string">&quot;出发到&quot;</span> + i + <span class="string">&quot;的最短路径为：&quot;</span> + path[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;=====================================&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> shortPath;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>改进:基本用法中为了更好的展示,使用了邻接矩阵,这需要更大的内存空间,一个改进方法是使用邻接链表;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">buildGraph</span><span class="params">()</span> &#123;</span><br><span class="line">    HashMap&lt;String, Vertex&gt; nodes = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;String, Vertex&gt;();</span><br><span class="line">    nodes.put(<span class="string">&quot;a&quot;</span>, <span class="keyword">new</span> <span class="title class_">Vertex</span>(<span class="string">&quot;a&quot;</span>));</span><br><span class="line">    nodes.put(<span class="string">&quot;b&quot;</span>, <span class="keyword">new</span> <span class="title class_">Vertex</span>(<span class="string">&quot;b&quot;</span>));</span><br><span class="line">    nodes.put(<span class="string">&quot;c&quot;</span>, <span class="keyword">new</span> <span class="title class_">Vertex</span>(<span class="string">&quot;c&quot;</span>));</span><br><span class="line">    nodes.put(<span class="string">&quot;d&quot;</span>, <span class="keyword">new</span> <span class="title class_">Vertex</span>(<span class="string">&quot;d&quot;</span>));</span><br><span class="line">    nodes.put(<span class="string">&quot;e&quot;</span>, <span class="keyword">new</span> <span class="title class_">Vertex</span>(<span class="string">&quot;e&quot;</span>));</span><br><span class="line"></span><br><span class="line">    nodes.get(<span class="string">&quot;a&quot;</span>).map.put(nodes.get(<span class="string">&quot;b&quot;</span>), <span class="keyword">new</span> <span class="title class_">Edge</span>(nodes.get(<span class="string">&quot;a&quot;</span>), nodes.get(<span class="string">&quot;b&quot;</span>), <span class="number">10</span>));</span><br><span class="line">    nodes.get(<span class="string">&quot;a&quot;</span>).map.put(nodes.get(<span class="string">&quot;d&quot;</span>), <span class="keyword">new</span> <span class="title class_">Edge</span>(nodes.get(<span class="string">&quot;a&quot;</span>), nodes.get(<span class="string">&quot;d&quot;</span>), <span class="number">30</span>));</span><br><span class="line">    nodes.get(<span class="string">&quot;a&quot;</span>).map.put(nodes.get(<span class="string">&quot;e&quot;</span>), <span class="keyword">new</span> <span class="title class_">Edge</span>(nodes.get(<span class="string">&quot;a&quot;</span>), nodes.get(<span class="string">&quot;e&quot;</span>), <span class="number">100</span>));</span><br><span class="line"></span><br><span class="line">    nodes.get(<span class="string">&quot;b&quot;</span>).map.put(nodes.get(<span class="string">&quot;c&quot;</span>), <span class="keyword">new</span> <span class="title class_">Edge</span>(nodes.get(<span class="string">&quot;b&quot;</span>), nodes.get(<span class="string">&quot;c&quot;</span>), <span class="number">50</span>));</span><br><span class="line"></span><br><span class="line">    nodes.get(<span class="string">&quot;c&quot;</span>).map.put(nodes.get(<span class="string">&quot;e&quot;</span>), <span class="keyword">new</span> <span class="title class_">Edge</span>(nodes.get(<span class="string">&quot;c&quot;</span>), nodes.get(<span class="string">&quot;e&quot;</span>), <span class="number">10</span>));</span><br><span class="line"></span><br><span class="line">    nodes.get(<span class="string">&quot;d&quot;</span>).map.put(nodes.get(<span class="string">&quot;c&quot;</span>), <span class="keyword">new</span> <span class="title class_">Edge</span>(nodes.get(<span class="string">&quot;d&quot;</span>), nodes.get(<span class="string">&quot;c&quot;</span>), <span class="number">20</span>));</span><br><span class="line">    nodes.get(<span class="string">&quot;d&quot;</span>).map.put(nodes.get(<span class="string">&quot;e&quot;</span>), <span class="keyword">new</span> <span class="title class_">Edge</span>(nodes.get(<span class="string">&quot;d&quot;</span>), nodes.get(<span class="string">&quot;e&quot;</span>), <span class="number">60</span>));</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//节点,没有什么特别之处,和一个String的类型一样;</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Vertex</span> &#123;</span><br><span class="line">    String key;</span><br><span class="line">    HashMap&lt;Vertex, Edge&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;Vertex, Edge&gt;();  <span class="comment">//key:以Vertex为end边的节点,当前节点到key的距离;</span></span><br><span class="line"></span><br><span class="line">    Vertex(String key) &#123;</span><br><span class="line">        <span class="built_in">this</span>.key = key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//边,包含了一个起始和一个终止节点,已经一个边的长度;</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Edge</span> &#123;</span><br><span class="line">    Vertex start;</span><br><span class="line">    Vertex end;</span><br><span class="line">    <span class="type">int</span> Len;</span><br><span class="line">    <span class="type">boolean</span> used;</span><br><span class="line"></span><br><span class="line">    Edge(Vertex start, Vertex end, <span class="type">int</span> key) &#123;</span><br><span class="line">        <span class="built_in">this</span>.start = start;</span><br><span class="line">        <span class="built_in">this</span>.end = end;</span><br><span class="line">        <span class="built_in">this</span>.Len = key;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%AE%97%E6%B3%95/"># 算法</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/04/26/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D-KMP%E7%AE%97%E6%B3%95/">字符串匹配--KMP算法</a>
+            
+            
+            <a class="next" rel="next" href="/2017/04/10/%E5%B9%BF%E5%BA%A6%E4%BC%98%E5%85%88%E7%AE%97%E6%B3%95/">广度优先算法</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

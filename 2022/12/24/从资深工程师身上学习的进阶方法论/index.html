@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>从资深工程师身上学习的进阶方法论 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">从资深工程师身上学习的进阶方法论</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 24, 2022&nbsp;&nbsp;16:48:19&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">871&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">1 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>今天阅读到一篇文章-<a target="_blank" rel="noopener" href="https://blog.pragmaticengineer.com/advice-to-myself-when-starting-as-a-software-developer/">Advice to Myself When Starting Out as a Software Developer</a>。<br>作者是一位资深的研发工程师，他在工作多年后，回顾到自己一路进阶打怪所积攒的经验，很有借鉴意义，摘录下来。</p>
+<span id="more"></span>
+
+
+<h3 id="1-每年读两本关于软件工程的书"><a href="#1-每年读两本关于软件工程的书" class="headerlink" title="1. 每年读两本关于软件工程的书"></a>1. 每年读两本关于软件工程的书</h3><p>注意是软件工程，偏系统，架构相关，而非简单的应用型书籍，这种书籍大多偏理论，抽象。但是想要进阶，这种能力必不可少。</p>
+<h3 id="2-精研工作中主打的编程语言，学通学精"><a href="#2-精研工作中主打的编程语言，学通学精" class="headerlink" title="2. 精研工作中主打的编程语言，学通学精"></a>2. 精研工作中主打的编程语言，学通学精</h3><p>精研一道两门工作中的语言，学到底层。此时你发现你已经掌握的一种超能力，使得你在学习其它语言的时候非常快。</p>
+<p>你会发现你懂的语言越多，就越了解它们各自的长处和短处。而且，你知道的语言越多，就越容易掌握新的语言——并且在需要时更轻松地深入学习。</p>
+<h3 id="3-重视单元测试用例"><a href="#3-重视单元测试用例" class="headerlink" title="3. 重视单元测试用例"></a>3. 重视单元测试用例</h3><p>高级工程师们经常谈论单元测试的重要性。但是单元测试似乎太违反直觉了：为什么要花更多的时间编写看起来很简单的测试？这是我在某段时间里对单元测试的看法。为了领略单元测试的价值，你需要拥有“啊哈！”时刻。当你编写的单元测试为你节省了一天的时间，那就是“啊哈！”时刻。</p>
+<p>不幸的是，在到达这一步之前，你需要脚踏实地，好好编写这些测试，并使它们在持续集成中运行。而且，你可能需要持续做上几个月，才会得到一个“啊哈！”时刻。</p>
+<h3 id="4-养成重构习惯并掌握重构工具"><a href="#4-养成重构习惯并掌握重构工具" class="headerlink" title="4. 养成重构习惯并掌握重构工具"></a>4. 养成重构习惯并掌握重构工具</h3><p>通过不断对项目进行小型或大型重构，让代码变得更好。注意，重构不是搞乱事情。</p>
+<p>这里一个不起眼但是很重要的 tips 是：你需要非常了解自己的 IDE，使用或者编写用于重构的插件，使得提取方法、改变量名、提取成常量在瞬间完成！</p>
+<h3 id="5-成长速度和业务场景强关联"><a href="#5-成长速度和业务场景强关联" class="headerlink" title="5. 成长速度和业务场景强关联"></a>5. 成长速度和业务场景强关联</h3><p>找机会在不同的技术栈、不同的领域和具有挑战性的项目里工作。</p>
+<p>作者花了七八年的时间才达到自己认为的“高级”水平。而反观身边的同事，有些人加入了像 Uber 这种高成长性的公司，三四年就达到了。这中间的区别是什么？</p>
+<p>这些人从事具有挑战性的项目，力求跟上周围其他人的步伐，并经常在中途更换团队，重新开始。他们自愿参与新项目，并在团队中率先尝试新技术。</p>
+<h3 id="6-善于分享"><a href="#6-善于分享" class="headerlink" title="6. 善于分享"></a>6. 善于分享</h3><p>分享的目的有两个：</p>
+<ol>
+<li>提升自身影响力</li>
+<li>确认自己是否真的会了</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%A8%8B%E5%BA%8F%E4%BA%BA%E7%94%9F/"># 程序人生</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2023/02/11/how-to-read-book/">如何阅读一本书</a>
+            
+            
+            <a class="next" rel="next" href="/2022/08/14/%E6%80%9D%E8%80%83-%E5%BF%AB%E4%B8%8E%E6%85%A2/">思考,快与慢</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

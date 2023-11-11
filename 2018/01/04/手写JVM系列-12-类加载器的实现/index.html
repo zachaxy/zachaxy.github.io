@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>手写JVM系列(12)-类加载器的实现 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">手写JVM系列(12)-类加载器的实现</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 4, 2018&nbsp;&nbsp;15:32:52&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">10k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">9 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>通过之前的文章，我们了解了 Class 文件存储格式的具体细节，在 Class 文件中描述的各种信息,最终都需要加载到虚拟机中之后才能运行和使用。之前我们已经可以将 Class 文件的字节码读取到内存中了，这其实就是类加载器中 的加载过程，属于类加载器的一部分功能，除此之外，类加载器还有其它功能需要完善，这一节将对类加载的过程做一个详细的介绍。<br>本节的代码集中在 <a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM/tree/master/Java/src/runtimedata/heap">heap</a> 包下。</p>
+</blockquote>
+<h1 id="类加载的生命周期"><a href="#类加载的生命周期" class="headerlink" title="类加载的生命周期"></a>类加载的生命周期</h1><p>类从被加载到虚拟机开始，到卸载出内存，其整个生命周期包括：</p>
+<ol>
+<li>加载</li>
+<li>验证—-|</li>
+<li>准备—-|—&gt;连接</li>
+<li>解析—-|</li>
+<li>初始化</li>
+<li>使用</li>
+<li>卸载</li>
+</ol>
+<p>其中：验证，准备，解析3个阶段统称为连接阶段。C语言需要在编译时进行连接工作，但是Java不同，其“连接”的工作全都推迟到运行期来做，这虽然会增加一些性能上的开销，但是却为java应用程序提供高度的灵活性.</p>
+<p>其生命周期的 加载，验证，准备，初始化，卸载这五个阶段顺序是确定的，而类的解析阶段，正常情况下是在初始化之前的，但是遇到多态，则在初始化之后开始。这也充分体现了Java的灵活性。<br>我们重点要掌握的是加载，验证，准备，解析,初始化这五个阶段。</p>
+<span id="more"></span>
+
+<p>虚拟机规范严格规定有且只有以下5种情况必须立即对类进行初始化:（前提是该类还未进行过初始化，以下5个条件任何一个都会触发其初始化动作；如果已经进行过初始化，会从 <strong>方法区</strong> 中直接读取）</p>
+<ol>
+<li>遇到new，getstatic，putstatic，invokestatic这四条字节码指令时；其分别对应Java语法中的使用new关键字实例化对象，读写一个类的静态变量时（若是读的static final 的基本类型或者字符串，那么其值是在字段的ConstantValue属性中就初始化好的，并不需要对类进行初始化），调用类的静态方法时；</li>
+<li>使用反射对类进行调用时</li>
+<li>初始化一个类的时候，发现其父类还未初始化，那么先触发其父类的初始化</li>
+<li>启动虚拟机时，需要制定一个包含main方法的类，虚拟机会先初始化该类</li>
+<li>如果一个<code>MethodHandle</code>实例最后的解析结果是 <code>REF_getStatic</code>,<code>REF_putStatic</code>,<code>REF_invokeStatic</code> 的方法的句柄时，会触发对应的 REF 类加载。</li>
+</ol>
+<h1 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h1><p>加载阶段，虚拟机需要完成2件事：</p>
+<ol>
+<li>通过类的全限定名来获取该类的二进制字节流，对应我们之前讲的搜寻类所在的路径，并读取 class 文件，将其映射为 <a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM/blob/master/Java/src/classfile/ClassFile.java">ClassFile</a> 对象</li>
+<li>将这个字节流所代表的静态存储初结构转换为方法区的运行时数据结构，将 ClassFile 转换为 <a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM/blob/master/Java/src/runtimedata/heap/Zclass.java">Zclass</a></li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//读取 class 文件</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">byte</span>[] readClass(String name) &#123;</span><br><span class="line">    <span class="type">byte</span>[] data = classPath.readClass(name);</span><br><span class="line">    <span class="keyword">if</span> (data != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将上面读取的到字节码转换为最终的 Zclass</span></span><br><span class="line"><span class="keyword">private</span> Zclass <span class="title function_">paraseClass</span><span class="params">(<span class="type">byte</span>[] data)</span> &#123;</span><br><span class="line">    <span class="type">ClassFile</span> <span class="variable">cf</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassFile</span>(data);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zclass</span>(cf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h1><p>这一阶段的目的是确保Class文件中的字节流包含的信息符合当前虚拟机的要求。该阶段需要接受四小阶段的验证动作：</p>
+<ol>
+<li>文件格式验证：是否按照Class字节码的格式组织的，同时对索引的访问是否越界等</li>
+<li>元数据验证：对字节码（Code中的属性）描述的信息进行语义分析，以保证其符合Java语言规范</li>
+<li>字节码验证：对数据流和控制流分析，确定程序语义是合法的，而不会在运行时危害虚拟机安全</li>
+<li>符号引用验证：在解析阶段发生，主要是验证符号引用转换为直接引用的时候。若无法通过符号引用验证，那么将抛出IncompatibleClassChangeError的子类。符号引用验证在转换为直接引用的时候，还要判断当前类是都对转换的直接引用有访问权限，如果没有，则抛出<code>java.lang.IllegalAccessError</code>异常。</li>
+</ol>
+<p>注意：这个阶段并不是必须的，如果是我们自己写的代码，后者大量验证了第三方库的代码是无害的，那么完全可以取消验证阶段，以提高类加载的效率。<code>可使用 -Xverify:none 参数来关闭验证</code></p>
+<p>而在本 JVM 中并没有对其进行验证。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在执行类的任何代码之前要对类进行严格的检验,这里忽略检验过程,,作为空实现;</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">verify</span><span class="params">(Zclass clazz)</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><p>准备阶段是为类的<strong>静态变量</strong>分配内存，并设置初值的阶段，这里要注意的是，<strong>设置初值指的是类型的零值</strong>。<br>例如类中有如下语句：<code>public static int i = 123;</code>，那么i在初始化阶段过后的值为0，而不是123，赋值为123的阶段是在后面的初始化阶段。<br>但是如果是同时被final修饰变量，<code>public static final int i = 123;</code>那么会为该变量生成ConstantValue属性，并在准备阶段将其值设为123。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//给类变量分配空间并赋予初始值</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">prepare</span><span class="params">(Zclass clazz)</span> &#123;</span><br><span class="line">    calcInstanceFieldSlotIds(clazz);</span><br><span class="line">    calcStaticFieldSlotIds(clazz);</span><br><span class="line">    allocAndInitStaticVars(clazz);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 计算new一个对象所需的空间,单位是clazz.instanceSlotCount,主要包含了类的非静态成员变量(包含父类的)</span></span><br><span class="line"><span class="comment">// 但是这里并没有真正的申请空间，只是计算大小，同时为每个非静态变量关联 slotId</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">calcInstanceFieldSlotIds</span><span class="params">(Zclass clazz)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">slotId</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (clazz.superClass != <span class="literal">null</span>) &#123;</span><br><span class="line">        slotId = clazz.superClass.instanceSlotCount;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (Zfield field : clazz.fileds) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!field.isStatic()) &#123;</span><br><span class="line">            field.slotId = slotId;</span><br><span class="line">            slotId++;</span><br><span class="line">            <span class="keyword">if</span> (field.isLongOrDouble()) &#123;</span><br><span class="line">                slotId++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    clazz.instanceSlotCount = slotId;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//计算类的静态成员变量所需的空间，不包含父类，同样也只是计算和分配 slotId，不申请空间</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">calcStaticFieldSlotIds</span><span class="params">(Zclass clazz)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">slotId</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (Zfield field : clazz.fileds) &#123;</span><br><span class="line">        <span class="keyword">if</span> (field.isStatic()) &#123;</span><br><span class="line">            field.slotId = slotId;</span><br><span class="line">            slotId++;</span><br><span class="line">            <span class="keyword">if</span> (field.isLongOrDouble()) &#123;</span><br><span class="line">                slotId++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    clazz.staticSlotCount = slotId;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 为静态变量申请空间,注意:这个申请空间的过程,就是将所有的静态变量赋值为0或者null;</span></span><br><span class="line"><span class="comment">// 如果是 static final 的基本类型或者 String，其值会保存在ConstantValueAttribute属性中</span></span><br><span class="line"><span class="comment">// 而ConstantValueAttribute属性中保存的值又是在常量池中！</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">allocAndInitStaticVars</span><span class="params">(Zclass clazz)</span> &#123;</span><br><span class="line">    clazz.staticVars = <span class="keyword">new</span> <span class="title class_">Slots</span>(clazz.staticSlotCount);</span><br><span class="line">    <span class="keyword">for</span> (Zfield field : clazz.fileds) &#123;</span><br><span class="line">        <span class="keyword">if</span> (field.isStatic() &amp;&amp; field.isFinal()) &#123;</span><br><span class="line">            initStaticFinalVar(clazz, field);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 为static final 修饰的成员赋值,这种类型的成员是ConstantXXXInfo类型的,该info中包含真正的值在运行时常量池中;</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">initStaticFinalVar</span><span class="params">(Zclass clazz, Zfield zfield)</span> &#123;</span><br><span class="line">    <span class="type">Slots</span> <span class="variable">staticVars</span> <span class="operator">=</span> clazz.staticVars;</span><br><span class="line">    <span class="type">RuntimeConstantPool</span> <span class="variable">runtimeConstantPool</span> <span class="operator">=</span> clazz.getRuntimeConstantPool();</span><br><span class="line">    <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> zfield.constValueIndex;</span><br><span class="line">    <span class="type">int</span> <span class="variable">slotId</span> <span class="operator">=</span> zfield.slotId;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (index &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">switch</span> (zfield.getDescriptor()) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;Z&quot;</span>:</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;B&quot;</span>:</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;C&quot;</span>:</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;S&quot;</span>:</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;I&quot;</span>:</span><br><span class="line">                <span class="type">int</span> <span class="variable">intValue</span> <span class="operator">=</span> (<span class="type">int</span>) runtimeConstantPool.getRuntimeConstant(index).getValue();</span><br><span class="line">                staticVars.setInt(slotId, intValue);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;J&quot;</span>:</span><br><span class="line">                <span class="type">long</span> <span class="variable">longValue</span> <span class="operator">=</span> (<span class="type">long</span>) runtimeConstantPool.getRuntimeConstant(index).getValue();</span><br><span class="line">                staticVars.setLong(slotId, longValue);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;F&quot;</span>:</span><br><span class="line">                <span class="type">float</span> <span class="variable">floatValue</span> <span class="operator">=</span> (<span class="type">float</span>) runtimeConstantPool.getRuntimeConstant(index).getValue();</span><br><span class="line">                staticVars.setFloat(slotId, floatValue);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;D&quot;</span>:</span><br><span class="line">                <span class="type">double</span> <span class="variable">doubleValue</span> <span class="operator">=</span> (<span class="type">double</span>) runtimeConstantPool.getRuntimeConstant(index).getValue();</span><br><span class="line">                staticVars.setDouble(slotId, doubleValue);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;Ljava/lang/String;&quot;</span>:</span><br><span class="line">                <span class="type">String</span> <span class="variable">stringValue</span> <span class="operator">=</span> (String) runtimeConstantPool.getRuntimeConstant(index).getValue();</span><br><span class="line">                <span class="type">Zobject</span> <span class="variable">jStr</span> <span class="operator">=</span> StringPool.jString(clazz.getLoader(), stringValue);</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h1><p>解析阶段在<a href="https://zachaxy.github.io/2018/01/03/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-11-%E7%BA%BF%E7%A8%8B%E5%85%B1%E4%BA%AB%E7%9A%84%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE/#%E6%80%BB%E7%BB%93">上一节</a>分析过概念，而接下会通过代码进行解释。该阶段是将class文件中常量池的符号引用替换为直接引用的过程，符号引用指的是在class文件中的<code>Constant_Class_info</code>,<code>Constant_Fieldref_info</code>,<code>Constant_Methodref_info</code>,<code>Constant_InterfaceMethodref_info</code>这四个常量。以及<code>Constant_MethodType_info</code>，<code>Constant_MethodHandle_info</code>，<code>Constant_Invokedynamic_info</code>。而这三种常量类型与JDK1.7新增的动态语言支持相关，这里暂时不涉及。</p>
+<p>符号引用vs直接引用<br>在class文件中，是一堆数据，这四个常量类型是以字符串来描述的，符号引用与虚拟机中的内存布局无关，因此成为符号引用。而直接引用则是直接指向虚拟机内存中目标的指针。</p>
+<p>上述四种常量类型可分为三类：</p>
+<ul>
+<li>类或接口</li>
+<li>字段</li>
+<li>方法<br>接下来对这三种类型的解析过程做一个介绍</li>
+</ul>
+<h2 id="类或接口类型的解析"><a href="#类或接口类型的解析" class="headerlink" title="类或接口类型的解析"></a>类或接口类型的解析</h2><p>当前类d，以及其class文件中的常量池，解析其中的<code>Constant_Class_info</code>，根据该常量，可以获取其对应的全限定名，然后将全限定名传给d的类加载器，去接在目标类c，中途出现任何异常，都将终止整个解析过程。将c加载出来后，还要判断当前类d对c是否具有访问权限(该过程属于符号引用验证阶段)，如果没有访问权限，则抛出<code>java.lang.IllegalAccessError</code>异常。</p>
+<h2 id="字段的解析"><a href="#字段的解析" class="headerlink" title="字段的解析"></a>字段的解析</h2><p>当前类d，以及其class文件中的常量池，解析其中的<code>Constant_Fieldref_info</code>，根据该常量，首先获取其classIndex索引，获取到常量池中<code>Constant_Class_info</code>，对其进行解析，如果目标类c解析成功，接下来进行后续的字段搜索。</p>
+<ol>
+<li>如果c中包含了该目标字段(简单名称和字段描述符都能匹配)，则返回该字段的直接引用。</li>
+<li>否则，如果c实现了接口，会按照继承关系，从下向上递归搜索接口和父接口，如果能找到，则返回该字段的引用</li>
+<li>否则，按照类继承关系，从下向上递归搜索父类，直到顶级父类Object，如果能找到，则返回该字段的引用</li>
+<li>否则，查找失败，抛出<code>java.lang.NoSuchFieldError</code>异常。</li>
+</ol>
+<p>如果查找过程中成功返回了引用，则将对目标字段进行权限验证，如果没有访问权限，则抛出<code>java.lang.IllegalAccessError</code>异常。</p>
+<h2 id="类方法的解析"><a href="#类方法的解析" class="headerlink" title="类方法的解析"></a>类方法的解析</h2><p>当前类d，以及其class文件中的常量池，解析其中的<code>Constant_Methodref_info</code>，根据该常量，首先获取其classIndex索引，获取到常量池中<code>Constant_Class_info</code>，对其进行解析，如果目标类c解析成功，接下来进行后续的方法搜索。</p>
+<ol>
+<li>首先明确这是类方法，而不是接口方法。如果在类方法中发现classIndex索引的c是个接口，那么直接抛出<code>java.lang.IncompatibleClassChangeError</code>异常</li>
+<li>如果通过第1步，在c中查找是否有简单名称和描述符都与目标匹配的方法，如果有则返回该方法的直接引用</li>
+<li>否则，按照类继承关系，从下向上递归搜索父类，直到顶级父类Object，如果能找到，则返回该方法的引用</li>
+<li>否则，在c实现的接口和其父接口中递归查找简单名称和描述符都与目标匹配的方法，如果有，说明c是一个抽象类，抛出<code>java.lang.AbstractMethodError</code>异常</li>
+<li>否则，查找失败，抛出<code>java.lang.NoSuchMethodError</code></li>
+</ol>
+<p>如果查找过程成功返回了引用，则将对目标方法进行权限验证，如果没有访问权限，则抛出<code>java.lang.IllegalAccessError</code>异常。</p>
+<h2 id="接口方法的解析"><a href="#接口方法的解析" class="headerlink" title="接口方法的解析"></a>接口方法的解析</h2><p>当前类d，以及其class文件中的常量池，解析其中的<code>Constant_InterfaceMethodref_info</code>，根据该常量，首先获取其classIndex索引，获取到常量池中<code>Constant_Class_info</code>，对其进行解析，如果目标接口 c解析成功，接下来进行后续的方法搜索。</p>
+<ol>
+<li>首先明确这是接口方法，而不是类方法。如果在接口方法中发现classIndex索引的c是个类，那么直接抛出<code>java.lang.IncompatibleClassChangeError</code>异常</li>
+<li>如果通过第1步，在c中查找是否有简单名称和描述符都与目标匹配的方法，如果有则返回该方法的直接引用</li>
+<li>否则，按照接口继承关系，从下向上递归搜索父接口，直到顶级父类Object(接口的顶级父类也是Object)，如果能找到，则返回该方法的引用</li>
+<li>否则，查找失败，抛出<code>java.lang.NoSuchMethodError</code></li>
+</ol>
+<p>接口中的方法默认都是public的，所以不存在访问权限问题。</p>
+<h2 id="以类引用的解析为例"><a href="#以类引用的解析为例" class="headerlink" title="以类引用的解析为例"></a>以类引用的解析为例</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public class SymRef &#123;</span><br><span class="line">    RuntimeConstantPool runtimeConstantPool;   //存放符号引用所在的运行时常量池指针,可以通过符号引用访问到运行时常量池，进一步又可以访问到类数据</span><br><span class="line">    String className;   //存放类的完全限定名</span><br><span class="line">    Zclass clazz;       //上述运行时常量池的宿主类中的符号引用的真正类,在外面访问时，根据 clazz 是否为 null 来决定是否执行 loadClass</span><br><span class="line"></span><br><span class="line">    public SymRef(RuntimeConstantPool runtimeConstantPool) &#123;</span><br><span class="line">        this.runtimeConstantPool = runtimeConstantPool;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //类引用转直接引用</span><br><span class="line">    public Zclass resolvedClass() &#123;</span><br><span class="line">        if (clazz == null) &#123;</span><br><span class="line">            resolvedClassRef();</span><br><span class="line">        &#125;</span><br><span class="line">        return clazz;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 当前类(runtimeConstantPool的宿主类)d中,如果引用了类c,那么就将c加载进来</span><br><span class="line">    private void resolvedClassRef() &#123;</span><br><span class="line">        Zclass d = runtimeConstantPool.clazz;</span><br><span class="line">        Zclass c = d.loader.loadClass(className);</span><br><span class="line">        //在这里判断下 d 能否访问 c</span><br><span class="line">        if (!c.isAccessibleTo(d)) &#123;</span><br><span class="line">            throw new IllegalAccessError(d.thisClassName + &quot; can&#x27;t access &quot; + c.thisClassName);</span><br><span class="line">        &#125;</span><br><span class="line">        clazz = c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的 SymRef 代表类引用，其核心方法就是resolvedClassRef方法。该方法是在什么情况下使用呢？</p>
+<h1 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h1><p>初始化阶段才是真正执行类中定义的Java程序代码(字节码)。<br>在前面的准备阶段，已经对类的静态变量进行过一次赋值了(0或者final定义的值)。而在初始化阶段，则根据程序员通过程序制定的代码去初始化类静态变量。其实，初始化阶段就是执行类构造器 <code>&lt;clinit&gt;</code>方法的过程。</p>
+<p><code>&lt;clinit&gt;</code>方法由编译器自动收集类中所有静态变量的赋值语句和静态代码块的语句，按照其在源文件中出现的顺序融到<code>&lt;clinit&gt;</code>中。同时，虚拟机会保证在执行子类的<code>&lt;clinit&gt;</code>方法之前，父类的<code>&lt;clinit&gt;</code>方法已经执行完毕。所以虚拟机中第一个被执行的<code>&lt;clinit&gt;</code>方法一定是Object类的。</p>
+<p>注意：只有当类中存在静态变量赋值语句或者静态代码块时，才会产生<code>&lt;clinit&gt;</code>方法，如果没有这些，那么虚拟机也就没有必要去创建<code>&lt;clinit&gt;</code>方法。</p>
+<p>接口中虽然不能包含静态代码块，但是可以包含变量的赋值，而且接口中的变量默认是<code>public static final</code> 的。因此接口中也可以有<code>&lt;clinit&gt;</code>方法，但是执行接口的<code>&lt;clinit&gt;</code>方法并不要求父接口的<code>&lt;clinit&gt;</code>先执行。</p>
+<p>初始化阶段执行的<code>&lt;clinit&gt;</code>方法我们当做一个普通的方法来执行就可以了，如果有的话，其在 class 文件中会产生对应的字节码。但是唯一要注意的是，<code>&lt;clinit&gt;</code>方法同一个类只能执行一次。因此在 Zclass 类中，添加了一个布尔类型的 initStarted 字段判断类是否已经初始化，执行了类的<code>&lt;clinit&gt;</code>方法。</p>
+<p>回想文章一开始介绍的类加载的时机，是在遇到new，getstatic，putstatic，invokestatic这四条字节码指令时，那么我们就在这四个指令的执行过程中去判断一个 class 是否已经被初始化，如果没有执行过，那么先执行其类初始化方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//判断其Class是否已经加载过,如果还未加载,那么调用其类的&lt;clinit&gt;方法压栈</span></span><br><span class="line"><span class="keyword">if</span> (!clazz.isInitStarted()) &#123;</span><br><span class="line">    <span class="comment">//当前指令已经是在执行new了,但是类还没有加载,所以当前帧先回退,让类初始化的帧入栈,等类初始化完成后,重新执行new;</span></span><br><span class="line">    frame.revertNextPC();</span><br><span class="line">    ClassInitLogic.initClass(frame.getThread(), clazz);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="类加载器的实现"><a href="#类加载器的实现" class="headerlink" title="类加载器的实现"></a>类加载器的实现</h1><p>具体源码请参考<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM/blob/master/Java/src/runtimedata/heap/ZclassLoader.java">ZclassLoader</a>，这里简述下其大体流程：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ZclassLoader</span> &#123;</span><br><span class="line">    ClassPath classPath;</span><br><span class="line">    <span class="comment">//作为缓存，之前加载过这个类，那么就将其class引用保存到map中，后面再用到这个类的时候，直接用map中取；</span></span><br><span class="line">    HashMap&lt;String, Zclass&gt; map;  </span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ZclassLoader</span><span class="params">(ClassPath classPath)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.classPath = classPath;</span><br><span class="line">        <span class="built_in">this</span>.map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;String, Zclass&gt;();</span><br><span class="line"></span><br><span class="line">        loadBasicClasses();</span><br><span class="line">        loadPrimitiveClasses();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> Zclass <span class="title function_">loadClass</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (map.containsKey(name)) &#123;</span><br><span class="line">            <span class="keyword">return</span> map.get(name);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Zclass clazz;</span><br><span class="line">        <span class="keyword">if</span> (name.charAt(<span class="number">0</span>) == <span class="string">&#x27;[&#x27;</span>) &#123;</span><br><span class="line">            clazz = loadArrayClass(name);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            clazz = loadNonArrayClass(name);</span><br><span class="line">        &#125;</span><br><span class="line">        ......</span><br><span class="line">        <span class="keyword">return</span> clazz;</span><br><span class="line">    &#125;   </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> Zclass <span class="title function_">loadNonArrayClass</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="type">byte</span>[] data = readClass(name);</span><br><span class="line">        <span class="type">Zclass</span> <span class="variable">clazz</span> <span class="operator">=</span> defineClass(data);</span><br><span class="line">        link(clazz);</span><br><span class="line">        <span class="keyword">return</span> clazz;</span><br><span class="line">    &#125;  </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[] readClass(String name) &#123;</span><br><span class="line">        <span class="type">byte</span>[] data = classPath.readClass(name);</span><br><span class="line">        <span class="keyword">if</span> (data != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> data;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ClassCastException</span>(<span class="string">&quot;class name: &quot;</span> + name);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> Zclass <span class="title function_">defineClass</span><span class="params">(<span class="type">byte</span>[] data)</span> &#123;</span><br><span class="line">        <span class="type">Zclass</span> <span class="variable">clazz</span> <span class="operator">=</span> parseClass(data);</span><br><span class="line">        clazz.loader = <span class="built_in">this</span>;</span><br><span class="line">        resolveSuperClass(clazz);</span><br><span class="line">        resolveInterfaces(clazz);</span><br><span class="line">        map.put(clazz.thisClassName, clazz);</span><br><span class="line">        <span class="keyword">return</span> clazz;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">   <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">link</span><span class="params">(Zclass clazz)</span> &#123;</span><br><span class="line">        verify(clazz);</span><br><span class="line">        prepare(clazz);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//在执行类的任何代码之前要对类进行严格的检验,这里忽略检验过程,作为空实现;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">verify</span><span class="params">(Zclass clazz)</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//给类变量分配空间并赋予初始值</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">prepare</span><span class="params">(Zclass clazz)</span> &#123;</span><br><span class="line">        calcInstanceFieldSlotIds(clazz);</span><br><span class="line">        calcStaticFieldSlotIds(clazz);</span><br><span class="line">        allocAndInitStaticVars(clazz);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JVM/"># JVM</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/01/04/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-13-%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E6%9C%BA%E5%88%B6/">手写JVM系列(13)-方法调用机制</a>
+            
+            
+            <a class="next" rel="next" href="/2018/01/03/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-11-%E7%BA%BF%E7%A8%8B%E5%85%B1%E4%BA%AB%E7%9A%84%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE/">手写JVM系列(11)-线程共享的运行时数据</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

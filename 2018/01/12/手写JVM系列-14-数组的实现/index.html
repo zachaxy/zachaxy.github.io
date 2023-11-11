@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>手写JVM系列(14)-数组的实现 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">手写JVM系列(14)-数组的实现</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 12, 2018&nbsp;&nbsp;19:18:25&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">7.2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">7 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>前面介绍了<a href="https://zachaxy.github.io/2018/01/04/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-12-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%AE%9E%E7%8E%B0/">类加载器的实现</a>，目前我们已经可以加载普通的类，并创建该类的对象了，但是目前我们的 JVM 还不支持数组。数组类虽然也是类，但是其加载方式和之前所讲的通过 class 文件的形式加载是完全不同的，本节将介绍 JVM 中数组的实现，并完善我们的类加载器，使其可以加载数组。</p>
+<span id="more"></span>
+
+<h1 id="数组概述"><a href="#数组概述" class="headerlink" title="数组概述"></a>数组概述</h1><ul>
+<li>基本数组类型：数组中的元素类型是基本类型</li>
+<li>引用数组类型：数组中的元素类型是引用类型</li>
+</ul>
+<p>数组类也是类，其父类同样也是 Object，但是其又和普通的类有一些差异：</p>
+<ul>
+<li>普通的类从 class 文件中加载,而数组类则是 JVM 在运行时生成的.</li>
+<li>创建普通对象和创建数组所用的指令是不同的;前者用 new,后者用 newarray 等指令。</li>
+<li>访问对象的成员变量和数组的元素不同，前者使用的是 getfield 指令，后者使用的是 aload 指令。</li>
+<li>数组的类名和其它类也不同，数组的类名是用左括号+数组元素的类型描述符。同时，数组的类名和数组的类型描述符是一样的。eg：int[]的类名为：[I；int[][] 的类名为：[[I；String[][] 的类名为： [[java&#x2F;lang&#x2F;String；</li>
+</ul>
+<h1 id="数组的创建"><a href="#数组的创建" class="headerlink" title="数组的创建"></a>数组的创建</h1><p>普通类和数组类的创建方式不同,但是其归根结底还是 Object 的子类。所以要在之前的 Zclass 中添加额外的针对创建数组 class 的方法。同样由数组的 class 创建的数组 Object 和普通 Object 不同。所以还要在 Object 中添加额外的方法来创建数组 Object。可是不管数组类和普通类有什么区别，整体的流程都是一样的，凡是创建对象,都是使用 newXXX 的指令,通过对应的指令先创建其对应的 class,然后用该 class 来创建 object。<br>接下来依次从加载数组类，然后根据数组类创建数组对象的流程，讲解数组的创建过程。</p>
+<h2 id="加载数组类"><a href="#加载数组类" class="headerlink" title="加载数组类"></a>加载数组类</h2><p>加载数组类和加载普通类的时机都是一样的，如果在 java 代码中显式的 new 了一个数组，那么势必会触发对应数组类的加载，而创建数组类的指令有三个：</p>
+<ul>
+<li>newarray：用于创建基本类型的一维数组，其操作数为一字节，该字节用来表示对应的基本类型</li>
+<li>anewarray：用于创建引用类型的一维数组，其操作数为 2 字节，指向运行时常量池的一个类引用，该引用的类型就是引用类型数组中的元素类型</li>
+<li>multianewarray：用于创建多维数组，其操作数为 3 字节，前两个字节同 anewarray，后一个字节用来表示多维数组的纬度，由此也可以看出我们在 Java 中创建多维数组最大纬度为 255。</li>
+</ul>
+<p>这里以 newarray 指令为例，查看其数组类加载的过程：<br>前面也说了 newarray 所创建的基本类型在指令后的字节中，JVM 为基本类型设置了对应的值，我们可以根据值来加载对应的类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_BOOLEAN</span> <span class="operator">=</span> <span class="number">4</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_CHAR</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_FLOAT</span> <span class="operator">=</span> <span class="number">6</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_DOUBLE</span> <span class="operator">=</span> <span class="number">7</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_BYTE</span> <span class="operator">=</span> <span class="number">8</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_SHORT</span> <span class="operator">=</span> <span class="number">9</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_INT</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_LONG</span> <span class="operator">=</span> <span class="number">11</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">switch</span> (<span class="built_in">this</span>.index) &#123;</span><br><span class="line">    <span class="keyword">case</span> AT_BOOLEAN:</span><br><span class="line">        <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[Z&quot;</span>);</span><br><span class="line">    <span class="keyword">case</span> AT_BYTE:</span><br><span class="line">        <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[B&quot;</span>);</span><br><span class="line">    <span class="keyword">case</span> AT_CHAR:</span><br><span class="line">        <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[C&quot;</span>);</span><br><span class="line">    <span class="keyword">case</span> AT_SHORT:</span><br><span class="line">        <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[S&quot;</span>);</span><br><span class="line">    <span class="keyword">case</span> AT_INT:</span><br><span class="line">        <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[I&quot;</span>);</span><br><span class="line">    <span class="keyword">case</span> AT_LONG:</span><br><span class="line">        <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[J&quot;</span>);</span><br><span class="line">    <span class="keyword">case</span> AT_FLOAT:</span><br><span class="line">        <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[F&quot;</span>);</span><br><span class="line">    <span class="keyword">case</span> AT_DOUBLE:</span><br><span class="line">        <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[D&quot;</span>);</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;Invalid atype!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后用类加载器去加载对应的类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Zclass <span class="title function_">loadClass</span><span class="params">(String name)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (map.containsKey(name)) &#123;</span><br><span class="line">        <span class="keyword">return</span> map.get(name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Zclass clazz;</span><br><span class="line">    <span class="keyword">if</span> (name.charAt(<span class="number">0</span>) == <span class="string">&#x27;[&#x27;</span>) &#123;</span><br><span class="line">        clazz = loadArrayClass(name);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        clazz = loadNonArrayClass(name);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> clazz;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建数组类"><a href="#创建数组类" class="headerlink" title="创建数组类"></a>创建数组类</h2><p>在加载对应的基本类型数组的时候，并不是从字节码文件中读取，然后转换为对应的 Class 对象，而是根据基本数组类型，直接创建对应的 class 对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Zclass <span class="title function_">loadArrayClass</span><span class="params">(String name)</span> &#123;</span><br><span class="line">    <span class="type">Zclass</span> <span class="variable">clazz</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Zclass</span>(AccessFlag.ACC_PUBLIC, name, <span class="built_in">this</span>, <span class="literal">true</span>,</span><br><span class="line">            loadClass(<span class="string">&quot;java/lang/Object&quot;</span>),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Zclass</span>[]&#123;loadClass(<span class="string">&quot;java/lang/Cloneable&quot;</span>), loadClass(<span class="string">&quot;java/io/Serializable&quot;</span>)&#125;);</span><br><span class="line">    map.put(name, clazz);</span><br><span class="line">    <span class="keyword">return</span> clazz;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改 Zclass ，我们之前创建 class 对象都是根据 class 文件，通过传入一个 ClassFile 对象构造 Class 对象的，而对于数组类型，我们为其添加一个构造方法，用来直接创建数组类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Zclass</span><span class="params">(<span class="type">int</span> accessFlags, String thisClassName, ZclassLoader loader,</span></span><br><span class="line"><span class="params">              <span class="type">boolean</span> initStarted, Zclass superClass, Zclass[] interfaces)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.accessFlags = accessFlags;</span><br><span class="line">    <span class="built_in">this</span>.thisClassName = thisClassName;</span><br><span class="line">    <span class="built_in">this</span>.loader = loader;</span><br><span class="line">    <span class="built_in">this</span>.initStarted = initStarted;</span><br><span class="line">    <span class="built_in">this</span>.superClass = superClass;</span><br><span class="line">    <span class="built_in">this</span>.interfaces = interfaces;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建数组对象"><a href="#创建数组对象" class="headerlink" title="创建数组对象"></a>创建数组对象</h2><p>上面创建的数组类型的 class 对象，那么接下来就该利用该 class 对象创建数组对象了，在 Zclass.java 中添加 newArray 方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Zobject <span class="title function_">newArray</span><span class="params">(<span class="type">int</span> count)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!isArray()) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;Not array class: &quot;</span> + thisClassName);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">switch</span> (thisClassName) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;[Z&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[count], <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;[B&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[count], <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;[C&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">char</span>[count], <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;[S&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">short</span>[count], <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;[I&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">int</span>[count], <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;[J&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">long</span>[count], <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;[F&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">float</span>[count], <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;[D&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">double</span>[count], <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Zobject</span>(<span class="built_in">this</span>, <span class="keyword">new</span> <span class="title class_">Zobject</span>[count], <span class="literal">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该方法需要得到数组的大小，在 java 中所创建的数组时是需要确定其具体大小的，该值保存在执行创建数组的 frame 中的操作数栈中。同时在创建对象时，根据 thisClassName 确定具体的类型，然后创建具体的 obj。</p>
+<p>同时注意到我们在创建 obj 对象时，是将创建好的数组赋值给了 Zobject 的 data 成员。该 data 成员在还没有介绍数组之前，是一个 slot[] 类型,用来保存非数组对象中的非静态成员变量,包含父类+ 自己的，现在引入了数组类型，需要将 Zobject 中的 data 类型做一个修改，这里直接改为 Object 类型，就可以做到既能盛放 slot，又能盛放数组对象。只不过在对普通对象和数组对象做元素存取的时候还要再进行强制类型转换，才能得到正确的值。其实我们可以这样理解，数组对象也是一个对象，只不过其内部的成员变量就是其数组的所有元素而已。</p>
+<h2 id="创建基本类型数组的指令-newarray-执行过程"><a href="#创建基本类型数组的指令-newarray-执行过程" class="headerlink" title="创建基本类型数组的指令 newarray 执行过程"></a>创建基本类型数组的指令 newarray 执行过程</h2><p>其实前面已经将基本类型数组对象的创建过程进行了一次描述了，这里只是贴出该指令执行的代码，作为回顾。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">NEW_ARRAY</span> <span class="keyword">extends</span> <span class="title class_">Index8Instruction</span> &#123;</span><br><span class="line">    <span class="comment">//Array Type  atype</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_BOOLEAN</span> <span class="operator">=</span> <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_CHAR</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_FLOAT</span> <span class="operator">=</span> <span class="number">6</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_DOUBLE</span> <span class="operator">=</span> <span class="number">7</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_BYTE</span> <span class="operator">=</span> <span class="number">8</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_SHORT</span> <span class="operator">=</span> <span class="number">9</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_INT</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">AT_LONG</span> <span class="operator">=</span> <span class="number">11</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(Zframe frame)</span> &#123;</span><br><span class="line">        <span class="type">OperandStack</span> <span class="variable">operandStack</span> <span class="operator">=</span> frame.getOperandStack();</span><br><span class="line">        <span class="comment">//从栈中获取数组的大小</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> operandStack.popInt();</span><br><span class="line">        <span class="keyword">if</span> (count &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NegativeArraySizeException</span>(<span class="string">&quot;&quot;</span> + count);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">ZclassLoader</span> <span class="variable">loader</span> <span class="operator">=</span> frame.getMethod().getClazz().getLoader();</span><br><span class="line">        <span class="type">Zclass</span> <span class="variable">arrClazz</span> <span class="operator">=</span> getPrimitiveArrayClass(loader);</span><br><span class="line">        <span class="type">Zobject</span> <span class="variable">arr</span> <span class="operator">=</span> arrClazz.newArray(count);</span><br><span class="line">        operandStack.pushRef(arr);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取基本类型数组的 class;如果没有加载过,需要加载进 JVM</span></span><br><span class="line">    <span class="keyword">private</span> Zclass <span class="title function_">getPrimitiveArrayClass</span><span class="params">(ZclassLoader loader)</span> &#123;</span><br><span class="line">        <span class="comment">//从字节码中获取到的 index 表明的是哪种类型的数组</span></span><br><span class="line">        <span class="keyword">switch</span> (<span class="built_in">this</span>.index) &#123;</span><br><span class="line">            <span class="keyword">case</span> AT_BOOLEAN:</span><br><span class="line">                <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[Z&quot;</span>);</span><br><span class="line">            <span class="keyword">case</span> AT_BYTE:</span><br><span class="line">                <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[B&quot;</span>);</span><br><span class="line">            <span class="keyword">case</span> AT_CHAR:</span><br><span class="line">                <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[C&quot;</span>);</span><br><span class="line">            <span class="keyword">case</span> AT_SHORT:</span><br><span class="line">                <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[S&quot;</span>);</span><br><span class="line">            <span class="keyword">case</span> AT_INT:</span><br><span class="line">                <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[I&quot;</span>);</span><br><span class="line">            <span class="keyword">case</span> AT_LONG:</span><br><span class="line">                <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[J&quot;</span>);</span><br><span class="line">            <span class="keyword">case</span> AT_FLOAT:</span><br><span class="line">                <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[F&quot;</span>);</span><br><span class="line">            <span class="keyword">case</span> AT_DOUBLE:</span><br><span class="line">                <span class="keyword">return</span> loader.loadClass(<span class="string">&quot;[D&quot;</span>);</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;Invalid atype!&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="完善数组相关的其它指令"><a href="#完善数组相关的其它指令" class="headerlink" title="完善数组相关的其它指令"></a>完善数组相关的其它指令</h1><p>前面介绍了创建基本类型的数组指令 newarray，其实还有其它和数组相关的指令，这里做一个概述，具体实现请参考<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM/tree/master/Java/src/instructions/references">instructions&#x2F;references 包下的源码</a></p>
+<h2 id="anewarray"><a href="#anewarray" class="headerlink" title="anewarray"></a>anewarray</h2><p>创建引用类型的一维数组。其过程和创建基本类型的一维数组是类似的，只不过该数组的元素是引用类型，所以我们要先获取到数组元素的引用类型。由 anewarray 指令后的操作数获取，其操作数为 2 字节，指向运行时常量池的一个类引用，该引用的类型就是引用类型数组中的元素类型。我们在获取到该类引用之后，先将其转换为直接引用(若还为加载过该类，则需要先加载到方法区)。接下来根据类型名，创建其一维数组名，eg：数组元素为 String，那么其一维数组类型名就是：[java&#x2F;lang&#x2F;String；接下来创建引用类型的一维数组的过程就和创建基本类型的一维数组过程就一样了。</p>
+<h2 id="arraylength"><a href="#arraylength" class="headerlink" title="arraylength"></a>arraylength</h2><p>获取数组的长度，在 java 中也是很常用的，其实现也很简单，我们之间在创建数组对象的时候，将数组放到了 Zobject 的 data 变量中，我们可以通过 data 的 class 来获取原本数组类型名，根据类型名将 data 进行相应的类型转换，得到具体的数组之后，在获取其长度。</p>
+<h2 id="aload-和-astore"><a href="#aload-和-astore" class="headerlink" title="aload 和 astore"></a><t>aload 和 <t>astore</h2><p>分别用来读取和写入数组元素，功能和之前介绍的 load，store 指令相似，只不过需要从操作数栈获取数组的索引，然后在对数组中对应的操作。比较简单，直接看代码，这里不再赘述了。<br>其实现分别在<code>instructions.loads.loadxarr</code>包下和<code>instructions.stores.storexarr</code>包下。</p>
+<h2 id="multianewarray"><a href="#multianewarray" class="headerlink" title="multianewarray"></a>multianewarray</h2><p>这里以<code>new int[3][4][5]</code>为例，讲解多维数组的创建过程，具体实现过程，请参考<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM/tree/master/Java/src/instructions/references/MULTI_ANEW_ARRAY.java">MULTI_ANEW_ARRAY.java</a><br>代码 <code>int[][][] arr = new int[3][4][5];</code><br>其产生的字节码为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">iconst_3</span><br><span class="line">iconst_4</span><br><span class="line">iconst_5</span><br><span class="line">multianewarray #5 ([[[I,3)</span><br></pre></td></tr></table></figure>
+<p>首先将三维数组各个维度压入操作数栈，栈顶向下一次为： 5，4，3，然后执行 multianewarray 指令，其操作数有两个，第一个 index 表示运行时常量池的类符号引用，其类名为[[[I<br>接着获取第二个操作数 3，表明这是一个三维数组。<br>接下来开始执行 multianewarray 指令：首先将获取到的类符号引用转为直接引用：转换依然是用 classloader，因为是数组类，所以不用从 class 文件中读取字节流，而是直接创建一个 class，该 class 将类名指定为 [[[I，这一创建 Class 对象的过程和创建一维数组是一样的；接下来依次从操作数栈中弹出三个整数，表示该多维数组每一维的大小；然后开始创建该多维数组的对象</p>
+<p>多维数组对象的创建过程：此时拿到的类名是：[[[I，各个维的大小是 3，4，5；<br>首先利用数组类[[[I,创建第一维 arr1 ，大小为 3，（多维数组对外表现的就是一维数组，只不过该数组中的元素依然是数组。）<br>接下来创建 arr1 中的每一个元素，其元素也是数组，我们称之为第 2 维，arr2（arr1 中的三个元素都是 arr2）<br>arr2 此时的类型为 [[I，依然需要用 classloader 进行加载，然后创建；<br>接下来创建 arr2 中的每一个元素，其元素还是数组，我们称之为第 3 维，arr3（arr2 中的三个元素都是 arr3）<br>arr3 此时的类型为 [I,依然需要用 classloader 进行加载，然后创建；<br>最终将创建好的 arr1，压入操作数栈，结束！</p>
+<h1 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h1><p>本节的测试代码在(TestNewArray09.java 中)[<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM/blob/master/Java/src/test/TestNewArray09.java]%E3%80%82">https://github.com/zachaxy/JVM/blob/master/Java/src/test/TestNewArray09.java]。</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JVM/"># JVM</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/01/15/%E7%90%86%E8%A7%A3%E5%90%84%E7%A7%8D%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%81/">理解各种字符编码</a>
+            
+            
+            <a class="next" rel="next" href="/2018/01/10/JNI%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B/">JNI开发流程</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

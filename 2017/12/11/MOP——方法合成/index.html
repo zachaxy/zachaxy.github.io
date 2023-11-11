@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>MOP——方法合成 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">MOP——方法合成</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 11, 2017&nbsp;&nbsp;9:27:16&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">1.7k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">2 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>前面<a href="https://zachaxy.github.io/2017/12/10/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%B3%A8%E5%85%A5/">MOP——方法注入</a>介绍了利用 MOP 对方法的调用进行注入，接下来要介绍利用 MOP 实现方法的合成。</p>
+<p>合成：在运行期，根据输入状态的不同，动态的生成一个方法。<br>这里要注意的是：方法合成，在运行时动态的生成方法，看起来很智能，但是合成是有前提的，就是调用的方法的方法名必须要符合预先定义好的规范，才能生成。</p>
+<p>同样，这里要和前面的方法注入区分开：<br>方法的合成和注入看起来似乎相同，都是向类中添加方法，以扩展类的功能，但这里也是有区别的：</p>
+<ul>
+<li>注入是已经知道要注入的方法名了，是发生在编译期的。</li>
+<li>合成是在编译期还不知道方法名，只有在调用的时候，发现并没有对应的方法，所以动态的生成该方法，然后并调用。<br>合成强调的是在运行时，注入强调的是在编译期；</li>
+</ul>
+<p>实现方法合成有以下两种方式：</p>
+<ul>
+<li>使用 methodMissing 合成方法</li>
+<li>使用 ExpandoMetaClass 合成方法</li>
+</ul>
+<span id="more"></span>
+
+
+
+<h1 id="使用-methodMissing-合成方法"><a href="#使用-methodMissing-合成方法" class="headerlink" title="使用 methodMissing 合成方法"></a>使用 methodMissing 合成方法</h1><p>首先明确以下方法合成的使用场景：其发生在对象调用了一个自身并不存在的方法，正常情况下会抛出异常，但是我们想根据调用的方法动态去生成一个对应的方法并执行。那么生成对应的方法这个步骤需要首先汇总到一个方法中——methodMissing，然后在该方法中，实现我们合成方法的逻辑。还是要注意，不是随意调用一个方法都能合成的，没有那么只能，必须符合预先设定好的规则。例如我们预先为一个人设定好其技能列表，但是不生成具体的方法，因为不知道外界会不会调用这些方法，如果全部实现一遍，到时候又可能用不到，所以需要在运行时，动态生成。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Man</span> &#123;</span><br><span class="line">    <span class="keyword">def</span> skills = [<span class="string">&quot;run&quot;</span>,<span class="string">&quot;sing&quot;</span>,<span class="string">&quot;dance&quot;</span>,<span class="string">&quot;talk&quot;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> methodMissing(String name,args)&#123;</span><br><span class="line">        <span class="keyword">if</span> (skills.contains(name))&#123;</span><br><span class="line">            println <span class="string">&quot;I can &quot;</span> + name</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">man = <span class="keyword">new</span> Man()</span><br><span class="line">man.dance()</span><br></pre></td></tr></table></figure>
+
+<h1 id="使用-ExpandoMetaClass-合成方法"><a href="#使用-ExpandoMetaClass-合成方法" class="headerlink" title="使用 ExpandoMetaClass 合成方法"></a>使用 ExpandoMetaClass 合成方法</h1><p>当我们无法编辑类的源文件，那么就无法使用上面的方法了，对于这类情况，依然可以使用 ExpandoMetaClass 来合成方法，在<a href="https://zachaxy.github.io/2017/12/10/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%B3%A8%E5%85%A5/">MOP——方法注入</a>中有提到过向 ExpandoMetaClass 中来注入方法，这里我们依然可以将 methodMissing 方法注入到 ExpandoMetaClass，从而实现方法合成。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Man</span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Man.metaClass.methodMissing = &#123; String name,args -&gt;</span><br><span class="line">    <span class="keyword">def</span> skills = [<span class="string">&quot;run&quot;</span>,<span class="string">&quot;sing&quot;</span>,<span class="string">&quot;dance&quot;</span>,<span class="string">&quot;talk&quot;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (skills.contains(name))&#123;</span><br><span class="line">        println <span class="string">&quot;I can &quot;</span> + name</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">man = <span class="keyword">new</span> Man()</span><br><span class="line">man.dance()</span><br></pre></td></tr></table></figure>
+
+<h1 id="为具体实例合成方法"><a href="#为具体实例合成方法" class="headerlink" title="为具体实例合成方法"></a>为具体实例合成方法</h1><p>就像为具体实例注入方法一样，我们也可以为具体实例合成方法，其代码也是类似的</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Man</span>&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> emc = <span class="keyword">new</span> ExpandoMetaClass(Man)</span><br><span class="line">emc.methodMissing = &#123; String name,args -&gt;</span><br><span class="line">    <span class="keyword">def</span> skills = [<span class="string">&quot;run&quot;</span>,<span class="string">&quot;sing&quot;</span>,<span class="string">&quot;dance&quot;</span>,<span class="string">&quot;talk&quot;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (skills.contains(name))&#123;</span><br><span class="line">        println <span class="string">&quot;I can &quot;</span> + name</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">emc.initialize()</span><br><span class="line"><span class="keyword">def</span> mike = <span class="keyword">new</span> Man()</span><br><span class="line">mike.metaClass = emc</span><br><span class="line">mike.sing()</span><br></pre></td></tr></table></figure>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Groovy/"># Groovy</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/12/MOP%E6%80%BB%E7%BB%93/">MOP总结</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/10/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%B3%A8%E5%85%A5/">MOP——方法注入</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

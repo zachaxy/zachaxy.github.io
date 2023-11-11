@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>手写JVM系列(3)-搜索class文件 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">手写JVM系列(3)-搜索class文件</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 8, 2017&nbsp;&nbsp;15:01:12&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">6.8k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">6 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>本节的目的是根据<code>-cp</code>命令指定的class路径以及后面的<code>ClassName</code>,找到对应的class文件,然后简单的打印出该 class 文件的字节码.完整源码<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM">classpath包中</a></p>
+</blockquote>
+<span id="more"></span>
+
+<h1 id="关于classpath"><a href="#关于classpath" class="headerlink" title="关于classpath"></a>关于classpath</h1><p><code>Java</code>虚拟机规范并没有规定虚拟机应该从哪里寻找类，因此不同的虚拟机实现可以采用不同的方法。Oracle的Java虚拟机实现根据类路径（class path）来搜索类。按照搜索的先后顺序,类路径分为以下三部分:</p>
+<ul>
+<li>启动类路径(bootstrap classpath):默认对应jre\lib目录，Java标准库(大部分在rt.jar里)位于该路径</li>
+<li>扩展类路径(extension classpath):默认对应jre\lib\ext目录，使用Java扩展机制的类位于这个路径</li>
+<li>用户类路径(user classpath):自己实现的类，以及第三方类库则位于用户类路径</li>
+</ul>
+<blockquote>
+<p>这里特别说一下:用户类路径的<strong>默认值</strong>就是当前目录,这也是平时我们配置Java开发环境时,网上很多教程会说要添加一个<code>classpath</code>变量,并将其变量值设置为 <code>.</code> (表示当前路径),其实这个根本没有必要,因为虚拟机默认是在当前路径下寻找class文件的.所以在刚开始学习Java编程时,使用文本编辑器写代码,只需要配置一个<code>JAVA_HOME</code>即可,如果是用<code>IDE</code>,那么恐怕连<code>JAVA_HOME</code>都不需要,只要你安装了<code>JDK</code>,在<code>IDE</code>中配置其路径即可,至于<code>classpath</code>,都是由<code>IDE</code>的脚本自动写好的,不同的<code>IDE</code>有自己的路径,我们只需要在<code>IDE</code>中写好代码,点击运行即可.</p>
+</blockquote>
+<p>我们这里编写的<code>JVM</code>是脱离<code>IDE</code>的,所以不能指望<code>IDE</code>来帮我们寻找路径,经过上面的分析,一个想法就是配置一个<code>classpath</code>的环境变量,将所有的<code>class</code>文件都丢到这个路径下,但是这样做并不灵活,更好的办法是给<code>java</code>命令传递<code>-classpath</code>（或简写为-cp）选项。<code>-classpath/-cp</code>选项的优先级更高，可以覆盖<code>CLASSPATH环境变量</code>。</p>
+<h2 id="java命令中的classpath-选项"><a href="#java命令中的classpath-选项" class="headerlink" title="java命令中的classpath 选项"></a>java命令中的classpath 选项</h2><p> <code>-classpath/-cp</code>选项既可以指定目录，也可以指定<code>JAR</code>文件或者<code>ZIP</code>文件</p>
+<h2 id="添加指向JDK启动类路径"><a href="#添加指向JDK启动类路径" class="headerlink" title="添加指向JDK启动类路径"></a>添加指向JDK启动类路径</h2><p><code>Java</code>虚拟机将使用JDK的启动类路径来寻找和加载<code>Java</code>标准库中的类，因此需要某种方式指定<code>jre</code>目录的位置。命令行选项是个不错的选择，所以增加一个非标准选<code>-Xjre</code>选项。但是这一选项并不是必须的，目前已经实现了读取<code>JAVA_HOME</code>来寻找启动类路径的功能，所以<code>-Xjre</code>选项是在没有配置<code>JAVA_HOME</code>环境变量的情况下，使用的。如果本地机器上有该环境变量，则无需指定<code>-Xjre</code></p>
+<p>注意这个选项的效果类似于<code>-classpath</code>,只不过这个选项是我们为了实现<code>JVM</code>自己添加的选项,并不是<code>java</code>自带的,其功能是指向**<code>JDK</code>启动类路径**,而<code>-cp</code>是指定<strong>用户类路径</strong>.</p>
+<p>但是不管怎样,最终的结果都是根据其执行的路径和后面所跟的类名,找到对应的<code>class</code>文件</p>
+<h1 id="代码编写"><a href="#代码编写" class="headerlink" title="代码编写"></a>代码编写</h1><blockquote>
+<p>搜索class文件所实现的功能源码都在项目的<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM/tree/master/Java/src/classpath">classpath包</a>下.</p>
+</blockquote>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>首先考虑一下在命令行使用时的可能的场景:</p>
+<ol>
+<li>直接指定路径,后面跟类名:<code>java -cp aaa/bbb/ccc  ddd  arg1  arg2</code></li>
+<li>指定类所在的jar文件的路径,后面跟类名:<code>java -cp aaa/bbb/ccc.jar  ddd arg1  arg2</code></li>
+<li>指定一个模糊路径,后面跟类名:<code>java -cp aaa/bbb/*  ddd  arg1  arg2</code></li>
+<li>指定若干个路径,后面跟类名(指定的类存在指定的某一条路径中,如果都存在那么以第一条为准):<code>java -cp aaa1/bbb/ccc;aaa2/bbb/ccc;aaa3/bbb/ccc;  ddd  arg1  arg2</code></li>
+</ol>
+<h2 id="抽象类-Entry"><a href="#抽象类-Entry" class="headerlink" title="抽象类 Entry"></a>抽象类 Entry</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Entry</span> &#123;</span><br><span class="line">    <span class="comment">//路径分隔符,在window下,使用 ; 分割开的  在Unix/Linux下使用: 分割开的</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">pathListSeparator</span> <span class="operator">=</span> System.getProperty(<span class="string">&quot;os.name&quot;</span>).contains(<span class="string">&quot;Windows&quot;</span>) ? <span class="string">&quot;;&quot;</span> : <span class="string">&quot;:&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 负责寻找和加载class文件</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> className class文件的相对路径，路径之间用斜线 / 分隔，文件名有.class后缀</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">abstract</span> <span class="type">byte</span>[] readClass(String className) <span class="keyword">throws</span> IOException;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 返回className的字符串表示形式;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">abstract</span> String <span class="title function_">printClassName</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 工厂方法,根据传入的path的形式不同,</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> path 命令行得到的路径字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 创建具体的Entry</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">static</span> Entry <span class="title function_">createEntry</span><span class="params">(String path)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (path != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (path.contains(pathListSeparator)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">CompositeEntry</span>(path, pathListSeparator);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (path.contains(<span class="string">&quot;*&quot;</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">WildcardEntry</span>(<span class="string">&quot;&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (path.contains(<span class="string">&quot;.jar&quot;</span>) || path.contains(<span class="string">&quot;.JAR&quot;</span>) || path.contains(<span class="string">&quot;.zip&quot;</span>) || path.contains(<span class="string">&quot;&quot;</span> +</span><br><span class="line">                    <span class="string">&quot;.ZIP&quot;</span>)) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ZipJarEntry</span>(path);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">DirEntry</span>(path);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="具体实现类"><a href="#具体实现类" class="headerlink" title="具体实现类"></a>具体实现类</h2><ul>
+<li>DirEntry</li>
+<li>ZipJarEntry</li>
+<li>WildcardEntry</li>
+<li>CompositeEntry</li>
+</ul>
+<p>这四个类是<code>Entry</code>的具体实现类,分别对应使用场景中的四种情况,下面会分析四种情况所要解决的问题,这里只贴出<code>DirEntry</code>的代码,先于篇幅原因,其它三种情况的具体实现,请查看本项目<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM">源码</a></p>
+<h3 id="DirEntry"><a href="#DirEntry" class="headerlink" title="DirEntry"></a>DirEntry</h3><p>这应该是最简单的一种使用场景了,构造方法中传入的字符串表示目录形式的类路径,这里拿到的直接就是指定的路径,那么先判断该路径是否存在,如果存在,那么和<code>className</code>拼接起来,使用<code>IO</code>流读取其中的字节码,并返回.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DirEntry</span> <span class="keyword">extends</span> <span class="title class_">Entry</span> &#123;</span><br><span class="line">    String absDir;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DirEntry</span><span class="params">(String path)</span> &#123;</span><br><span class="line">        <span class="type">File</span> <span class="variable">dir</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(path);</span><br><span class="line">        <span class="keyword">if</span> (dir.exists()) &#123;</span><br><span class="line">            absDir = dir.getAbsolutePath();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="type">byte</span>[] readClass(String className) <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(absDir, className);</span><br><span class="line">        <span class="type">byte</span>[] temp = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">        <span class="type">BufferedInputStream</span> <span class="variable">in</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">out</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">        in = <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file));</span><br><span class="line">        out = <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>(<span class="number">1024</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> ((size = in.read(temp)) != -<span class="number">1</span>) &#123;</span><br><span class="line">            out.write(temp, <span class="number">0</span>, size);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (in != <span class="literal">null</span>) &#123;</span><br><span class="line">            in.close();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (out != <span class="literal">null</span>) &#123;</span><br><span class="line">            out.close();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> out.toByteArray();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    String <span class="title function_">printClassName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> absDir;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="ZipJarEntry"><a href="#ZipJarEntry" class="headerlink" title="ZipJarEntry"></a>ZipJarEntry</h3><p>这种使用场景是指定了一个<code>zip文件</code>或者<code>jar包</code>的情况,那么需要解决的问题是如何拿到压缩文件中的文件,这里主要使用了<code>java.util.zip</code>包下的类来拿到文件,使用zipFile来读取文件和读取普通的文件夹类似,这里只管把zip文件当成文件夹就好</p>
+<p>这里有一点要注意的是:</p>
+<p>如果是<code>zip</code>文件,在获取<code>ZipEntry</code>的时候<code>ZipEntry ze = zipFile.getEntry(zipName + &quot;/&quot; + className)</code></p>
+<p>如果是<code>jar</code>包,在获取<code>ZipEntry</code>的时候,<code>ZipEntry ze = zipFile.getEntry(className)</code></p>
+<h3 id="WildcardEntry"><a href="#WildcardEntry" class="headerlink" title="WildcardEntry"></a>WildcardEntry</h3><p>这种使用场景是指定了一个形如<code>aa/bb/*</code>的路径,这种路径表明我们的<code>class</code>文件在<code>aa/bb/</code>路径下的<code>jar</code>包中,所以我们只要遍历该路径下的所有以<code>.jar</code>结尾的文件,然后调用<code>ZipJarEntry</code>的实现方法,即可以获得字节码.</p>
+<h3 id="CompositeEntry"><a href="#CompositeEntry" class="headerlink" title="CompositeEntry"></a>CompositeEntry</h3><p>这种使用场景是包含多个路径的情况,(eg:a1&#x2F;b1&#x2F;c1;a2&#x2F;b2&#x2F;c2;a3&#x2F;b3&#x2F;c3),那么遇到这种情况,需要将字符串分割成不同的子串,注意分割符在不同的系统下是不同的,这里仅仅实现<code>windows</code>,其它情况下视为<code>unix</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">pathListSeparator</span> <span class="operator">=</span> System.getProperty(<span class="string">&quot;os.name&quot;</span>).contains(<span class="string">&quot;Windows&quot;</span>) ? <span class="string">&quot;;&quot;</span> : <span class="string">&quot;:&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>当然分成的子串分别对应一个<code>DirEntry</code>,再调用<code>DirEntry</code>的方法来获取字节码.</p>
+<h2 id="classpath对外的统一使用接口"><a href="#classpath对外的统一使用接口" class="headerlink" title="classpath对外的统一使用接口"></a>classpath对外的统一使用接口</h2><p>上面我们已经实现了对于 classpath 路径的解析,这里在进行一步封装,提供一个对外的统一接口.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassPath</span> &#123;</span><br><span class="line">    <span class="comment">//分别存放三种类路径</span></span><br><span class="line">    Entry bootClasspath;</span><br><span class="line">    Entry extClasspath;</span><br><span class="line">    Entry userClasspath;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//parse()函数使用 -Xjre 选项解析启动类路径和扩展类路径</span></span><br><span class="line">    <span class="comment">// 使用-classpath/-cp选项解析用户类路径</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ClassPath</span><span class="params">(String jreOption, String cpOption)</span> &#123;</span><br><span class="line">        parseBootAndExtClasspath(jreOption);</span><br><span class="line">        parseUserClasspath(cpOption);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里参数传进来的是: C:\Program Files\Java\jdk1.8.0_20\jre</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">parseBootAndExtClasspath</span><span class="params">(String jreOption)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">jreDir</span> <span class="operator">=</span> getJreDir(jreOption);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//可能出现的情况是: jre/lib/*</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">jreLibPath</span> <span class="operator">=</span> jreDir + File.separator + <span class="string">&quot;lib&quot;</span> + File.separator + <span class="string">&quot;*&quot;</span>;</span><br><span class="line">        bootClasspath = <span class="keyword">new</span> <span class="title class_">WildcardEntry</span>(jreLibPath);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//可能出现的情况是: jre/lib/ext/*</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">jreExtPath</span> <span class="operator">=</span> jreDir + File.separator + <span class="string">&quot;lib&quot;</span> + File.separator + <span class="string">&quot;ext&quot;</span> + File.separator + <span class="string">&quot;*&quot;</span>;</span><br><span class="line">        extClasspath = <span class="keyword">new</span> <span class="title class_">WildcardEntry</span>(jreExtPath);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String <span class="title function_">getJreDir</span><span class="params">(String jreOption)</span> &#123;</span><br><span class="line">        File jreFile;</span><br><span class="line">        <span class="keyword">if</span> (jreOption != <span class="literal">null</span> &amp;&amp; jreOption != <span class="string">&quot;&quot;</span>) &#123;</span><br><span class="line">            jreFile = <span class="keyword">new</span> <span class="title class_">File</span>(jreOption);</span><br><span class="line">            <span class="keyword">if</span> (jreFile.exists()) &#123;</span><br><span class="line">                <span class="keyword">return</span> jreOption;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        jreFile = <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;jre&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (jreFile.exists()) &#123;</span><br><span class="line">            <span class="keyword">return</span> jreFile.getAbsolutePath();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">String</span> <span class="variable">java_home</span> <span class="operator">=</span> System.getenv(<span class="string">&quot;JAVA_HOME&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (java_home != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> java_home + File.separator + <span class="string">&quot;jre&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;Can not find jre folder!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">parseUserClasspath</span><span class="params">(String cpOption)</span> &#123;</span><br><span class="line">        userClasspath = Entry.createEntry(cpOption);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">byte</span>[] readClass(String className) &#123;</span><br><span class="line">        className = className + <span class="string">&quot;.class&quot;</span>;</span><br><span class="line">        <span class="type">byte</span>[] data;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            data = bootClasspath.readClass(className);</span><br><span class="line">            <span class="keyword">if</span> (data != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> data;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            data = extClasspath.readClass(className);</span><br><span class="line">            <span class="keyword">if</span> (data != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> data;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            data = userClasspath.readClass(className);</span><br><span class="line">            <span class="keyword">if</span> (data != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> data;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;can&#x27;t find class!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> userClasspath.printClassName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>构造方法:传入解析到的 <code>-Xjre</code>来的路径和<code>-cp</code>的路径,当然在<code>Cmd</code>类中,这两个路径的初始值都是空字符串,而不是<code>null</code>,然后根据二者的值进行解析</p>
+<p>之前也说过寻找 class 文件是由优先级的,依次是:<code>bootClasspath</code>-&gt; <code>extClasspath</code> -&gt;  <code>userClasspath</code>那么我们怎么实现这个加载顺序呢? </p>
+<p>首先:在<code>Cmd</code>类中,这两个路径的初始值是:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">XjreOption</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">cpOption</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>这里优先使用用户输入的 -Xjre 选项作为 jre 目录。如果没有输入该选项，则在当前目录下寻找 jre 目录。如果找不到，尝试使用 JAVA_HOME 环境变量。最终返回<code>bootClasspath</code>和<code>extClasspath</code>.</p>
+<p>然后再根据 <code>-cp</code>的值得到一个<code>userClasspath</code>,然后再根据这三个<code>Entry</code>的顺序来加载类文件,一旦加载到,直接返回。</p>
+<p>最终,使用<code>readClass</code>()方法就可以返回我们要加载的类文件字节数组。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JVM/"># JVM</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-4-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6/">手写JVM系列(4)-分析class文件</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/07/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-2-%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%90/">手写JVM系列(2)-参数解析</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

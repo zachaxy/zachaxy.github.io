@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>手写JVM系列(16)反射机制简介 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">手写JVM系列(16)反射机制简介</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 18, 2018&nbsp;&nbsp;22:19:01&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">6.2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">6 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>反射是 java 一个强大的机制，通过反射，我们可以动态地创建类型的实例，将类型绑定到现有对象，或从现有对象中获取类型，然后调用类型的方法或访问其字段和属性。本节主要介绍反射机制中用到的类对象。</p>
+<span id="more"></span>
+
+<h1 id="理解类对象"><a href="#理解类对象" class="headerlink" title="理解类对象"></a>理解类对象</h1><p>我们之前在 JVM 中定义了 Zclass 类，用来表示一个 class 文件在 JVM 中的抽象(注意该 Zclass 和 java&#x2F;lang&#x2F;Class 中的做区分，前者是在 JVM 中，后者是在 java 应用程序中的类)。在构造 Zclass 对象时，我们是传入了一个 ClassFile 的对象,然后通过 ClassFile 对象的各个字段，构造了 Zclass 对象。同一个 class 文件会产生唯一的一个 Zclass 对象(前提是用同一个类加载器加载的 class 文件，如果是不同的类加载器，则另当别论，本文暂时不讨论多个类加载器加载同一个 class 文件的情况，所以暂且认为同一个 class 文件和 Zclass 对象是一一对应的)。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Zclass</span><span class="params">(ClassFile classFile)</span> &#123;</span><br><span class="line">    accessFlags = classFile.getAccessFlags();</span><br><span class="line">    thisClassName = classFile.getClassName();</span><br><span class="line">    superClassName = classFile.getSuperClassName();</span><br><span class="line">    interfaceNames = classFile.getInterfaceNames();</span><br><span class="line">    runtimeConstantPool = <span class="keyword">new</span> <span class="title class_">RuntimeConstantPool</span>(<span class="built_in">this</span>, classFile.getConstantPool());</span><br><span class="line">    fileds = Zfield.makeFields(<span class="built_in">this</span>, classFile.getFields());</span><br><span class="line">    methods = Zmethod.makeMethods(<span class="built_in">this</span>, classFile.getMethods());</span><br><span class="line">    sourceFile = classFile.getSourceFile();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用 Zclass 就可以描述一个类，其实我们在 java 中定义一个类，无非就是在定义两类东西，一个是该类中有哪些变量，另一个是该类中有哪些方法。这些都可以在 Zclass 中反映出来。</p>
+<p>我们在 JVM 中定义的 Zobject(Zobject 表示的是在 JVM 中一个对象的，要注意其和在 java 应用中 Object 的区别) 中就有一个字段，其指向该对象对应的 Zclass 对象。这个很容易理解，因为 Zobject 中只保存了该对象的成员变量的值，如果要执行该类的方法，还是要去对应的 Zclass 中的 Zmethod 中获取对应的字节码。方法的字节码都是一样的，并不针对单独的对象，同一个类创建的对象，调用其方法时的字节码都是一样的，只不过传入的参数不同而已。因此为了节省 JVM 的内存，没有必要为每个 Zobject 中保存方法的字节码。</p>
+<p>这里只是打通了 Zobject 到 Zclass 的单向通道，其实 Zclass 中也需要一个字段指向一个具体的 Zobject，注意该 Zobject 并不是由 Zclass 创建的<strong>实例对象</strong>，而是 Zclass 所代表的 Class 的<strong>类对象</strong>。<br>我们拿熟悉的 String 类举例子，每个字符串 eg:”hello”都是 String 的一个实例对象，对应 JVM 中的 Zobject。然而 String 所代表的类，也有一个实例对象，该对象的获取方式有两种：</p>
+<ul>
+<li>String.class</li>
+<li>“hello”.getClass()</li>
+</ul>
+<p>这两种方法获取到的都是同一个对象。</p>
+<p>这也解释了为什么 JVM 中每个 Zclass 中都需要一个字段指向该类的类对象(String.class)，而不是类的实例对象 “hello”</p>
+<p>接下来我们就在 Zclass 中添加这个字段，让其指向该类的类对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Zclass</span> &#123;</span><br><span class="line">	...</span><br><span class="line">    Zobject jObject;        <span class="comment">// jObject 指向的是该类的元类对象 obj。 eg：String.class 得到的结果</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>定义了该字段，那么该字段具体在上面时候赋值呢？回想一下 Zclass 是何时被创建的，是通过类加载器加载 class 文件是生成的，于是我们也就很自然的想到类对象需要紧跟着在 Zclass 生成之后生成。</p>
+<h1 id="实现类对象"><a href="#实现类对象" class="headerlink" title="实现类对象"></a>实现类对象</h1><p>前面也提到了，为类对象赋值是在 class 文件生成之后，那么我们再次修改类加载器，是其完成类对象的构造。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Zclass <span class="title function_">loadClass</span><span class="params">(String name)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (map.containsKey(name)) &#123;</span><br><span class="line">        <span class="keyword">return</span> map.get(name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Zclass clazz;</span><br><span class="line">    <span class="keyword">if</span> (name.charAt(<span class="number">0</span>) == <span class="string">&#x27;[&#x27;</span>) &#123;</span><br><span class="line">        clazz = loadArrayClass(name);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        clazz = loadNonArrayClass(name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//为每一个 class 都关联一个元类</span></span><br><span class="line">    <span class="type">Zclass</span> <span class="variable">jlClassClass</span> <span class="operator">=</span> map.get(<span class="string">&quot;java/lang/Class&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (jlClassClass != <span class="literal">null</span>) &#123;</span><br><span class="line">        clazz.jObject = jlClassClass.newObject();</span><br><span class="line">        clazz.jObject.extra = clazz;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> clazz;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在产生 Zclass 之后，获取<code>java/lang/Class</code>的 Zclass——jlClassClass，在利用 jlClassClass 创建 Zobject，此 Zobject 就是之前加载的 Zclass 的类对象，通过对 Zclass 的 jObject 的赋值，那么加载到方法区的类就都有类对象了。</p>
+<p>这里还有个问题：类也是对象，而对象又是类的实例，那么在 JVM 中，究竟是先有类还是先有对象呢？</p>
+<p>在 JVM 中，我们手动触发的是加载<code>java/lang/Class</code>，但是在加载该类的时候，会先加载其父类 <code>java/lang/Object</code>，以及 Class 实现的接口类。那么此时 JVM 的方法区中已经有了这几个类的 Zclass 了，接下来再为这几个类创建类变量，其逻辑在下面的 loadBasicClasses 方法中，该方法是在 ZclassLoader 的构造方法中调用的，也就是说 JVM 启动时就触发这些基本类的加载，因为这些类太重要了，所有其它的子类都需要这些类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">loadBasicClasses</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">//经过这一步 load 之后,classMap 中就有 Class 的 Class 了，已经 Object 和 Class 所实现的接口；</span></span><br><span class="line">    <span class="type">Zclass</span> <span class="variable">jlClassClass</span> <span class="operator">=</span> loadClass(<span class="string">&quot;java/lang/Class&quot;</span>);</span><br><span class="line">    <span class="comment">//接下来对 classMap 中的每一个 Class 都创建一个 jClass;使用 jlClassClass.NewObject()方法;</span></span><br><span class="line">    <span class="comment">// 通过调用 newObject 方法，为每一个 Class 都创建一个元类对象；这样在使用 String.class 时可以直接获取到；</span></span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;String, Zclass&gt; entry : map.entrySet()) &#123;</span><br><span class="line">        <span class="type">Zclass</span> <span class="variable">jClass</span> <span class="operator">=</span> entry.getValue();</span><br><span class="line">        <span class="keyword">if</span> (jClass.jObject == <span class="literal">null</span>) &#123;</span><br><span class="line">            jClass.jObject = jlClassClass.newObject();</span><br><span class="line">            jClass.jObject.extra = jClass;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="基本类型的类"><a href="#基本类型的类" class="headerlink" title="基本类型的类"></a>基本类型的类</h1><p>通过前面的介绍，已经完成了类与类对象的关联，但是 void 和基本类型也有对应的类对象，但其只能通过字面值来访问，eg:</p>
+<ul>
+<li>void.class</li>
+<li>int.class</li>
+</ul>
+<p>就像之前的数组类一样，基本类型的类并没有 class 文件，其也是由 JVM 在运行期间生成的。那么我们就在 JVM 开启时，也手动创建基本类型的类，并将基本类型的类加载到方法区。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">    <span class="comment">//加载基本类型的类:void.class;boolean.class;byte.class</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">loadPrimitiveClasses</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;String, String&gt; entry : ClassNameHelper.primitiveTypes.entrySet()) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">className</span> <span class="operator">=</span> entry.getKey();</span><br><span class="line">        loadPrimitiveClass(className);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//加载基本类型,和数组类似,也没有对应的 class 文件,只能在运行时创建;基本类型:无超类,也没有实现任何接口</span></span><br><span class="line"><span class="comment">/* 针对基本类型的三点说明：</span></span><br><span class="line"><span class="comment">1. void 和基本类型的类型名字就是：void，int，float 等</span></span><br><span class="line"><span class="comment">2. 基本类型的类没有超类，也没有实现任何接口</span></span><br><span class="line"><span class="comment">3. 非基本类型的类对象是通过 ldc 指令加载到操作数栈中的</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">loadPrimitiveClass</span><span class="params">(String className)</span> &#123;</span><br><span class="line">    <span class="type">Zclass</span> <span class="variable">clazz</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Zclass</span>(AccessFlag.ACC_PUBLIC, className, <span class="built_in">this</span>, <span class="literal">true</span>,</span><br><span class="line">            <span class="literal">null</span>,</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Zclass</span>[]&#123;&#125;);</span><br><span class="line">    clazz.jObject = map.get(<span class="string">&quot;java/lang/Class&quot;</span>).newObject();</span><br><span class="line">    clazz.jObject.extra = clazz;</span><br><span class="line">    map.put(className, clazz);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> HashMap&lt;String, String&gt; primitiveTypes;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    primitiveTypes = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;String, String&gt;();</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;void&quot;</span>, <span class="string">&quot;V&quot;</span>);</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;boolean&quot;</span>, <span class="string">&quot;Z&quot;</span>);</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;byte&quot;</span>, <span class="string">&quot;B&quot;</span>);</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;short&quot;</span>, <span class="string">&quot;S&quot;</span>);</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;int&quot;</span>, <span class="string">&quot;I&quot;</span>);</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;long&quot;</span>, <span class="string">&quot;J&quot;</span>);</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;char&quot;</span>, <span class="string">&quot;C&quot;</span>);</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;float&quot;</span>, <span class="string">&quot;F&quot;</span>);</span><br><span class="line">    primitiveTypes.put(<span class="string">&quot;double&quot;</span>, <span class="string">&quot;D&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>对于非基本类型的类对象，其获取是通过 ldc 指令获取到的，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static void fClazz() &#123;</span><br><span class="line">    Class c = String.class;</span><br><span class="line">&#125;</span><br><span class="line">//对应的字节码：</span><br><span class="line">0 ldc #4 &lt;java/lang/String&gt;</span><br><span class="line">2 astore_0</span><br><span class="line">3 return</span><br></pre></td></tr></table></figure>
+
+<p>回想一下，之前介绍的 ldc 指令的功能，是用来加载基本类型，字符串字面值的，所以现在需要扩展 ldc 指令，根据 ldc 操作数得到的运行时常量池中的常量，如果是 ClassRef 类型的，那么就将其 Zclass 的 jObject 对象放到操作数栈</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LDC</span> <span class="keyword">extends</span> <span class="title class_">Index8Instruction</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(Zframe frame)</span> &#123;</span><br><span class="line">        <span class="type">OperandStack</span> <span class="variable">operandStack</span> <span class="operator">=</span> frame.getOperandStack();</span><br><span class="line">        <span class="type">Zclass</span> <span class="variable">clazz</span> <span class="operator">=</span> frame.getMethod().getClazz();</span><br><span class="line">        <span class="type">RuntimeConstantInfo</span> <span class="variable">runtimeConstant</span> <span class="operator">=</span> clazz.getRuntimeConstantPool().getRuntimeConstant(index);</span><br><span class="line">        <span class="keyword">switch</span> (runtimeConstant.getType()) &#123;</span><br><span class="line">            <span class="keyword">case</span> ConstantInfo.CONSTANT_Integer:</span><br><span class="line">                operandStack.pushInt((Integer) runtimeConstant.getValue());</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        ......</span><br><span class="line">            <span class="keyword">case</span> ConstantInfo.CONSTANT_String:</span><br><span class="line">                <span class="type">Zobject</span> <span class="variable">internedStr</span> <span class="operator">=</span> StringPool.jString(clazz.getLoader(), (String) runtimeConstant.getValue());</span><br><span class="line">                operandStack.pushRef(internedStr);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> ConstantInfo.CONSTANT_Class:</span><br><span class="line">                <span class="type">ClassRef</span> <span class="variable">classRef</span> <span class="operator">=</span> (ClassRef) runtimeConstant.getValue();</span><br><span class="line">                <span class="type">Zobject</span> <span class="variable">jObject</span> <span class="operator">=</span> classRef.resolvedClass().getjObject();</span><br><span class="line">                operandStack.pushRef(jObject);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="comment">// case MethodType, MethodHandle //Java7 中的特性，不在本虚拟机范围内</span></span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>同时，基本类型的类对象，在 java 代码中看起来是通过字面量获取的，但是通过查看其编译后的 class 文件，发现并不是由 ldc 加载到内存的，而是通过 getstatic 指令。因为每个基本类型都有对应的包装类，包装类中都有一个静态常量：TYPE，该字段中保存的就是基本类型的类，我们查看 Integer.java 类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Integer</span> <span class="keyword">extends</span> <span class="title class_">Number</span> <span class="keyword">implements</span> <span class="title class_">Comparable</span>&lt;Integer&gt; &#123;</span><br><span class="line">	 <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Class&lt;Integer&gt;  TYPE = (Class&lt;Integer&gt;) Class.getPrimitiveClass(<span class="string">&quot;int&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而 getPrimitiveClass 方法是一个 native 的方法，关于 native 的方法的实现，请参考下一节的讲解。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JVM/"># JVM</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/01/18/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-17-%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E7%9A%84%E8%B0%83%E7%94%A8%E8%BF%87%E7%A8%8B/">手写JVM系列(17)本地方法的调用过程</a>
+            
+            
+            <a class="next" rel="next" href="/2018/01/16/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-15-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E5%AE%9E%E7%8E%B0/">手写JVM系列(15)-字符串的实现</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

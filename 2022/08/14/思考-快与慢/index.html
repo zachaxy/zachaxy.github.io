@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>思考,快与慢 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">思考,快与慢</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 14, 2022&nbsp;&nbsp;0:15:11&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">1.7k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">2 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="Overview📌"><a href="#Overview📌" class="headerlink" title="Overview📌"></a>Overview📌</h1><p>书籍链接</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://book.douban.com/subject/10785583/">Thinking, Fast and Slow</a></li>
+</ul>
+<p>本书要点概括🔑</p>
+<ul>
+<li>我们的大脑中存在两个系统，系统 1（快） 和系统 2（慢）</li>
+<li>人们更愿意相信自己是客观理性的，但是思考机制决定了人们很多时候都是非理性决策，从而导致一些直觉缺陷。</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="How-the-book-changed-me🤔"><a href="#How-the-book-changed-me🤔" class="headerlink" title="How the book changed me🤔?"></a>How the book changed me🤔?</h2><ul>
+<li>与合作方沟通时，要么提前掌握锚定效应主动权，否则就应立即结束沟通。</li>
+<li>项目开始前，可以进行一轮事前验尸，避免过度自信。    </li>
+<li>说话时言简意赅，能用简单句子的时候就别用复杂句。这将决定了你在对方眼中是否是可靠的，睿智的，值得信赖的。</li>
+<li>疲劳，饥饿等身体状态不佳时<strong>不要做重要决策</strong>，此时是系统 1 本能的在工作，要防止直觉缺陷。</li>
+</ul>
+<h2 id="Top-Quotes✏️"><a href="#Top-Quotes✏️" class="headerlink" title="Top Quotes✏️"></a>Top Quotes✏️</h2><ul>
+<li>在经济行为中，付出就是成本，学习技能是为了追求利益和成本的平衡。因为懒惰是人类的本性。</li>
+<li>当人们相信某个结论是正确的时候，他们很可能会相信支持这个结论的论证，哪怕这些论证不正确。如果系统 1 也参与到活动中来，人们总会先得出结论，然后才进行论证。</li>
+<li>系统 2 是非常懒惰的，它不愿意付出努力。如果可能的话，消息的接收方会离所有需要付出努力的事务远远地，包括名字复杂的信息源。</li>
+<li>人们习惯把相似度当成一种简单的启发手段来做艰难的决策。</li>
+</ul>
+<h1 id="Deep-In-Though💡"><a href="#Deep-In-Though💡" class="headerlink" title="Deep In Though💡"></a>Deep In Though💡</h1><h2 id="快系统与慢系统的区别？"><a href="#快系统与慢系统的区别？" class="headerlink" title="快系统与慢系统的区别？"></a>快系统与慢系统的区别？</h2><ul>
+<li>快系统：依靠直接，无意识，消耗脑力少。</li>
+<li>慢系统：有意识，专注，理性，消耗脑力多。</li>
+</ul>
+<h2 id="大脑思考机制是什么？"><a href="#大脑思考机制是什么？" class="headerlink" title="大脑思考机制是什么？"></a>大脑思考机制是什么？</h2><p>人的本质是懒惰的，这是人类进化的结果，而慢系统需要消耗极大的脑力，因此就决定了他不会一直处于活跃状态。</p>
+<p>每个人的思考过程，其实都是快系统和慢系统合作的结果。这两个系统分工明确，它们的配合还有一个特点，就是快系统常常处于自动运行状态，而慢系统处于放松状态，只有当快系统遇到处理不了的问题的时候，才可能会找慢系统帮忙。</p>
+<p>遇到问题，如果快系统运行过快，抢在慢系统之前给出答案，既<strong>非理性决策</strong></p>
+<h2 id="大脑思考机制引发的心理学效应"><a href="#大脑思考机制引发的心理学效应" class="headerlink" title="大脑思考机制引发的心理学效应"></a>大脑思考机制引发的心理学效应</h2><ul>
+<li>曝光效应：某人某事儿频繁出现，引起认知放松，从而被判定为可信的。（广告）</li>
+<li>启动效应：行为和情感不自觉的被他物启动。</li>
+<li>常态理论：已经遭遇了某种小概率事件，类似的事情再发生就不以为意，从而缺乏防备。</li>
+<li>因果关系错觉：将持续发生的一些列事件解释为因果关系。（因为苹果熟了，所以从树上掉下来了）</li>
+<li>确认偏误：现有猜想或观点，然后再寻找证据支持自己的偏好或者猜想。</li>
+<li>光环效应：初始印象好，会觉得 ta 什么都好，后续如果发生的事情符合你对 ta 的判断，则印象会不断加深。</li>
+<li>框架效应：本质相同，但是表现框架不同，从而导致人们的感受不同。</li>
+</ul>
+<h2 id="大脑思考机制带来的直接缺陷"><a href="#大脑思考机制带来的直接缺陷" class="headerlink" title="大脑思考机制带来的直接缺陷"></a>大脑思考机制带来的直接缺陷</h2><ul>
+<li>启发法：慢系统遇到复杂问题时，自动使用另一个简单的问题来替代前面复杂的问题，从而作为复杂问题的结论。<ul>
+<li>典型性启发</li>
+<li>小数定律：人烟稀少的地方，肾炎发病率高？为什么，其实与环境无关，就是样本量少！</li>
+<li>合取谬误</li>
+<li>忽略回归均值现象</li>
+<li>锚定效应</li>
+<li>效用层叠</li>
+<li>结果偏见：事实会让记忆朝已发生的结果修正。</li>
+<li>有效性错觉</li>
+<li>过度新来直觉</li>
+<li>规划谬误</li>
+<li>乐观偏见：人们乐意承担风险，并非风险承受能力强，而是高估了利益，而低估了风险。本质还是觉得胜算大。</li>
+<li>沉没成本悖论：已经投入那么多，期望继续投入打捞起已沉默的成本，而不懂的及时止损。</li>
+</ul>
+</li>
+<li>前景理论<ul>
+<li>确定效应：确定收益和赌一把之间，概率相同，人们往往选择确定收益。</li>
+<li>反射效应：确定损失和赌一把之间，概率相同，人们往往选择赌一把。</li>
+<li>损失厌恶：人们对损失比获得，更敏感。</li>
+<li>可能性效应与确定性效应</li>
+<li>联合评估和偏好逆转</li>
+</ul>
+</li>
+<li>禀赋效应：人一旦拥有某物品，对其评价要比拥有前更高。</li>
+</ul>
+<h2 id="应对直觉缺陷的一些方法"><a href="#应对直觉缺陷的一些方法" class="headerlink" title="应对直觉缺陷的一些方法"></a>应对直觉缺陷的一些方法</h2><ul>
+<li>借助公式法：通过简单的公式运算，有多简单？只需要给每个指标分配分数，然后进行简单的整合，就能提升准确性。</li>
+<li>借助他人法：鉴于我们会高估自己，也很难接受自我质疑，同时自己开启慢系统来评估自己是非常困难的，此时可以引入外部视角，通过别人的慢系统来帮助检查我们的决策。</li>
+<li>事前验尸法：先假设这件事会失败，然后集中讨论失败的可能性，最终按重要性进行排序。</li>
+</ul>
+<h1 id="Summarize"><a href="#Summarize" class="headerlink" title="Summarize"></a>Summarize</h1><p>在了解了大脑思考过程后，我们依然并没有办法阻止自己犯错，但是能明白自己错在了哪儿，就是进步。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"># 读书笔记</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2022/12/24/%E4%BB%8E%E8%B5%84%E6%B7%B1%E5%B7%A5%E7%A8%8B%E5%B8%88%E8%BA%AB%E4%B8%8A%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%BF%9B%E9%98%B6%E6%96%B9%E6%B3%95%E8%AE%BA/">从资深工程师身上学习的进阶方法论</a>
+            
+            
+            <a class="next" rel="next" href="/2022/08/06/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0%E6%A8%A1%E6%9D%BF/">读书笔记模板</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

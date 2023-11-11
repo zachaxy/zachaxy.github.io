@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Java反射 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Java反射</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">September 27, 2018&nbsp;&nbsp;8:40:08&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">8.7k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">8 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>反射是 Java 语言中的高级功能。它允许 Java 程序在运行中拿到一个类的所有信息（方法名称，字段名称），并且动态执行对象的方法或修改字段的值。</p>
+</blockquote>
+<span id="more"></span>
+
+<h1 id="获取-Class-对象的三种方式"><a href="#获取-Class-对象的三种方式" class="headerlink" title="获取 Class 对象的三种方式"></a>获取 Class 对象的三种方式</h1><ol>
+<li>通过类名获取：<code>Class clazz = String.class;</code></li>
+<li>通过对象获取：<code>Class clazz = &quot;str&quot;.getClass();</code></li>
+<li>通过全类名获取：<code>Class clazz  = Class.forName(&quot;java.lang.String&quot;);</code></li>
+<li>通过 ClassLoader + 全类名获取：<code>Class clazz = classLoader.loadClass(&quot;java.lang.String&quot;);</code></li>
+</ol>
+<h1 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h1><p>通过上述获取到的 clazz 对象，进而可以获取对应类的具体信息。下面 api 中，会频繁出现 getXXX 和 getDeclaredXXX 的方法。其中前者表示获取的是当前类中 public 的 xxx，而后者表示的是获取当前类中含 protect，default，private 的 xxx。</p>
+<h2 id="获取构造方法"><a href="#获取构造方法" class="headerlink" title="获取构造方法"></a>获取构造方法</h2><ul>
+<li>获取当前类（不包含父类）的所有 public 构造方法：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Constructor[] constructors = clazz.getConstructors();</span><br></pre></td></tr></table></figure></li>
+<li>根据参数类型返回指定构造方法：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Constructor constructor = clazz.getConstructor(Class&lt;?&gt;... parameterTypes);</span><br></pre></td></tr></table></figure></li>
+<li>获取当前类（不包含父类）的所有构造方法（含private）：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Constructor[] constructors = clazz.getDeclaredConstructors();</span><br></pre></td></tr></table></figure></li>
+<li>根据参数类型返回指定构造方法：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Constructor constructor = clazz.getDeclaredConstructor(Class&lt;?&gt;... parameterTypes);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="创建新对象"><a href="#创建新对象" class="headerlink" title="创建新对象"></a>创建新对象</h2><ul>
+<li>无参构造方法，且是 public，可以直接：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Object obj = clazz.newInstance();</span><br></pre></td></tr></table></figure></li>
+<li>有参构造方法，需要通过上一步获取到的 constructor<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Object obj = constructor.newInstance(Object... args);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>注意：如果 constructor 非 public，需要先调用 <code>constructor.setAccessible(true);</code><br>再创建对象，否则会抛出 IllegalAccessException。<br>下面 method 和 filed 在使用时，也有类似问题。</p>
+<h2 id="获取方法"><a href="#获取方法" class="headerlink" title="获取方法"></a>获取方法</h2><ul>
+<li>获取public方法<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Method[] methods = clazz.getMethods();</span><br></pre></td></tr></table></figure></li>
+<li>获取 public 指定方法<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Method</span> <span class="variable">method</span> <span class="operator">=</span> clazz.getMethod(String name, Class&lt;?&gt;... parameterTypes)</span><br></pre></td></tr></table></figure></li>
+<li>获取所有方法<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Method[] methods = clazz.getDeclaredMethods();</span><br></pre></td></tr></table></figure></li>
+<li>获取所有方法中的指定方法<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Method</span> <span class="variable">method</span> <span class="operator">=</span> clazz.getDeclaredMethod(String name, Class&lt;?&gt;... parameterTypes)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="执行方法"><a href="#执行方法" class="headerlink" title="执行方法"></a>执行方法</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 如果 method 为非 public，则需要执行如下：</span><br><span class="line">method.setAccessible(true);</span><br><span class="line">// 指定方法，第一个参数是传入的对象，如果是静态方法，则传 null</span><br><span class="line">method.invoke(Object obj, Object... args) </span><br></pre></td></tr></table></figure>
+
+<h2 id="获取字段"><a href="#获取字段" class="headerlink" title="获取字段"></a>获取字段</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Field[] fields = clazz.getFields();</span><br><span class="line"><span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> clazz.getField(String name);</span><br><span class="line">Field[] fields = clazz.getDeclaredFields();</span><br><span class="line"><span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> clazz.getDeclaredField(String name);</span><br></pre></td></tr></table></figure>
+
+<h2 id="读、写-field"><a href="#读、写-field" class="headerlink" title="读、写 field"></a>读、写 field</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// 如果 field 为非 public，则需要执行如下：</span><br><span class="line">field.setAccessible(true);</span><br><span class="line"></span><br><span class="line">// 读 </span><br><span class="line">Object value = field.get(obj);</span><br><span class="line">// 写</span><br><span class="line">field.set(obj, arg);</span><br></pre></td></tr></table></figure>
+
+<h1 id="创建数组"><a href="#创建数组" class="headerlink" title="创建数组"></a>创建数组</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String[] array = (String[])Array.newInstance(String.class, 10);</span><br></pre></td></tr></table></figure>
+
+<h1 id="获取泛型类型"><a href="#获取泛型类型" class="headerlink" title="获取泛型类型"></a>获取泛型类型</h1><p><img src="https://raw.githubusercontent.com/zachaxy/pic-repository/master/imgJava_Type%20%E7%B1%BB%E5%85%B3%E7%B3%BB%E5%9B%BE.png" alt="Type类关系图"></p>
+<p>Type：用来表示某个字段的类型</p>
+<ul>
+<li>Class：普通类的类型</li>
+<li>TypeVariable：泛型类型的变量</li>
+<li>ParameterizedType：带泛型的类型： eg： <code>List&lt;String&gt; list</code></li>
+<li>GenericArrayType：泛型类型的数组： eg <code>List&lt;String&gt;[] list</code></li>
+<li>WildcardType：<strong>通配符</strong>泛型类型： eg：<code>List&lt;? extends Number&gt; list</code></li>
+</ul>
+<p>具体看下面 demo 代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TypeDemo</span>&lt;T <span class="keyword">extends</span> <span class="title class_">Comparable</span> &amp; Serializable&gt; &#123;</span><br><span class="line">    String str;</span><br><span class="line">    T t;</span><br><span class="line">    Map&lt;String, Integer&gt; map;</span><br><span class="line">    List&lt;String&gt;[] listsArray;</span><br><span class="line">    List&lt;? <span class="keyword">extends</span> <span class="title class_">Number</span>&gt; numberList;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            demo4Normal();</span><br><span class="line">            demo4TypeVariable();</span><br><span class="line">            demo4ParameterizedType();</span><br><span class="line">            demo4GenericArrayType();</span><br><span class="line">            demo4WildcardType();</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchFieldException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">demo4Normal</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchFieldException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;===demo4Normal===&quot;</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> TypeDemo.class.getDeclaredField(<span class="string">&quot;str&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType: &quot;</span> + field.getGenericType());</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType Class: &quot;</span> + field.getGenericType().getClass());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">demo4TypeVariable</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchFieldException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;===demo4TypeVariable===&quot;</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> TypeDemo.class.getDeclaredField(<span class="string">&quot;t&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType: &quot;</span> + field.getGenericType());</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType Class: &quot;</span> + field.getGenericType().getClass());</span><br><span class="line">        <span class="type">TypeVariable</span> <span class="variable">type</span> <span class="operator">=</span> (TypeVariable) field.getGenericType();</span><br><span class="line">        <span class="comment">// T</span></span><br><span class="line">        System.out.println(<span class="string">&quot;TypeVariable name: &quot;</span> + type.getName());</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取声明该泛型变量的 owner 的 class 对象: --&gt;  class zx.reflect.TypeDemo</span></span><br><span class="line">        System.out.println(<span class="string">&quot;GenericDeclaration: &quot;</span> + type.getGenericDeclaration());</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * java.lang.Comparable</span></span><br><span class="line"><span class="comment">         * java.io.Serializable</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">for</span> (Type bound : type.getBounds()) &#123;</span><br><span class="line">            System.out.println(bound.getTypeName());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">demo4ParameterizedType</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchFieldException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;===demo4ParameterizedType===&quot;</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> TypeDemo.class.getDeclaredField(<span class="string">&quot;map&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType: &quot;</span> + field.getGenericType());</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType Class: &quot;</span> + field.getGenericType().getClass());</span><br><span class="line">        <span class="type">ParameterizedType</span> <span class="variable">parameterizedType</span> <span class="operator">=</span> (ParameterizedType) field.getGenericType();</span><br><span class="line">        System.out.println(<span class="string">&quot;RawType: &quot;</span> + parameterizedType.getRawType());</span><br><span class="line">        System.out.println(<span class="string">&quot;OwnerType: &quot;</span> + parameterizedType.getOwnerType());</span><br><span class="line">        <span class="keyword">for</span> (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;ActualTypeArgument: &quot;</span> + actualTypeArgument);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">demo4GenericArrayType</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchFieldException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;===demo4GenericArrayType===&quot;</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> TypeDemo.class.getDeclaredField(<span class="string">&quot;listsArray&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType: &quot;</span> + field.getGenericType());</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType Class: &quot;</span> + field.getGenericType().getClass());</span><br><span class="line">        <span class="type">GenericArrayType</span> <span class="variable">genericArrayType</span> <span class="operator">=</span> (GenericArrayType) field.getGenericType();</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericComponentType: &quot;</span> + genericArrayType.getGenericComponentType());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">demo4WildcardType</span><span class="params">()</span> <span class="keyword">throws</span> NoSuchFieldException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;===demo4WildcardType===&quot;</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> TypeDemo.class.getDeclaredField(<span class="string">&quot;numberList&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType: &quot;</span> + field.getGenericType());</span><br><span class="line">        System.out.println(<span class="string">&quot;GenericType Class: &quot;</span> + field.getGenericType().getClass());</span><br><span class="line">        <span class="type">ParameterizedType</span> <span class="variable">parameterizedType</span> <span class="operator">=</span> (ParameterizedType) field.getGenericType();</span><br><span class="line">        <span class="comment">// 这里确定只有一个,直接取数组下标 0</span></span><br><span class="line">        <span class="type">Type</span> <span class="variable">type</span> <span class="operator">=</span> parameterizedType.getActualTypeArguments()[<span class="number">0</span>];</span><br><span class="line">        System.out.println(<span class="string">&quot;ActualTypeArgument GenericType: &quot;</span> + type);</span><br><span class="line">        System.out.println(<span class="string">&quot;ActualTypeArgument GenericType Class: &quot;</span> +type.getClass());</span><br><span class="line">        <span class="type">WildcardType</span> <span class="variable">wildcardType</span> <span class="operator">=</span> (WildcardType) type;</span><br><span class="line">        <span class="keyword">for</span> (Type lowerBound : wildcardType.getLowerBounds()) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;lowerBound: &quot;</span> + lowerBound);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (Type upperBound : wildcardType.getUpperBounds()) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;upperBound: &quot;</span> + upperBound);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="获取注解类型"><a href="#获取注解类型" class="headerlink" title="获取注解类型"></a>获取注解类型</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h1 id="使用反射可以获取private字段的值，类的封装还有意义吗"><a href="#使用反射可以获取private字段的值，类的封装还有意义吗" class="headerlink" title="使用反射可以获取private字段的值，类的封装还有意义吗"></a>使用反射可以获取private字段的值，类的封装还有意义吗</h1><p>正常情况下，我们总是通过符合 Java 语法规范的代码来访问合法的方法或字段，编译器会根据public、protected，private决定是否允许访问字段，这样就达到了数据封装的目的。</p>
+<p>而反射是一种非常规的用法，使用反射，首先代码非常繁琐，其次，它更多地是给工具或者底层框架来使用，目的是在不知道目标实例任何信息的情况下，获取特定字段的值。</p>
+<p>此外，<strong>setAccessible(true)可能会失败</strong>。如果JVM运行期存在SecurityManager，那么它会根据规则进行检查，有可能阻止setAccessible(true)。例如，某个SecurityManager可能不允许对java和javax开头的package的类调用setAccessible(true)，这样可以保证JVM核心库的安全。</p>
+<h1 id="gson中-TypeToken-是如何获取的"><a href="#gson中-TypeToken-是如何获取的" class="headerlink" title="gson中 TypeToken 是如何获取的"></a>gson中 TypeToken 是如何获取的</h1><p>todo:单独放在一篇里面，篇幅太多了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GenericType</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> T t;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">getT</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setT</span><span class="params">(T t)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.t = t;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对应的字节码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">// class version 52.0 (52)</span><br><span class="line">// access flags 0x21</span><br><span class="line">// signature &lt;T:Ljava/lang/Object;&gt;Ljava/lang/Object;</span><br><span class="line">// declaration: zx/generic/GenericType&lt;T&gt;</span><br><span class="line">public class zx/generic/GenericType &#123;</span><br><span class="line"></span><br><span class="line">    // compiled from: GenericType.java</span><br><span class="line">  </span><br><span class="line">    // access flags 0x2</span><br><span class="line">    // signature TT;</span><br><span class="line">    // declaration: T</span><br><span class="line">    private Ljava/lang/Object; t</span><br><span class="line">  </span><br><span class="line">    // access flags 0x1</span><br><span class="line">    public &lt;init&gt;()V</span><br><span class="line">     L0</span><br><span class="line">      LINENUMBER 7 L0</span><br><span class="line">      ALOAD 0</span><br><span class="line">      INVOKESPECIAL java/lang/Object.&lt;init&gt; ()V</span><br><span class="line">      RETURN</span><br><span class="line">     L1</span><br><span class="line">      LOCALVARIABLE this Lzx/generic/GenericType; L0 L1 0</span><br><span class="line">      // signature Lzx/generic/GenericType&lt;TT;&gt;;</span><br><span class="line">      // declaration: zx.generic.GenericType&lt;T&gt;</span><br><span class="line">      MAXSTACK = 1</span><br><span class="line">      MAXLOCALS = 1</span><br><span class="line">  </span><br><span class="line">    // access flags 0x1</span><br><span class="line">    // signature ()TT;</span><br><span class="line">    // declaration: T getT()</span><br><span class="line">    public getT()Ljava/lang/Object;</span><br><span class="line">     L0</span><br><span class="line">      LINENUMBER 11 L0</span><br><span class="line">      ALOAD 0</span><br><span class="line">      GETFIELD zx/generic/GenericType.t : Ljava/lang/Object;</span><br><span class="line">      ARETURN</span><br><span class="line">     L1</span><br><span class="line">      LOCALVARIABLE this Lzx/generic/GenericType; L0 L1 0</span><br><span class="line">      // signature Lzx/generic/GenericType&lt;TT;&gt;;</span><br><span class="line">      // declaration: zx.generic.GenericType&lt;T&gt;</span><br><span class="line">      MAXSTACK = 1</span><br><span class="line">      MAXLOCALS = 1</span><br><span class="line">  </span><br><span class="line">    // access flags 0x1</span><br><span class="line">    // signature (TT;)V</span><br><span class="line">    // declaration: void setT(T)</span><br><span class="line">    public setT(Ljava/lang/Object;)V</span><br><span class="line">     L0</span><br><span class="line">      LINENUMBER 15 L0</span><br><span class="line">      ALOAD 0</span><br><span class="line">      ALOAD 1</span><br><span class="line">      PUTFIELD zx/generic/GenericType.t : Ljava/lang/Object;</span><br><span class="line">     L1</span><br><span class="line">      LINENUMBER 16 L1</span><br><span class="line">      RETURN</span><br><span class="line">     L2</span><br><span class="line">      LOCALVARIABLE this Lzx/generic/GenericType; L0 L2 0</span><br><span class="line">      // signature Lzx/generic/GenericType&lt;TT;&gt;;</span><br><span class="line">      // declaration: zx.generic.GenericType&lt;T&gt;</span><br><span class="line">      LOCALVARIABLE t Ljava/lang/Object; L0 L2 1</span><br><span class="line">      // signature TT;</span><br><span class="line">      // declaration: T</span><br><span class="line">      MAXSTACK = 2</span><br><span class="line">      MAXLOCALS = 2</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SubGenericType</span> <span class="keyword">extends</span> <span class="title class_">GenericType</span>&lt;String&gt; &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的字节码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">// class version 52.0 (52)</span><br><span class="line">// access flags 0x21</span><br><span class="line">// signature Lzx/generic/GenericType&lt;Ljava/lang/String;&gt;;</span><br><span class="line">// declaration: zx/generic/SubGenericType extends zx.generic.GenericType&lt;java.lang.String&gt;</span><br><span class="line">public class zx/generic/SubGenericType extends zx/generic/GenericType  &#123;</span><br><span class="line"></span><br><span class="line">  // compiled from: SubGenericType.java</span><br><span class="line"></span><br><span class="line">  // access flags 0x1</span><br><span class="line">  public &lt;init&gt;()V</span><br><span class="line">   L0</span><br><span class="line">    LINENUMBER 7 L0</span><br><span class="line">    ALOAD 0</span><br><span class="line">    INVOKESPECIAL zx/generic/GenericType.&lt;init&gt; ()V</span><br><span class="line">    RETURN</span><br><span class="line">   L1</span><br><span class="line">    LOCALVARIABLE this Lzx/generic/SubGenericType; L0 L1 0</span><br><span class="line">    MAXSTACK = 1</span><br><span class="line">    MAXLOCALS = 1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="反射对性能的影响"><a href="#反射对性能的影响" class="headerlink" title="反射对性能的影响"></a>反射对性能的影响</h1><p>这里先给出结论：</p>
+<ul>
+<li>通过 Class 的对象来获取 Method，Filed 等行为，是非常耗时的方法，如果非要使用反射，且会频繁的对某个固定的 Class 对象进行反射的操作，应该在第一次获取到 Method，Filed时，缓存起来。</li>
+<li>setAccessible(true) 方法并非简单的赋值，而是一个较为耗时的方法，如果我们确定其为 public 方法，应该避免调用 setAccessible 方法。</li>
+</ul>
+<p>todo：待 benchmark 测试</p>
+<h1 id="JVM中反射的实现机制"><a href="#JVM中反射的实现机制" class="headerlink" title="JVM中反射的实现机制"></a>JVM中反射的实现机制</h1><p>可以参考自动动手写 JVM 中，<a href="https://zachaxy.github.io/2018/01/18/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-16-%E5%8F%8D%E5%B0%84%E6%9C%BA%E5%88%B6%E7%AE%80%E4%BB%8B/">JVM中反射的实现机制</a> 对反射机制的实现。</p>
+<h1 id="常用的反射库"><a href="#常用的反射库" class="headerlink" title="常用的反射库"></a>常用的反射库</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/ronmamo/reflections">reflections</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/jOOQ/jOOR">jOOR</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/vidageek/mirror/">Mirror</a></li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Java-in-Deep/"># Java in Deep</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/10/02/Java%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">Java动态代理</a>
+            
+            
+            <a class="next" rel="next" href="/2018/09/25/Java%E6%B3%A8%E8%A7%A3/">Java注解</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

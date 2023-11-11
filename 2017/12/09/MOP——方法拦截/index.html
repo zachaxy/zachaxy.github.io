@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>MOP——方法拦截 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">MOP——方法拦截</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 9, 2017&nbsp;&nbsp;17:14:35&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">2.5k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">2 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>前面<a href="https://zachaxy.github.io/2017/12/08/Groovy%E5%AF%B9%E8%B1%A1%E5%92%8CMOP/">Groovy 对象和 MOP</a>简单了介绍了 Groovy 所提供的 MOP 机制。<br>接下来要介绍利用 MOP 实现方法的拦截。<br>拦截：在对方法进行调用时，我们可能有一些其它的要求，eg：日志的记录，执行时间的记录等，在 Java 可以 AOP 对方法的调用进行拦截，插入我们想执行的方法。而 Groovy 提供的 MOP 机制可以更为轻松的实现对方法的拦截。</p>
+<p>MOP 的拦截有两种实现方式：</p>
+<ol>
+<li>实现 GroovyInterceptable 接口进行拦截</li>
+<li>利用 MetaClass 进行拦截</li>
+</ol>
+<span id="more"></span>
+
+<h2 id="实现-GroovyInterceptable-接口进行拦截"><a href="#实现-GroovyInterceptable-接口进行拦截" class="headerlink" title="实现 GroovyInterceptable 接口进行拦截"></a>实现 GroovyInterceptable 接口进行拦截</h2><p>对于一个想要拦截方法的 Groovy 对象，要先实现 GroovyInterceptable 接口，然后务必重写其中的 invokeMethod()方法。我们拦截处理的逻辑都在这个方法中实现。<br>接下来在调用该类的<strong>任何方法</strong>的时候，都会被路由到 invokeMethod 方法中。我们可以在 invokeMethod 方法中，根据被拦截的方法名，来加入我们要记录的内容，然后将方法在路由到具体实际的方法中。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Man</span> <span class="keyword">implements</span> <span class="title class_">GroovyInterceptable</span> &#123;</span><br><span class="line">    <span class="keyword">def</span> talk() &#123;</span><br><span class="line">        System.out.println <span class="string">&quot;hello&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> run() &#123;</span><br><span class="line">        System.out.println <span class="string">&quot;running&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> invokeMethod(String name, args) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;start call method: &quot;</span> + name);</span><br><span class="line">        <span class="keyword">def</span> targetMethod = Man.metaClass.getMetaMethod(name, args)</span><br><span class="line">        targetMethod.invoke(<span class="variable language_">this</span>,args)</span><br><span class="line">        System.out.println(<span class="string">&quot;end call method: &quot;</span> + name);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">man = <span class="keyword">new</span> Man()</span><br><span class="line"></span><br><span class="line">man.talk()</span><br><span class="line">man.run()</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">start call method: talk</span><br><span class="line">hello</span><br><span class="line">end call method: talk</span><br><span class="line">start call method: run</span><br><span class="line">running</span><br><span class="line">end call method: run</span><br></pre></td></tr></table></figure>
+
+<p>man 调用的所有方法都被拦截到了 invokeMethod 方法中。</p>
+<p>这里要注意的有两点：</p>
+<ol>
+<li>不仅我们调用的方法会被拦截，方法内使用的 Groovy 上的方法(eg：<code>println()</code>方法)同样也会被拦截。所以这里使用了<code>System.out.println()</code>方法，因为其是 Java 上的方法，不会受到拦截的影响，我们这个例子很简单，如果拦截的方法内部使用了 Groovy 中的方法，那么很可能会产生递归调用，导致栈溢出。</li>
+<li>在 invokeMethod 方法中，利用类似反射的手段，根据方法名找到对应的方法，其返回值在 Groovy 中是 MetaMethod，其类型和 Java 中的 Method 类型相似，这里用 targetMethod 表示返回值，但是这里必须显示的使用 def 定义 targetMethod,否则报错<code>groovy.lang.MissingPropertyException: No such property: targetMethod for class: Man</code> 原因可参考<a target="_blank" rel="noopener" href="http://www.infoq.com/cn/articles/android-in-depth-gradle">深入理解 Android（一）：Gradle 详解</a>中<code>脚本中的变量和作用域</code>一节的讲解。</li>
+</ol>
+<p>额(⊙o⊙)…坑好多</p>
+<h2 id="利用-MetaClass-进行拦截"><a href="#利用-MetaClass-进行拦截" class="headerlink" title="利用 MetaClass 进行拦截"></a>利用 MetaClass 进行拦截</h2><p>使用 MetaClass 重写上述的方法</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Man</span> &#123;</span><br><span class="line">    <span class="keyword">def</span> talk() &#123;</span><br><span class="line">        System.out.println <span class="string">&quot;hello&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> run() &#123;</span><br><span class="line">        System.out.println <span class="string">&quot;running&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Man.metaClass.invokeMethod = &#123;</span><br><span class="line">    String name, args -&gt;</span><br><span class="line">        System.out.println(<span class="string">&quot;start call method: &quot;</span> + name);</span><br><span class="line">        targetMethod = Man.metaClass.getMetaMethod(name, args)</span><br><span class="line">        targetMethod.invoke(delegate, args)</span><br><span class="line">        System.out.println(<span class="string">&quot;end call method: &quot;</span> + name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">man = <span class="keyword">new</span> Man()</span><br><span class="line"></span><br><span class="line">man.talk()</span><br><span class="line">man.run()</span><br></pre></td></tr></table></figure>
+<p>其结果和实现 GroovyInterceptable 接口的结果相同</p>
+<p>这里要注意的是：</p>
+<ol>
+<li>这里将一个闭包赋给了 Man.metaClass 的 invokeMethod，也就是间接的实现了 invokeMethod 方法。因为 groovy 中调用方法时，如果找不到对应的方法名，会从该类的闭包中查找是否有相同的名字，若该闭包的参数也符合，那么就会直接调用该闭包。如果你一时接受不了这种方式，你可以重新创建一个 MetaClass 的实例，重写 invokeMethod 方法，然后将自己实现 metaClass 赋给 Man.metaClass，两种方式是等价的，但是明显前者的方式更简洁。</li>
+<li>实现的闭包中一定注意其有两个参数。否则依然无法实现拦截</li>
+<li>在闭包中，不用为 targetMethod 加 def 的定义</li>
+<li>执行方法时，调用 invoke 方法，第一个参数要传 delegate。因为这是在闭包中。</li>
+</ol>
+<p><strong>所有形如 Foo.metaClass.bar &#x3D; { delegate } 的闭包中出现的 delegate，该 delegate 代表的就是调用 bar 方法的 Foo 实例对象</strong></p>
+<h2 id="两种拦截方法的使用场景"><a href="#两种拦截方法的使用场景" class="headerlink" title="两种拦截方法的使用场景"></a>两种拦截方法的使用场景</h2><p>第一种需要实习接口，这就需要我们可以修改该类的源码才能让该类实现接口，否则只能使用第二种方法。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Groovy/"># Groovy</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/10/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%B3%A8%E5%85%A5/">MOP——方法注入</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/08/Groovy%E5%AF%B9%E8%B1%A1%E5%92%8CMOP/">Groovy对象和MOP</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

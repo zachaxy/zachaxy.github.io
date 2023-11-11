@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>go语言快速上手 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">go语言快速上手</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 18, 2021&nbsp;&nbsp;0:22:35&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">1.7k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">2 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>非 go 语言深入教程,只是作一个笔记整理,方便在使用时,能快速的编写代码; 其中罗列了编程语言中最基本的:环境安装,变量,函数,if&#x2F;else, for 循环, 集合类使用,以及go语言的基本特性</p>
+</blockquote>
+<span id="more"></span>
+
+<h1 id="导入包"><a href="#导入包" class="headerlink" title="导入包"></a>导入包</h1><p>两种方式</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 第一种方式</span></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;xxx&quot;</span></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;yyy&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 第二种方式,推荐使用,同时可以使用多个括号,对导入进行分组,使代码结构更清晰</span></span><br><span class="line"><span class="keyword">import</span> &#123;</span><br><span class="line">    <span class="string">&quot;xxx&quot;</span></span><br><span class="line">    <span class="string">&quot;yyy&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123;</span><br><span class="line">    <span class="string">&quot;zzz&quot;</span></span><br><span class="line">    <span class="string">&quot;mmm&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不可以有冗余 import,如果发现 import 的包在代码中没有使用,那么</p>
+<h1 id="访问权限"><a href="#访问权限" class="headerlink" title="访问权限"></a>访问权限</h1><p>不同于 Java 有对应的 public,private 等关键字,go 中,只有包中的变量或方法是以大写字母开头的,才可以被外部引用</p>
+<h1 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h1><ul>
+<li>使用 <code>var</code> 关键字定义变量, 后面是变量名称, 变量类型在最后面</li>
+<li>初始化变量,可以不声明类型,go 可以根据初始化的值,推断变量类型</li>
+<li>在函数中定义的变量,同时进行赋值,只是在函数中使用,有更简单的声明方式</li>
+</ul>
+<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var i int</span><br><span class="line">var str1, str2 string</span><br></pre></td></tr></table></figure>
+
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> i, j <span class="type">int</span> = <span class="number">1</span>, <span class="number">2</span></span><br><span class="line"><span class="keyword">var</span> c, python, java = <span class="literal">true</span>, <span class="literal">false</span>, <span class="string">&quot;no!&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="函数中的短变量声明"><a href="#函数中的短变量声明" class="headerlink" title="函数中的短变量声明"></a>函数中的短变量声明</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func main() &#123;</span><br><span class="line">	k := 3</span><br><span class="line">	c, python, java := true, false, &quot;no!&quot;</span><br><span class="line">	fmt.Println(j, k, c, python, java)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="外部变量-分组声明"><a href="#外部变量-分组声明" class="headerlink" title="外部变量,分组声明"></a>外部变量,分组声明</h2><p>类似外部 import 导入一样,外部变量也可以分组声明</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;math/cmplx&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">var (</span><br><span class="line">	ToBe   bool       = false</span><br><span class="line">	MaxInt uint64     = 1&lt;&lt;64 - 1</span><br><span class="line">	z      complex128 = cmplx.Sqrt(-5 + 12i)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	fmt.Printf(&quot;Type: %T Value: %v\n&quot;, ToBe, ToBe)</span><br><span class="line">	fmt.Printf(&quot;Type: %T Value: %v\n&quot;, MaxInt, MaxInt)</span><br><span class="line">	fmt.Printf(&quot;Type: %T Value: %v\n&quot;, z, z)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="基本类型变量的默认值"><a href="#基本类型变量的默认值" class="headerlink" title="基本类型变量的默认值"></a>基本类型变量的默认值</h2><p>string 类型的默认值是 “” ,而不是 nil</p>
+<h2 id="类型转换"><a href="#类型转换" class="headerlink" title="类型转换"></a>类型转换</h2><p>需要显式声明,加强了编译时检测</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> i <span class="type">int</span> = <span class="number">42</span>  <span class="comment">// 定义变量</span></span><br><span class="line"><span class="keyword">var</span> f <span class="type">float64</span> = <span class="type">float64</span>(i) <span class="comment">// 进行类型转黄, 变量定义钱的 float64 不可忽略</span></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line"><span class="keyword">var</span> f:= <span class="type">float64</span>(i)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="方法定义"><a href="#方法定义" class="headerlink" title="方法定义"></a>方法定义</h1><ul>
+<li><code>func</code> 关键字定义方法,不同于 kotlin 中的 <code>fun</code> … </li>
+<li>返回值类型在括号后面…</li>
+<li>函数中的参数,如果出现连续两个及以上,类型相同,则可以只写最后一个参数的类型</li>
+<li>返回值可以有多个,用()包裹</li>
+<li>在函数定义时,可以定义返回值变量,其在函数内可以直接使用, 最后以 return 语句结,较大的函数中不推荐使用,可读性差<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">add</span><span class="params">(x <span class="type">int</span>, y <span class="type">int</span>)</span></span> <span class="type">int</span> &#123;</span><br><span class="line"><span class="comment">// func add(x, y int) int &#123;  // 等价的</span></span><br><span class="line">	<span class="keyword">return</span> x + y</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回值可以有多个</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">swap</span><span class="params">(x, y <span class="type">string</span>)</span></span> (<span class="type">string</span>, <span class="type">string</span>) &#123;</span><br><span class="line">	<span class="keyword">return</span> y, x</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 在函数定义时,定义返回值变量, 其在函数内可以直接使用, 最后以 return 语句结束</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">split</span><span class="params">(sum <span class="type">int</span>)</span></span> (x, y <span class="type">int</span>) &#123;</span><br><span class="line">	x = sum * <span class="number">4</span> / <span class="number">9</span></span><br><span class="line">	y = sum - x</span><br><span class="line">	<span class="keyword">return</span>  <span class="comment">// return 语句不能省略</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(add(<span class="number">42</span>, <span class="number">13</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/"># 编程语言</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/04/18/Python%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/">Python快速上手</a>
+            
+            
+            <a class="next" rel="next" href="/2020/11/22/%E6%91%84%E5%BD%B1%E4%B8%AD%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">摄影中的基本概念</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

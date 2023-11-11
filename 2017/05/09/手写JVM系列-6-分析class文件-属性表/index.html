@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>手写JVM系列(6)-分析class文件-属性表 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">手写JVM系列(6)-分析class文件-属性表</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 9, 2017&nbsp;&nbsp;16:24:05&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">7.4k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">7 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>和常量池类似，各种属性表达的信息也各不相同，因此无法用统一的结构来定义。不同之处在于，常量是由 Java 虚拟机规范严格定义的，共有 14 种。但属性是可以扩展的，不同的虚拟机实现可以定义自己的属性类型。由于这个原因，Java 虚拟机规范没有使用 tag，而是使用<strong>属性名</strong>来区别不同的属性。属性数据放在属性名之后的 u1 表中，这样 Java 虚拟机实现就可以跳过自己无法识别的属性。</p>
+</blockquote>
+<h1 id="属性的基本结构"><a href="#属性的基本结构" class="headerlink" title="属性的基本结构"></a>属性的基本结构</h1><p>属性的结构定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">attribute_info &#123;</span><br><span class="line">  u2 attribute_name_index;</span><br><span class="line">  u4 attribute_length;</span><br><span class="line">  u1 info[attribute_length];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一个字段是属性名在常量池的索引，指向常量池中的 CONSTANT_Utf8_info 常量。</p>
+<p>第二个字段是后面跟着的属性字节码的长度，用 u4 表示，表明属性的大小最大可以为 2^32-1。</p>
+<p>第三个字段就是属性字节码。</p>
+<h1 id="属性的种类"><a href="#属性的种类" class="headerlink" title="属性的种类"></a>属性的种类</h1><p>按照用途，有 23 种预定义属性，可以分为三组。</p>
+<ol>
+<li>第一组属性是实现 Java 虚拟机所必需的，共有 5 种；</li>
+<li>第二组属性是 Java 类库所必需的，共有 12 种；</li>
+<li>第三组属性主要提供给工具使用，共有 6 种。（这组属性是可选的，也就是说可以不出现在 class 文件中。如果 class 文件中存在第三组属性，Java 虚拟机实现或者 Java 类库也是可以利用它们的，比如使用 LineNumberTable 属性在异常堆栈中显示行号。）</li>
+</ol>
+<p>这里只介绍几个常用的属性：</p>
+<table>
+<thead>
+<tr>
+<th>属性名</th>
+<th>位置</th>
+<th>含义</th>
+<th>分组</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Deprecated</td>
+<td>ClassFile, field_info, method_info</td>
+<td>被声明为 deprecated 的方法和字段</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Synthetic</td>
+<td>ClassFile, field_info, method_info</td>
+<td>标示方法或字段是由编译器自动生成的</td>
+<td>2</td>
+</tr>
+<tr>
+<td>SourceFile</td>
+<td>ClassFile</td>
+<td>记录源文件的名称</td>
+<td>3</td>
+</tr>
+<tr>
+<td>ConstantValue</td>
+<td>field_info</td>
+<td>final 关键字定义的常量值</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Code</td>
+<td>method_info</td>
+<td>Java 代码编译成的字节码指令</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Exceptions</td>
+<td>method_info</td>
+<td>方法抛出的异常</td>
+<td>1</td>
+</tr>
+<tr>
+<td>LineNumberTable</td>
+<td>Code</td>
+<td>Java 源代码的行号与字节码指令的对应关系</td>
+<td>3</td>
+</tr>
+<tr>
+<td>LocalVariableTable</td>
+<td>Code</td>
+<td>方法的局部变量描述</td>
+<td>3</td>
+</tr>
+</tbody></table>
+<h1 id="属性的具体介绍"><a href="#属性的具体介绍" class="headerlink" title="属性的具体介绍"></a>属性的具体介绍</h1><p>由于属性种类较多，这里只选几个有代表性的属性进行讲解。</p>
+<h2 id="Deprecated"><a href="#Deprecated" class="headerlink" title="Deprecated"></a>Deprecated</h2><p>最简单的属性，仅起标记作用，不包含任何数据。Deprecated 属性用于指出类、接口、字段或方法已经不建议使用，编译器等工具可以根据 Deprecated 属性输出警告信息。J2SE 5.0 之前可以使用 Javadoc 提供的@deprecated 标签指示编译器给类、接口、字段或方法添加 Deprecated 属性。其结构定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Deprecated_attribute &#123;</span><br><span class="line">  u2 attribute_name_index;</span><br><span class="line">  u4 attribute_length;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于不包含任何数据，所以 attribute_length 的值必须是 0。自然也就没有了后面的 info 数组字段了。</p>
+<h2 id="Synthetic"><a href="#Synthetic" class="headerlink" title="Synthetic"></a>Synthetic</h2><p>最简单的属性，仅起标记作用，不包含任何数据。Synthetic 属性用来标记源文件中不存在、由编译器生成的类成员，引入 Synthetic 属性主要是为了支持嵌套类和嵌套接口。其结构定义如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Synthetic_attribute &#123;</span><br><span class="line">  u2 attribute_name_index;</span><br><span class="line">  u4 attribute_length;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于不包含任何数据，所以 attribute_length 的值必须是 0。自然也就没有了后面的 info 数组字段了。</p>
+<h3 id="桥接方法"><a href="#桥接方法" class="headerlink" title="桥接方法"></a>桥接方法</h3><p>这里要说一下，哪些方法是我们在代码里没有写，但是字节码文件会给我们加上呢? 首先构造方法，如果我们默认不写，那么字节码会自动添加上的。还有就是泛型，这里详细说明一下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">A</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">abstract</span> T <span class="title function_">get</span><span class="params">(T t)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span> <span class="keyword">extends</span> <span class="title class_">A</span>&lt;String&gt; &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    String <span class="title function_">get</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestBridge</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        Class&lt;B&gt; clazz = B.class;</span><br><span class="line">        Method[] methods = clazz.getDeclaredMethods();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; methods.length; i++) &#123;</span><br><span class="line">            <span class="type">Method</span> <span class="variable">m</span> <span class="operator">=</span> methods[i];</span><br><span class="line">            System.out.println(getMethodInfo(m) + <span class="string">&quot; is Bridge Method? &quot;</span> + m.isBridge());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">getMethodInfo</span><span class="params">(Method m)</span>&#123;</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        sb.append(m.getReturnType()).append(<span class="string">&quot; &quot;</span>);</span><br><span class="line">        sb.append(m.getName());</span><br><span class="line">        Class[]params = m.getParameterTypes();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; params.length; i++) &#123;</span><br><span class="line">            sb.append(params[i].getName()).append(<span class="string">&quot; &quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sb.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>B 中复写了 A 中的 get 方法，那么在 main 方法中，打印 B 中的方法数，应该就是一个吧，那接下来看一下打印结果：</p>
+<blockquote>
+<p>[class java.lang.String get] is Bridge Method? false</p>
+<p>[class java.lang.Object get] is Bridge Method? true </p>
+</blockquote>
+<p>会不会感到诧异，怎么会多出一个返回值为 Object 的 get 方法？</p>
+<p>这个是 java5 中的泛型所带来的结果了。针对上面的这段代码分析下：<br>在 java5 之前，你可以往一个集合里扔任何你想扔的对象。但是从集合中取对象却变得很难。你不知道你下个取到的对象将会是什么具体类型的。因为取出来的对象是 Object 类型的，不知道转成什么类型，所以只能使用所有 Object 的方法了，这样就毫无意义了。所以在 java5 中提供了泛型这一新特性。我们在写代码的时候可以指定集合可以存放对象的类型。然后<strong>将类型检查的事情交给编译器去做</strong>，减少了程序员的工作。<br>​    </p>
+<p>上面代码中&lt;&gt;中的 T 和 String 就是指定类的参数类型。T 代表一种泛型，告诉编译器，一旦有类指定了 T 这个参数的实际类，那么 get 方法返回的类型也必须为同一个类（当然也可以是这个类的子类；这个也是 java5 中的协变式返回新特性），如果不是，就必须报错提示；将原来的运行时可能出现的错误提前到编译期了。那么，假设你是 java5 编译器的设计者，你会如何来设计让编译器能实现这个特性，同时能保证编译出来的字节码可以在老版本的 jdk 中运行呢？java5 编译器中作了个很巧妙的设计——桥接方法。 </p>
+<p>那么编译器是如何编译这个抽象类 A 的呢？</p>
+<p>对于 A：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">A</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">abstract</span> T <span class="title function_">get</span><span class="params">(T t)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译器会直接将其转换为下面的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">A</span>&lt;Object&gt; &#123;</span><br><span class="line">    <span class="keyword">abstract</span> Object <span class="title function_">get</span><span class="params">(Object t)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面这个过程称为类型擦除，将泛型类型参数全部替换为 Object。</p>
+<p>对于 B 类，它继承了 A 类，指定了 T 参数为 String。如果还按照以前那么编译，那编译的类就是： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">B</span> <span class="keyword">extends</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    String <span class="title function_">get</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样在运行时肯定会报错，因为 B 继承了 A，而 A 又是 asbtract 类，B 还没 overriding A 中 Object get()方法。如何解决这个错误呢？java5 编译器在编译的时候做了些手脚。当编译器发现你指定了类型参数，便会在编译的字节码中添加一个桥接方法。所以代码变成了下面这样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">B</span> <span class="keyword">extends</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    <span class="comment">//这个就是编译器添加的方法</span></span><br><span class="line">    Object <span class="title function_">get</span><span class="params">(Object s)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> (Object) get((String) s);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String <span class="title function_">get</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>而我们实际在调用 B 的 get 方法时，调用的其实是第二个方法，因为我们的参数传入的是 String。而如果是使用了多态，调用了 A.get,那么调用的将是 B 的第一个 get 方法。</p>
+<ul>
+<li><p>第一个 get 方法的描述符是：(Ljava&#x2F;lang&#x2F;Object;)Ljava&#x2F;lang&#x2F;Object;</p>
+<p>access_flag:0x0001(public)</p>
+</li>
+<li><p>第二个 get 方法的描述符是：(Ljava&#x2F;lang&#x2F;String;)Ljava&#x2F;lang&#x2F;String;</p>
+<p>access_flag:0x1041(public Synthetic bridge)</p>
+</li>
+</ul>
+<h2 id="SourceFile"><a href="#SourceFile" class="headerlink" title="SourceFile"></a>SourceFile</h2><p>SourceFile 是可选定长属性，只会出现在 ClassFile 结构中，用于指出源文件名。其结构定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SourceFile_attribute &#123;</span><br><span class="line">  u2 attribute_name_index;</span><br><span class="line">  u4 attribute_length;</span><br><span class="line">  u2 sourcefile_index;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>attribute_length 的值必须是 2。因为这个长度就是下面一个字段 sourcefile_index 的长度，这个索引是常量池的索引，常量池长度是用 u2 来表示的，所以该索引决不能超出 u2 的最大值，因此最大用两字节表示，所以 attribute_length 值固定为 2。</p>
+<p>sourcefile_index 是常量池索引，指向<code>CONSTANT_Utf8_info</code>常量。而<code>CONSTANT_Utf8_info</code>中的字符串就是当前源文件的文件名。</p>
+<h2 id="ConstantValue"><a href="#ConstantValue" class="headerlink" title="ConstantValue"></a>ConstantValue</h2><p>ConstantValue 是定长属性，只会出现在 field_info 结构中，用于表示常量表达式的值。其作用是通知虚拟机自动为静态变量赋值。只有被 static 修饰的变量（类变量）才可以使用这项属性。</p>
+<p>其结构定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ConstantValue_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;</span><br><span class="line">    u4 attribute_length;</span><br><span class="line">    u2 constantvalue_index;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面有三种情况：</p>
+<ul>
+<li>int a1 &#x3D; 123；</li>
+<li>static int a2 &#x3D; 123;</li>
+<li>final static int a3 &#x3D; 123</li>
+</ul>
+<p>对于非 static 变量，eg：a1，其赋值是在实例构造器<code>&lt;init&gt;</code>方法中完成的。</p>
+<p>而对于 static 变量，eg：a2，a3，有两种赋值方式。</p>
+<ol>
+<li>在类构造器<code>&lt;clinit&gt;</code>方法中。</li>
+<li>使用 ConstantValue 属性。</li>
+</ol>
+<p>目前 Sun Javac 的选择是：前提都是针对于用 static 修饰的静态变量。如果是用 final static 修饰的话，并且这个变量是基本类型或者 String，那么使用 2 赋值。否则使用 1 赋值。</p>
+<p>因此这里的 constantvalue_index 是指向常量池中一个字面量类别（CONSTANT_Integer、CONSTANT_Float、CONSTANT_Long、CONSTANT_Double、CONSTANT_Utf8 五种中的一种）的索引，该常量中保存着变量的值。</p>
+<h2 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h2><p>Code 是变长属性，只存在于 method_info 结构中。Code 属性中存放字节码等方法相关信息。其结构定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Code_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;</span><br><span class="line">    u4 attribute_length;</span><br><span class="line">    u2 max_stack;</span><br><span class="line">    u2 max_locals;</span><br><span class="line">    u4 code_length;</span><br><span class="line">    u1 code[code_length];</span><br><span class="line">    u2 exception_table_length;</span><br><span class="line">    exception_table[exception_table_length];</span><br><span class="line">    u2 attributes_count;</span><br><span class="line">    attribute_info attributes[attributes_count];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关于上面的 exception_table，其结构定义如下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123; </span><br><span class="line">  	u2 start_pc;</span><br><span class="line">    u2 end_pc;</span><br><span class="line">    u2 handler_pc;</span><br><span class="line">    u2 catch_type;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>java 方法中的代码经过 Javac 编译器处理之后，最终变成<strong>字节码指令</strong>存储在 Code 属性内。Code 属性出现在方法表的属性集合之中，但是并非所有的方法都必须存在 Code 这个属性。譬如接口或者抽象类中的方法就不存在 Code 属性。</p>
+<p>接下来对其中的字段做一个介绍：</p>
+<ul>
+<li>attribute_name_index：指向 CONSTANT_Utf8_info 类型常量的索引，这个常量值固定为“Code”，代表了该属性的属性名称。</li>
+<li>attribute_length：代表该属性的长度，包括从 attribute_name_index 开始到 attributes[]数组结束。</li>
+<li>max_stack：代表操作数栈的深度的最大值。在方法执行的任意时刻，操作数栈都不能超过这个深度。</li>
+<li>max_locals：代表了局部变量表所需的存储空间大小。在这里 max_locals 的单位是 Slot，Slot 是虚拟机为局部变量非配内存所使用的最小单位。对于 byte、char、short、int、float、boolean、returnAddress 等长度不超过 32 位的数据，每个局部变量占用一个 Slot，而 double 和 long 这种 64 位的数据则需要两个 Slot 来存放。</li>
+<li>code_length：指示下面的 code 字节码数组的长度。虽然这是一个 u4 类型，理论上最大值可以达到 2^32-1，但是 Java 虚拟机明确规定一个方法中的指令不能超过 65535 条字节码指令，也就是说它实际是使用了 u2 的长度。</li>
+<li>code[code_length]：存放的是 Java 源程序编译后生成的 <strong>字节码指令</strong> ，关于字节码指令，会在<a href="https://zachaxy.github.io/2017/05/13/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-9-%E6%8C%87%E4%BB%A4%E9%9B%86/">手写JVM系列(9)-指令集</a>一节详细说明。</li>
+<li>exception_table_length：指示下面的异常表数组的长度。</li>
+<li>exception_table[exception_table_length] 关于异常处理，会在<a href="">后面的文章</a>中进行详细说明。</li>
+<li>attributes_count：指示下面的属性表数组的长度。</li>
+<li>attribute_info attributes[attributes_count]：Code 本身就已经是属性了，在这个属性的字段中还包括一些其它的属性…那么就存在这个表中。</li>
+</ul>
+<h3 id="关于-max-locals"><a href="#关于-max-locals" class="headerlink" title="关于 max_locals"></a>关于 max_locals</h3><p>max_locals 给出局部变量表大小。在这里 max_locals 的单位是 Slot，Slot 是虚拟机为局部变量非配内存所使用的最小单位。对于 byte、char、short、int、float、boolean、returnAddress 等长度不超过 32 位的数据，每个局部变量占用一个 Slot，而 double 和 long 这种 64 位的数据则需要两个 Slot 来存放。</p>
+<p>局部变量表中存放的内容</p>
+<ul>
+<li>方法参数（包括实例方法中隐藏参数 this）</li>
+<li>显式异常处理器的参数（catch 块所定义的异常）</li>
+<li>方法体中递归的局部变量</li>
+</ul>
+<p>但是这里要注意的是：并非在方法中用到了多少个局部变量，就把这些局部变量所占的 Slot 的数量作为 max_locals 的值，因为局部变量表中的 Slot 是可以重用的，当代码执行超出了某一局部变量的<strong>作用域</strong>之后，这个 Slot 就可以被其它局部变量所使用了，所以 Javac 编译器会根据变量的作用域来分配 Slot 给各个变量使用，然后计算出 max_locals 的大小。</p>
+<p><strong>方法体内部使用的 this 从何而来？</strong></p>
+<p>大家注意到没有，定义在类中的非静态方法内部，可以使用 this 来访问当前的对象内的属性，它的实现方法是在 Javac 编译的时候把 this 添加到每个非静态方法的方法参数中，所以在方法内访问的 this 其实是本方法的参数。我们自己定义一个<code>void func()</code>的方法，使用 javap 命令查看其 Code 字节码，会发现这个 func 方法的<code>Args_size=1</code>,原因就在这，这个参数就是编译器默认为我们添加进去的<code>this</code></p>
+<h2 id="Exception"><a href="#Exception" class="headerlink" title="Exception"></a>Exception</h2><p>这里将的 Exception 属性和 Code 属性是一级的。并不是 Code 属性中的异常属性表。</p>
+<p>这里的 Exception 属性的作用是列举方法中通过<code>throws</code>关键字后面列举的异常。其结构如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Exceptions_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;</span><br><span class="line">    u4 attribute_length;</span><br><span class="line">    u2 number_of_exceptions;</span><br><span class="line">    u2 exception_index_table[number_of_exceptions];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里的 number_of_exceptions 项表示方法可能抛出的异常的数量。后面跟的是一个 exception_index_table，该数组中每个元素的长度均为 u2，因为该数组中保存的是一个指向常量池中 CONSTANT_Class_info 型的常量的索引，代表该异常的类型。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JVM/"># JVM</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/10/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-7-%E8%AF%BB%E5%8F%96class%E6%96%87%E4%BB%B6/">手写JVM系列(7)-读取class文件</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-5-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B8%B8%E9%87%8F%E6%B1%A0/">手写JVM系列(5)-分析class文件-常量池</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>对LayoutParams的理解 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">对LayoutParams的理解</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 11, 2017&nbsp;&nbsp;9:33:25&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">7.6k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">7 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="LayoutParams-是什么？"><a href="#LayoutParams-是什么？" class="headerlink" title="LayoutParams 是什么？"></a>LayoutParams 是什么？</h1><p>相信很多人都有疑惑，LayoutParams 是什么？不知道大家想过没有，如果定义一个 ViewGroup，然后在这个 ViewGroup 中放若干 view，这些 view 在 ViewGroup 中的大小关系是保存在哪里的呢？</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">LinearLayout</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:android</span>=<span class="string">&quot;http://schemas.android.com/apk/res/android&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:tools</span>=<span class="string">&quot;http://schemas.android.com/tools&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:id</span>=<span class="string">&quot;@+id/activity_main&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_width</span>=<span class="string">&quot;match_parent&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_height</span>=<span class="string">&quot;match_parent&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:orientation</span>=<span class="string">&quot;vertical&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">tools:context</span>=<span class="string">&quot;com.zx.readsourcecode.MainActivity&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">TextView</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:id</span>=<span class="string">&quot;@+id/tv&quot;</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_width</span>=<span class="string">&quot;match_parent&quot;</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_height</span>=<span class="string">&quot;wrap_content&quot;</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:text</span>=<span class="string">&quot;文字&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上面是一段最简单不过的布局文件，这里我们最常用的一个属性<code>android:layout_width</code>和<code>android:layout_height</code>相信大家再熟悉不过，其实这两个属性对应两个变量 width 和 height，那么这两个变量是哪个类的成员变量呢？答案就是 LayoutParams。虽然之前不知道 LayoutParams 这和类的存在，但是却一直偷偷的使用它。</p>
+<h1 id="LayoutParams-的作用"><a href="#LayoutParams-的作用" class="headerlink" title="LayoutParams 的作用"></a>LayoutParams 的作用</h1><p> <strong>LayoutParams 是 View 用来告诉它的父控件如何放置自己的。</strong>基类 LayoutParams（也就是 ViewGroup.LayoutParams）仅仅描述了这个 View 想要的宽度和高度。在 View 的测量过程中，LayoutParams 起到了决定性的作用！</p>
+<p>注意：<code>android:layout_width</code>和<code>android:layout_height</code>表面看起来是 TextView 的宽度和高度，相信这是很多人误解的地方，但如果是描述自己的宽高，那么属性名直接定义为<code>android:width</code>和<code>android:height</code>不就行了，为什么前面要加<code>layout_</code>的前缀？这是因为 TextView 既然放在 LinearLayout 中，那么它的宽度和高度并不是由自己决定的，而是由其父容器（这里对应 LinearLayout）来决定的。通过该属性可选的值 <code>match_parent</code>可以看出，这并不是一个具体的值，而是描述为和父容器一样宽，所以宽度是看父容器有多宽，才给子 view 设置多宽的。</p>
+<p>而描述 View 直接用它们自己的属性就好了，如<code>textColor</code>和<code>text</code>等等，为什么还需要引入 LayoutParams 呢？因为<code>textColor</code>和<code>text</code>等这样的属性都是只与 TextView 自身有关的，无论这个 TextView 处于什么环境，这些属性都是不变的。而<code>layout_width</code>与<code>layout_marginLeft</code>这样的属性是与它的父控件息息相关的，是父控件通过 LayoutParams 提供这些”layout_”属性给孩子们用的；是父控件根据孩子们的要求（LayoutParams）来决定怎么测量。</p>
+<p>所以在 xml 布局中，凡是以<code>layout_</code>开头的属性，均不是 view 自身的，而是它所在的父控件的 LayoutParams 类中的属性，这里的父控件一定是 ViewGroup 的一个子类。</p>
+<h1 id="ViewGroup-LayoutParams"><a href="#ViewGroup-LayoutParams" class="headerlink" title="ViewGroup.LayoutParams"></a>ViewGroup.LayoutParams</h1><p>LayoutParams 是 ViewGroup 中的一个静态类，而每个 ViewGroup 的子类（eg：LinearLayout，FrameLayout，RelativeLayout 等）中依然有一个各自的 LayoutParams 的子类，其在 ViewGroup 的 LayoutParams 静态类的基础之上，添加了和具体布局相关的属性，比如 LinearLayout 中特有的 layout_weight 属性，用来指定特定方向的分配比例，再比如 RelativeLayout 特有的 layout_left，用来指定当前 view 和其它子 view 相对位置的属性等。进入源码中看一下 ViewGroup 中静态内部类 LayoutParams。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">public static class LayoutParams &#123;</span><br><span class="line"></span><br><span class="line">    @SuppressWarnings(&#123;&quot;UnusedDeclaration&quot;&#125;)</span><br><span class="line">    @Deprecated</span><br><span class="line">    public static final int FILL_PARENT = -1;</span><br><span class="line"></span><br><span class="line">    public static final int MATCH_PARENT = -1;</span><br><span class="line"></span><br><span class="line">    public static final int WRAP_CONTENT = -2;</span><br><span class="line"></span><br><span class="line">    public int width;</span><br><span class="line"></span><br><span class="line">    public int height;</span><br><span class="line">    </span><br><span class="line">    public LayoutParams(Context c, AttributeSet attrs) &#123;</span><br><span class="line">    TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.ViewGroup_Layout);</span><br><span class="line">    </span><br><span class="line">    	setBaseAttributes(a,</span><br><span class="line">   			 R.styleable.ViewGroup_Layout_layout_width,</span><br><span class="line">   		 	R.styleable.ViewGroup_Layout_layout_height);</span><br><span class="line">    </span><br><span class="line">    	a.recycle();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public LayoutParams(int width, int height) &#123;</span><br><span class="line">        this.width = width;</span><br><span class="line">        this.height = height;</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到其内部的成员变量只有最基本的 width 和 height，对应了布局文件中的<code>android:layout_width</code>和<code>android:layout_height</code>的值，在解析布局文件时，遇到这两个属性，就给对应的 LayoutParams 的这两个成员变量进行赋值了。</p>
+<p>在 ViewGroup 中还自带了一个 LayoutParams 的子类 MarginLayoutParams，供不同的布局使用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">MarginLayoutParams</span> <span class="keyword">extends</span> <span class="title class_">ViewGroup</span>.LayoutParams &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> leftMargin;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> topMargin;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> rightMargin;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> bottomMargin;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">startMargin</span> <span class="operator">=</span> DEFAULT_MARGIN_RELATIVE;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">endMargin</span> <span class="operator">=</span> DEFAULT_MARGIN_RELATIVE;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>其添加了 Margin 相关的属性，相对于布局文件的<code>android:layout_marginLeft=&quot;5dp&quot;</code>等属性。</p>
+<p><code>LayoutParams</code>其实是父控件提供给子 view 的，好让子 view 选择如何测量和放置自己。所以在子 view 添加到父控件的那一刻，子 view 就应该有<code>LayoutParams</code>了。我们来看看几中常见的在代码中添加 View 的方式：还是上面的布局，这次我们不用 xml，而是用代码来实现一样的效果。 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">LinearLayout</span> <span class="variable">linearLayout</span> <span class="operator">=</span> (LinearLayout) findViewById(R.id.activity_main);</span><br><span class="line"><span class="type">TextView</span> <span class="variable">textView</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TextView</span>(<span class="built_in">this</span>);</span><br><span class="line">LinearLayout.<span class="type">LayoutParams</span> <span class="variable">params</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">LinearLayout</span>.LayoutParams(</span><br><span class="line">        LinearLayout.LayoutParams.MATCH_PARENT,</span><br><span class="line">        LinearLayout.LayoutParams.WRAP_CONTENT);</span><br><span class="line">linearLayout.addView(textView, params);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>View 要是想被添加到 ViewGroup 中，是不可能脱离相应的 ViewGroup.LayoutParams，而独立存在的，不信你将布局文件中的<code>android:layout_width</code>和<code>android:layout_height</code>这两个属性删掉，编译器立即报错。</p>
+<p>同时在代码中添加上述操作，虽然可以使用如下代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">LinearLayout</span> <span class="variable">linearLayout</span> <span class="operator">=</span> (LinearLayout) findViewById(R.id.activity_main);</span><br><span class="line"><span class="type">TextView</span> <span class="variable">textView</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TextView</span>(<span class="built_in">this</span>);</span><br><span class="line">linearLayout.addView(textView);</span><br></pre></td></tr></table></figure>
+
+<p>但是我们追到 addView 方法内部看一下，可以得出结论，调用 addView（view）的方法，对应的 ViewGroup子类会通过 generateDefaultLayoutParams（）方法自动添加一个默认的 LayoutParams。不同的 ViewGroup（这里指的是 LinearLayout）产生具体 LayoutParams 的方法不同。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addView</span><span class="params">(View child)</span> &#123;</span><br><span class="line">    addView(child, -<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addView</span><span class="params">(View child, <span class="type">int</span> index)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (child == <span class="literal">null</span>) &#123;</span><br><span class="line">    	<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Cannot add a null child view to a ViewGroup&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">LayoutParams</span> <span class="variable">params</span> <span class="operator">=</span> child.getLayoutParams();</span><br><span class="line">    <span class="keyword">if</span> (params == <span class="literal">null</span>) &#123;</span><br><span class="line">    	params = generateDefaultLayoutParams();</span><br><span class="line">    <span class="keyword">if</span> (params == <span class="literal">null</span>) &#123;</span><br><span class="line">    	<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;generateDefaultLayoutParams() cannot return null&quot;</span>);</span><br><span class="line">    	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    addView(child, index, params);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>不同的 ViewGroup（布局）产生具体 LayoutParams 的方法不同。看一下 LinearLayout 中的 generateDefaultLayoutParams（）是如何添加的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> LayoutParams <span class="title function_">generateDefaultLayoutParams</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LayoutParams</span>(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很简单的添加了一个宽高均为 wrap_content 的属性。</p>
+<p><strong>注：generateDefaultLayoutParams 方法中返回的 LayoutParams 类，是具体的 ViewGroup 子类（这里代表 LinearLayout）中的静态类 LayoutParams，而不是 ViewGroup 中的。</strong></p>
+<p>在深入到 addView 中，看一下 view 和 LayoutParams 是如何关联的，这里删除了部分代码，只看主线；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">addViewInner</span><span class="params">(View child, <span class="type">int</span> index, LayoutParams params,</span></span><br><span class="line"><span class="params">        <span class="type">boolean</span> preventRequestLayout)</span> &#123;  </span><br><span class="line"></span><br><span class="line">	<span class="comment">//(1)</span></span><br><span class="line">    <span class="keyword">if</span> (child.getParent() != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>(<span class="string">&quot;The specified child already has a parent. &quot;</span> +</span><br><span class="line">                <span class="string">&quot;You must call removeView() on the child&#x27;s parent first.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//(2)</span></span><br><span class="line">    <span class="keyword">if</span> (!checkLayoutParams(params)) &#123;</span><br><span class="line">        params = generateLayoutParams(params);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  	<span class="comment">//(3)preventRequestLayout 参数的默认值是 false；</span></span><br><span class="line">    <span class="keyword">if</span> (preventRequestLayout) &#123;</span><br><span class="line">        child.mLayoutParams = params;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        child.setLayoutParams(params);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  	<span class="comment">//(4)默认值为 -1</span></span><br><span class="line">    <span class="keyword">if</span> (index &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        index = mChildrenCount;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//(5)</span></span><br><span class="line">    addInArray(child, index);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//(6) tell our children，默认值为 false；</span></span><br><span class="line">    <span class="keyword">if</span> (preventRequestLayout) &#123;</span><br><span class="line">        child.assignParent(<span class="built_in">this</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        child.mParent = <span class="built_in">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//(7)</span></span><br><span class="line">    dispatchViewAdded(child);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">//......</span></span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里看一下 addViewInner 方法内部的执行流程</p>
+<ol>
+<li>检查 view 是否被别的 ViewGroup 添加过，如果被别的添加过，那么抛出异常</li>
+<li>再对 layoutParams 进行检测，如果为 null，执行 generateLayoutParams(params)，这也是最后一次为 view 创建 params 了，这里添加的是 ViewGroup.LayoutParams，一般在 LinearLayout、RelativeLayout 等已有的布局中，addview 中会先执行类似的为 view 创建 params 的方法，添加的是各布局特有的 LayoutParams，但是如果是我们自定义的 ViewGroup，也许没有实现配套的 LayoutParams，所以最后用的是 ViewGroup 中自带的 LayoutParams</li>
+<li>将 view 的 layoutParams 设置为当前的 layoutParams，在这里执行了关联</li>
+<li>除非我们在 addView(view,index)指定了具体值，否则 index 默认值为 -1，如果是 -1 的话，这一步将 index 改为 ViewGroup 中当前 child view 的总和</li>
+<li>ViewGroup 中有一个数组，保存着其所有子 view，这里根据 index 值添加到相应的位置，当然这里也涉及到了数组扩容问题，如果你手动指定的 index 过大，超过了当前 ViewGroup 的 mChildrenCount，那么直接报错，index 过大</li>
+<li>为 view 分配 parent，这个 parent 就是添加该子 view 的 ViewGroup</li>
+<li>执行了 addView 方法，那么原有的 ViewGroup 的结构势必会发生改变，这时候会执行一个回调，通知当前 ViewGroup 添加或者移除了一个 view；当然这个回调默认是 null，我们可以手动添加该回调，使用<code>setOnHierarchyChangeListener(OnHierarchyChangeListener listener)</code></li>
+</ol>
+<h1 id="自定义-LayoutParams"><a href="#自定义-LayoutParams" class="headerlink" title="自定义 LayoutParams"></a>自定义 LayoutParams</h1><p>前面提到，每个 ViewGroup 的子类（eg：LinearLayout，FrameLayout，RelativeLayout 等）中依然有一个各自的静态内部类 xxxLayout.LayoutParams，其继承了 ViewGroup#LayoutParams，并根据具体的布局，新增了相关属性，比如 LinearLayout 中特有的 layout_weight 属性，用来指定特定方向的分配比例，再比如 RelativeLayout 特有的 layout_left、layout_right 等，用来指定当前 view 和其它子 view 相对位置的属性等。</p>
+<p>前面分析 addView 的流程中也介绍到子 view 要想添加到父容器中，父容器必定会给子 view 指定一个 LayoutParams，脱离了 LayoutParams，view 无法单独存在，view 可以通过其 getLayoutParams 方法获取其父容器为子 view 绑定的 LayoutParams。</p>
+<p>使用 Android 官方提供的这些 ViewGroup（eg：LinearLayout，FrameLayout，RelativeLayout 等）在 addView 时都会为 view 设置一个 xxxLayout.LayoutParams，而在我们自定义 ViewGroup 控件的时候，如果没有为自定义的 ViewGroup 添加配套的 LayoutParams，那么最终在执行 addViewInner 方法时，会为 view 添加 ViewGroup#LayoutParams，这个 LayoutParams 是一个最基础的，只有 width 和 height 属性，如果我们想实现自定义的 ViewGroup 特殊需求，那么自定义 LayoutParams 是必不可少的。</p>
+<p>关于如何自定义 LayoutParams，以及在自定义 LayoutParams 时要注意哪些问题，请参考实战案例<a href="">自定义 ViewGroup——百分比布局</a>，这篇文章会根据具体的 ViewGroup 的功能需求，制定对应的 LayoutParams。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>LayoutParams 的作用：是 View 用来告诉它的父控件如何放置自己的，理解这一点很重要，因为这是 view 在 measure 和 layout 过程中很重要的因素。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Android-Framework/"># Android Framework</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/12/LayoutInflater%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86/">LayoutInflater内部原理</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/10/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-7-%E8%AF%BB%E5%8F%96class%E6%96%87%E4%BB%B6/">手写JVM系列(7)-读取class文件</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

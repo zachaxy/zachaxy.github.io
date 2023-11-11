@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Volley框架详解-基本使用 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Volley框架详解-基本使用</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 20, 2017&nbsp;&nbsp;21:52:01&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">7.8k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">7 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>最近在往博客上整理一些之前看过的框架，翻到了已经推出很久的网络请求框架—— Volley。这是在 13 年由谷歌推出的一款轻量级的 Android 异步网络请求框架和图片加载框架。虽然现在市面上已经出现了比 Volley 更好的网络请求框架——Okhttp，和图片请求框架——Glide，但是个人认为 Volley 的源码比其它框架的源码更加优美，所以 Volley 的源码非常值得初学者拿来分析练手。</p>
+</blockquote>
+<h1 id="Volley-简介"><a href="#Volley-简介" class="headerlink" title="Volley 简介"></a>Volley 简介</h1><p>Volley 是 Google 推出的 Android 异步网络请求框架和图片加载框架。在 Google I&#x2F;O 2013 大会上发布。</p>
+<p>Volley 的特点：特别适合<strong>数据量小，通信频繁</strong>的网络操作。</p>
+<h1 id="Volley-的主要特点"><a href="#Volley-的主要特点" class="headerlink" title="Volley 的主要特点"></a>Volley 的主要特点</h1><ol>
+<li>扩展性强。Volley 中大多是<strong>基于接口</strong>的设计，可配置性强。</li>
+<li>一定程度符合 Http 规范，包括返回 ResponseCode(2xx、3xx、4xx、5xx）的处理，请求头的处理，缓存机制的支持等。并支持重试及优先级定义。</li>
+<li>默认 Android2.3 及以上基于 HttpURLConnection，2.3 以下基于 HttpClient 实现。所以兼容性强。</li>
+</ol>
+<h1 id="Volley-的基本用法"><a href="#Volley-的基本用法" class="headerlink" title="Volley 的基本用法"></a>Volley 的基本用法</h1><p>在使用 Volley 之前，不要忘记在你的 manifest 文件中添加网络权限。</p>
+<h2 id="（一）创建请求队列"><a href="#（一）创建请求队列" class="headerlink" title="（一）创建请求队列"></a>（一）创建请求队列</h2><p>首先需要创建一个 RequestQueue 对象，用来保存所有的网路请求 request，其获取方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">RequestQueue</span> <span class="variable">mQueue</span> <span class="operator">=</span> Volley.newRequestQueue(context);  </span><br></pre></td></tr></table></figure>
+
+<p>这里要注意的是：RequestQueue 内部的设计适合高并发，因此我们不必为每一次 HTTP 请求都创建一个 RequestQueue 对象，这是非常浪费资源的，基本上一个 RequestQueue 对象就足够了。所以我们将 RequestQueue 的获取放在自定义的 Application 中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyApp</span> <span class="keyword">extends</span> <span class="title class_">Application</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> RequestQueue queues;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onCreate();</span><br><span class="line">        queues = Volley.newRequestQueue(getApplicationContext());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> RequestQueue <span class="title function_">getHttpQueues</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> queues;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="（二）创建请求"><a href="#（二）创建请求" class="headerlink" title="（二）创建请求"></a>（二）创建请求</h2><p>Volley 自带的请求有：</p>
+<ol>
+<li>StringRequest</li>
+<li>JsonRequest</li>
+<li>ImageRequest</li>
+</ol>
+<p>一般我们请求的数据都是当做字符串来返回的，如果返回的结果使我们自定义的简单的结果，那么直接解析返回的字符串即可，但如果返回的结果是 Json 或者 Xml，那么就需要我们手动将返回的字符串转换为对应的 Json 或 Xml，好在 Volley 已经为我们实现了 Json，后面我们会学习如何自定义 Xml 的请求。</p>
+<p>常见的请求又分为两种，一种是 GET 请求，一种是 POST 请求，这里以 StringRequest 为例，分别创建 GET 请求和 POST 请求：</p>
+<h3 id="GET-请求"><a href="#GET-请求" class="headerlink" title="GET 请求"></a>GET 请求</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;http://op.juhe.cn/onebox/phone/query?tel=18220197835&amp;key=xxxxxxxxxxxxxxxxxxx&quot;</span>;</span><br><span class="line"><span class="comment">//使用 get 方法;传入 URL;请求成功的监听回调;请求失败的监听回调;</span></span><br><span class="line"><span class="type">StringRequest</span> <span class="variable">request</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringRequest</span>(Request.Method.GET, url, <span class="keyword">new</span> <span class="title class_">Response</span>.Listener&lt;String&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onResponse</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="comment">//System.out.println(s);</span></span><br><span class="line">        Log.e(<span class="string">&quot;volley_GetByString&quot;</span>, <span class="string">&quot;onResponse: &quot;</span> + s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="keyword">new</span> <span class="title class_">Response</span>.ErrorListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onErrorResponse</span><span class="params">(VolleyError volleyError)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">request.setTag(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">MyApp.getHttpQueues().add(request);</span><br></pre></td></tr></table></figure>
+
+<p>创建 GET 请求，只需要在创建的 StringRequest 的构造方法的第一个参数中传入常量 Request.Method.GET 即可；第二个参数是所请求的 URL，第三个参数是请求成功的回调，这是一个接口，需要我们实现 onResponse 方法，该方法中传入的参数就是服务器给我们回调的结果；第四个参数是请求失败的回调，也是一个接口，需要我们实现 onErrorResponse，我们可以根据自己的业务需求，分别在请求成功或者失败的回调中处理不同的逻辑；</p>
+<p>至此，一个请求就已经创建好了，如何发送请求呢？很简单，只需要将该请求添加到我们在上一步中创建的 RequestQueue 中即可。这里我们为 request 打上了一个标签，这个标签有什么用？在 Volley 与 Activity 生命周期的联动中会用到，别急。</p>
+<h3 id="POST-请求"><a href="#POST-请求" class="headerlink" title="POST 请求"></a>POST 请求</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;http://op.juhe.cn/onebox/phone/query?&quot;</span>;</span><br><span class="line"><span class="type">StringRequest</span> <span class="variable">request</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringRequest</span>(Request.Method.POST, url, <span class="keyword">new</span> <span class="title class_">Response</span>.Listener&lt;String&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onResponse</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        PhoneMsg msg;</span><br><span class="line">        <span class="type">Gson</span> <span class="variable">gson</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Gson</span>();</span><br><span class="line">        msg = gson.fromJson(s, PhoneMsg.class);</span><br><span class="line">        Log.e(<span class="string">&quot;###&quot;</span>, <span class="string">&quot;volley_PostByString: &quot;</span> + msg.reason + <span class="string">&quot;&lt;&gt;&quot;</span> + msg.result.city + <span class="string">&quot;&lt;&gt;&quot;</span> + msg.error_code);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="keyword">new</span> <span class="title class_">Response</span>.ErrorListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onErrorResponse</span><span class="params">(VolleyError volleyError)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;) &#123;</span><br><span class="line">    <span class="comment">//StringRequest 的父类中的方法,这里我们是创建了一个匿名 StringRequest,重写了其 getParams 方法;</span></span><br><span class="line">    <span class="comment">//当使用 post 方法时,会自动回调该方法,得到一个 map,并将其中的 key-value 以 key1=value1&amp;key2=value2&amp; 的形式拼接起来</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Map&lt;String, String&gt; <span class="title function_">getParams</span><span class="params">()</span> <span class="keyword">throws</span> AuthFailureError &#123;</span><br><span class="line">        Map&lt;String, String&gt; hashMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        hashMap.put(<span class="string">&quot;tel&quot;</span>, <span class="string">&quot;18220197835&quot;</span>);</span><br><span class="line">        hashMap.put(<span class="string">&quot;key&quot;</span>, <span class="string">&quot;xxxxxxxxxxxxxxxxxx&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> hashMap;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">request.setTag(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">MyApp.getHttpQueues().add(request);</span><br></pre></td></tr></table></figure>
+
+<p>POST 请求和 GET 请求类似，只不过在创建的 StringRequest 第一个参数改为常量 Request.Method.POST 即可，第二个参数 URL 和 get 不同了，因为我们这里是用 POST 方法发送请求，那么请求的 key-value 都不会出现在 url 中，而是重写了 StringRequest 的 getParams 方法，创建了一个 map，将请求的 key-value 保存到 map 中，然后将该 map 返回即可，在 post 请求发送时会自动回调 getParams 方法,并得到的 map 中的 key-value 以 key1&#x3D;value1&amp;key2&#x3D;value2&amp; 的形式拼接起来，添加到请求体中。第三个参数和第四个参数与 GET 请求相同。</p>
+<h1 id="Volley-与-Activity-生命周期的联动"><a href="#Volley-与-Activity-生命周期的联动" class="headerlink" title="Volley 与 Activity 生命周期的联动"></a>Volley 与 Activity 生命周期的联动</h1><p>在创建了请求之后，将请求添加到 RequestQueue 中，</p>
+<p>考虑这样一种场景，如果我们在当前的 Activity 中创建了大量的 request，但是这时突然用户有点击了 back 键或者跳转到了另一个 Activity，那么还未执行的 request 此时就没有必要去执行了，如何取消还未执行的请求呢？注意我们在每个 request 中都绑定了一个 tag，<code>request.setTag(&quot;abc&quot;);</code>，如果想取消这些 request，只需要在 Activity 的 onStop 回调中调用 cancelAll 方法，取消特定的 tag，那么之前发出的请求将不会被执行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onStop</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>.onStop();</span><br><span class="line">    MyApp.getHttpQueues().cancelAll(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="自定义请求"><a href="#自定义请求" class="headerlink" title="自定义请求"></a>自定义请求</h1><p>前面也介绍了 Volley 的一个特点就是高扩展性，官方也为我们提供了 StringRequest，JsonRequest 等现成的 request，但是如果我们的业务用的是我们一种公司自定义的形式，那么我们就有必要自定义请求来解析返回的结果。</p>
+<p>首先要明确的是：最原始的请求返回的结果都是字节流，我们正是通过对字节流的转换，才得到了我们想要的请求，这就是自定义 request 的本质。</p>
+<p>JsonRequest 的数据解析是利用 Android 本身自带的 JSONObject 和 JSONArray 来实现的，配合使用 JSONObject 和 JSONArray 就可以解析出任意格式的 JSON 数据。但是使用 JSONObject 还是太麻烦了，还有很多方法可以让 JSON 数据解析变得更加简单，比如说 GSON。那么接下来我们自定义一个 GsonRequest。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GsonRequest</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">Request</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> Response.Listener&lt;T&gt; mListener;</span><br><span class="line">    <span class="keyword">private</span> Gson mGson;</span><br><span class="line">    <span class="keyword">private</span> Class&lt;T&gt; mClass;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">GsonRequest</span><span class="params">(<span class="type">int</span> method, String url, Class&lt;T&gt; clazz, Response.Listener&lt;T&gt; listener,</span></span><br><span class="line"><span class="params">                       Response.ErrorListener elistener)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(method, url, elistener);</span><br><span class="line">        mGson = <span class="keyword">new</span> <span class="title class_">Gson</span>();</span><br><span class="line">        mClass = clazz;</span><br><span class="line">        mListener = listener;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">GsonRequest</span><span class="params">(String url, Class&lt;T&gt; clazz, Response.Listener&lt;T&gt; listener,</span></span><br><span class="line"><span class="params">                       Response.ErrorListener errorListener)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(Method.GET, url, clazz, listener, errorListener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    这是响应最原始的面貌,得到的就是一个 NetWorkResponse,至于应用层想得到什么类型的响应,需要在这里进行转换;</span></span><br><span class="line"><span class="comment">    这个过程和 StringRequest 的构造很像,具体可以参考 StringRequest;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Response <span class="title function_">parseNetworkResponse</span><span class="params">(NetworkResponse response)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//这一句是固定格式,先将 response 的 data 域拿出来,其是字节,要转换成字符串,同时要获取该字节的编码;</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">jsonString</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(response.data, HttpHeaderParser.parseCharset(response.headers));</span><br><span class="line">            <span class="keyword">return</span> Response.success(mGson.fromJson(jsonString, mClass), HttpHeaderParser.parseCacheHeaders(response));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            <span class="keyword">return</span> Response.error(<span class="keyword">new</span> <span class="title class_">ParseError</span>(e));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">deliverResponse</span><span class="params">(T response)</span> &#123;</span><br><span class="line">        mListener.onResponse(response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>自定义 request 需要继承 Request 类，而 Request 是一个抽象类，需要我们实现其抽象方法，包含两个：parseNetworkResponse 和 deliverResponse。</p>
+<p>第一个要实现的方法 parseNetworkResponse，该方法是得到服务器响应时回调的结果，其参数是执行网络请求得到的响应 NetworkResponse，我们可以通过 NetworkResponse.data 拿到包含在响应中的字节数组，然后通过 HttpHeaderParser.parseCacheHeaders(response)获取响应中的编码格式，将该字节数组转换为对应的字符串。如果字符串解析成功，接下来我们就可以调用 Response 中的 success 方法，将结果传入进去，如果解码失败，那么调用 Response 的 error 方法。</p>
+<p>第二个要实现的方法是 deliverResponse，这个方法也必须实现,该方法的参数是从上一步 parseNetworkResponse 中 Response.success()第一个参数得到的响应,我们要把这个响应分发下去;注意这一步说明我们已经得到成功的响应了,而之前 errorListener 的响应则是在网络出错或者服务器出错的情况下分发的 是由 Volley 顶层实现的。</p>
+<p>我们看一下Volley自带的StringRequest是如何实现的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StringRequest</span> <span class="keyword">extends</span> <span class="title class_">Request</span>&lt;String&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Listener&lt;String&gt; mListener;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Creates a new request with the given method.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method the request &#123;<span class="doctag">@link</span> Method&#125; to use</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url URL to fetch the string at</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> listener Listener to receive the String response</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> errorListener Error listener, or null to ignore errors</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">StringRequest</span><span class="params">(<span class="type">int</span> method, String url, Listener&lt;String&gt; listener,</span></span><br><span class="line"><span class="params">            ErrorListener errorListener)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(method, url, errorListener);</span><br><span class="line">        mListener = listener;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Creates a new GET request.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url URL to fetch the string at</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> listener Listener to receive the String response</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> errorListener Error listener, or null to ignore errors</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">StringRequest</span><span class="params">(String url, Listener&lt;String&gt; listener, ErrorListener errorListener)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>(Method.GET, url, listener, errorListener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">deliverResponse</span><span class="params">(String response)</span> &#123;</span><br><span class="line">        mListener.onResponse(response);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Response&lt;String&gt; <span class="title function_">parseNetworkResponse</span><span class="params">(NetworkResponse response)</span> &#123;</span><br><span class="line">        String parsed;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            parsed = <span class="keyword">new</span> <span class="title class_">String</span>(response.data, HttpHeaderParser.parseCharset(response.headers));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            parsed = <span class="keyword">new</span> <span class="title class_">String</span>(response.data);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> Response.success(parsed, HttpHeaderParser.parseCacheHeaders(response));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>是不是相同的套路，同样是拿到了服务器的字节数组之后，直接转换为了字符串，然后就返回了，这个我们自定义的GsonRequest和StringRequest的套路是一致的。</p>
+<p>至此，关于Volley的基本使用就讲完了，具体的使用请参考<a target="_blank" rel="noopener" href="https://github.com/zachaxy/android-project-demo/blob/master/TestVolley/app/src/main/java/com/zx/testvolley/MainActivity.java">这里</a>，下一篇，会进入Volley的源码，详细解剖其内部的基本实现。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1%E4%B9%8B%E7%BE%8E/"># 框架设计之美</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/22/Volley%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-%E8%AF%B7%E6%B1%82%E9%98%9F%E5%88%97/">Volley源码解析-请求队列</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/15/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-10-%E8%A7%A3%E9%87%8A%E5%99%A8/">手写JVM系列(10)-解释器</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

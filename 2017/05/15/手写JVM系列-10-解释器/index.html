@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>手写JVM系列(10)-解释器 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">手写JVM系列(10)-解释器</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 15, 2017&nbsp;&nbsp;11:44:03&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">4.4k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">4 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>上一节介绍了关于 JVM 指令集的相关知识，那么接下来我们就根据上一节介绍的知识，编写一个简易的解释器，读取字节码中的操作码和操作数，实现 JVM 规范中描述的指令集对应功能，从而完成简单方法的调用过程，并在接下来的章节中不断完善该解释器，使其支持更多指令。本节所实现的代码均在<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM">项目</a>的 instructions 包下。</p>
+</blockquote>
+<h1 id="操作码的实现"><a href="#操作码的实现" class="headerlink" title="操作码的实现"></a>操作码的实现</h1><p>在 Code 属性中的字节数组就是字节码。操作码规定长度为一个字节，所以这里先读取一个字节，查看其对应的是哪种操作码，然后根据该操作码的实际含义，再决定是不是后面还有操作数需要读取。这一节实现了约 150 条指令，这些指令根据其分类，在 instructions 包下的子包中，具体实现见<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM">项目源码</a>。</p>
+<h1 id="指令抽象接口"><a href="#指令抽象接口" class="headerlink" title="指令抽象接口"></a>指令抽象接口</h1><p>有了前面的基础知识，接下来我们就要从字节码中读取指令，并执行指令，完成解释器的功能了。首先定义指令接口，然后定义一个结构体用来辅助指令解码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Instruction</span> &#123;</span><br><span class="line">    <span class="comment">//从字节码中提取操作数</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">fetchOperands</span><span class="params">(BytecodeReader reader)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//执行指令逻辑</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(Zframe frame)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是所有指令都要完成的两个动作，提取操作数（如果有的话），执行指令。</p>
+<h1 id="指令抽象类"><a href="#指令抽象类" class="headerlink" title="指令抽象类"></a>指令抽象类</h1><p>有很多指令的操作数都是类似的。为了避免重复代码，按照操作码类型定义一些抽象类，这些抽象类实现了 Instruction 接口，并实现 FetchOperands（）方法。再由具体的类去继承这些抽象类，然后<br>专注实现 Execute（）方法即可。定义的抽象类有以下几种。</p>
+<h2 id="NoOperandsInstruction"><a href="#NoOperandsInstruction" class="headerlink" title="NoOperandsInstruction"></a>NoOperandsInstruction</h2><p>NoOperandsInstruction 表示没有操作数的指令，所以没有定义任何字段。FetchOperands（）方法自然也是空空如也，什么也不用读。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">NoOperandsInstruction</span> <span class="keyword">implements</span> <span class="title class_">Instruction</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">fetchOperands</span><span class="params">(BytecodeReader reader)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="BranchInstruction"><a href="#BranchInstruction" class="headerlink" title="BranchInstruction"></a>BranchInstruction</h2><p>BranchInstruction 表示跳转指令，Offset 字段存放跳转偏移量。FetchOperands（）方法从字节码中读取一个 uint16 整数，转成 int 后赋给 Offset 字段。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">BranchInstruction</span> <span class="keyword">implements</span> <span class="title class_">Instruction</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> offset;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">fetchOperands</span><span class="params">(BytecodeReader reader)</span> &#123;</span><br><span class="line">        offset = reader.readInt16();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Index8Instruction"><a href="#Index8Instruction" class="headerlink" title="Index8Instruction"></a>Index8Instruction</h2><p>存储和加载类指令需要根据索引存取局部变量表，索引由单字节操作数给出。把这类指令抽象成 Index8Instruction 结构体，用 Index 字段表示局部变量表索引。FetchOperands（）方法从字节码中读取一个 int8 整数，转成 uint 后赋给 Index 字段。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Index8Instruction</span> <span class="keyword">implements</span> <span class="title class_">Instruction</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Index8Instruction</span><span class="params">()</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> index;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">fetchOperands</span><span class="params">(BytecodeReader reader)</span> &#123;</span><br><span class="line">        index = reader.readUint8();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Index16Instruction"><a href="#Index16Instruction" class="headerlink" title="Index16Instruction"></a>Index16Instruction</h2><p>有一些指令需要访问运行时常量池，常量池索引由两字节操作数给出。把这类指令抽象成 Index16Instruction 结构体，用 Index 字段表示常量池索引。FetchOperands（）方法从字节码中读取一个 uint16 整数，转成 uint 后赋给 Index 字段。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Index16Instruction</span> <span class="keyword">implements</span> <span class="title class_">Instruction</span> &#123;</span><br><span class="line">    <span class="type">int</span> index;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">fetchOperands</span><span class="params">(BytecodeReader reader)</span> &#123;</span><br><span class="line">        index = reader.readUint16();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="读取字节码辅助类"><a href="#读取字节码辅助类" class="headerlink" title="读取字节码辅助类"></a>读取字节码辅助类</h1><p>code 字段存放字节码，pc 字段记录读取到了哪个字节。所有的指令都要从字节码中读取数据，并根据不同的指令类型读取 int、long、float、double 等类型的数据，所以定义一个读取字节码的辅助类 BytecodeReader，让其实现一系列的 readXXX（）方法。至于具体调用哪个 read 方法，则根据操作码中对应的操作类型来调用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BytecodeReader</span> &#123;</span><br><span class="line">    <span class="type">byte</span>[] code;  <span class="comment">//Java 语言中 byte 的范围四 -128~127,和 Go 语言中的 byte:0~255 不同,所以在取数据的时候需要注意;</span></span><br><span class="line">    <span class="type">int</span> pc;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">reset</span><span class="params">(<span class="type">byte</span>[] code, <span class="type">int</span> pc)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.code = code;</span><br><span class="line">        <span class="built_in">this</span>.pc = pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getPc</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> pc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">byte</span> <span class="title function_">readInt8</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">byte</span> <span class="variable">res</span> <span class="operator">=</span> code[pc];</span><br><span class="line">        pc++;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">readUint8</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> code[pc];</span><br><span class="line">        res = (res + <span class="number">256</span>) % <span class="number">256</span>;</span><br><span class="line">        pc++;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">readInt16</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="type">short</span>) readUint16();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>  <span class="type">int</span> <span class="title function_">readUint16</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">a1</span> <span class="operator">=</span> readUint8();</span><br><span class="line">        <span class="type">int</span> <span class="variable">a2</span> <span class="operator">=</span> readUint8();</span><br><span class="line">        <span class="keyword">return</span> (a1 &lt;&lt; <span class="number">8</span> | a2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">readInt32</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">byte</span>[] data = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span>];</span><br><span class="line">        data[<span class="number">0</span>] = readInt8();</span><br><span class="line">        data[<span class="number">1</span>] = readInt8();</span><br><span class="line">        data[<span class="number">2</span>] = readInt8();</span><br><span class="line">        data[<span class="number">3</span>] = readInt8();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ByteUtils.byteToInt32(data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] readInt32s(<span class="type">int</span> n) &#123;</span><br><span class="line">        <span class="type">int</span>[] data = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            data[i] = readInt32();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//4k 对齐,没有对齐的会有填充数据,这些数据要忽略掉;</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">skipPadding</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (pc % <span class="number">4</span> != <span class="number">0</span>) &#123;</span><br><span class="line">            readInt8();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="指令创建工厂"><a href="#指令创建工厂" class="headerlink" title="指令创建工厂"></a>指令创建工厂</h1><p>有了前面的各个指令的具体实现，接下来统一对外提供一个创建指令的接口，根据不同的操作码创建具体的指令，整体结构就是一个 switch-case 语句，其枚举了这一节已经实现的 150 多种指令，代码太长就不列举了，具体实现在 instructions 包下的 InstructionFactory 类中。</p>
+<h1 id="解释器"><a href="#解释器" class="headerlink" title="解释器"></a>解释器</h1><p>Java 虚拟机解释器的大致逻辑，其伪码如下所示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">    atomically calculate pc and fetch opcode at pc;</span><br><span class="line">    <span class="keyword">if</span> (operands) fetch operands;</span><br><span class="line">    execute the action <span class="keyword">for</span> the opcode;</span><br><span class="line">&#125; <span class="keyword">while</span> (there is more to <span class="keyword">do</span>);</span><br></pre></td></tr></table></figure>
+
+<p>解释一下上面的过程：</p>
+<ol>
+<li>计算 pc 值（默认 pc++，取下一条指令，否则就是跳转指令，对应 pc + offset ）；</li>
+<li>根据 pc 寄存器的指示位置，从字节码中读取出操作码；</li>
+<li>如果该操作码存在操作数，那么继续从字节码中读取操作数；</li>
+<li>执行操作码所定义的操作；</li>
+<li>如果字节码还未读取完，继续步骤 1；</li>
+</ol>
+<p>我们根据前面已经实现的编码，创建 Interpreter 类，实现指令的执行过程，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">loop</span><span class="params">(Zthread thread, <span class="type">byte</span>[] byteCode)</span> &#123;</span><br><span class="line">    <span class="type">Zframe</span> <span class="variable">frame</span> <span class="operator">=</span> thread.popFrame();   <span class="comment">//得到栈顶的帧。</span></span><br><span class="line">    <span class="type">BytecodeReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BytecodeReader</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里循环的条件是 true,因为在解析指令的时候会遇到 return,而现在还没有实现 return,所以遇到 return 直接抛出异常,那么循环也就终止了</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">pc</span> <span class="operator">=</span> frame.getNextPC(); <span class="comment">//这第一次 frame 才刚初始化，获取的 pc 应该是默认值 0 吧。</span></span><br><span class="line">        thread.setPc(pc);</span><br><span class="line">        reader.reset(byteCode, pc); <span class="comment">//reset 方法，其实是在不断的设置 pc 的位置。</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">opCode</span> <span class="operator">=</span> reader.readUint8();</span><br><span class="line">        <span class="comment">//解析指令,创建指令,然后根据不同的指令执行不同的操作</span></span><br><span class="line">        <span class="type">Instruction</span> <span class="variable">instruction</span> <span class="operator">=</span> InstructionFactory.createInstruction(opCode);</span><br><span class="line">        instruction.fetchOperands(reader);</span><br><span class="line">        frame.setNextPC(reader.getPc());</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;pc: %2d, inst: %s \n&quot;</span>, pc, instruction.getClass().getSimpleName());</span><br><span class="line">        instruction.execute(frame);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 Interpreter#loop（）方法中，while 循环部分的代码就是 Java 虚拟机规范中 JVM 解释器的具体实现。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JVM/"># JVM</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/20/Volley%E6%A1%86%E6%9E%B6%E8%AF%A6%E8%A7%A3-%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/">Volley框架详解-基本使用</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/13/setContentView%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86/">setContentView内部原理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

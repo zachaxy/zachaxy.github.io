@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>手写JVM系列(2)-参数解析 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">手写JVM系列(2)-参数解析</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 7, 2017&nbsp;&nbsp;10:53:02&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.4k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>这一章节开始<code>JVM</code>的编写,首先解决第一个问题,就是如何运行java程序，回想最开始学java时，写一个Hello.java的程序，使用<code>javac Hello.java</code>将源代码转换为class文件，然后使用<code>java Hello</code>运行程序。JVM是只认class文件的，如果想让JVM运行该Hello程序，就要通过java命令。本节将介绍java命令的常用方法，并实现java命令的解析。最终通过命令参数，读取对应的class数据。本节的代码均在<a target="_blank" rel="noopener" href="https://github.com/zachaxy/JVM">classpath包</a>下</p>
+<span id="more"></span>
+
+
+
+<h1 id="java-命令简介"><a href="#java-命令简介" class="headerlink" title="java 命令简介"></a>java 命令简介</h1><p><code>Java</code>应用程序需要一个入口点，这个入口点就是我们熟知的<code>main()</code>方法。如果一个类包含<code>public static void main(String[] args)</code>方法，这个类就可以用来启动Java应用程序，我们把这个类叫作主类.这个类是需要我们用命令行手动向JVM提供的;</p>
+<p>Java命令一般有以下几种形式:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">java [-options] class [args]</span><br><span class="line">java [-options] -jar jarfile [args]</span><br><span class="line">javaw [-options] class [args]</span><br><span class="line">javaw [-options] -jar jarfile [args]</span><br></pre></td></tr></table></figure>
+
+<p>可以向 <code>java</code> 命令传递三组参数：选项、主类名（或者JAR文件名）<br>和 main() 方法参数。选项由减号<code>-</code>开头。通常，第一个非选项参数给出主类的完全限定名（fully qualified class name）。但是如果用户提供了<code>–jar</code>选项，第一个非选项参数表示<code>JAR</code>文件名，<code>java</code>命令必须从这个JAR文件中寻找主类。<code>javaw</code>命令和<code>java</code>命令几乎一样，唯一的差别在于，<code>javaw</code>命令不显示命令行窗口，因此特别适合用于启动<code>GUI</code>（图形用户界面）应用程序。</p>
+<p>可以看到命令中都带有一个<code> [-options]</code>代表可选项, java命令行常用选项如下:</p>
+<table>
+<thead>
+<tr>
+<th align="center">选项</th>
+<th align="center">用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">-version</td>
+<td align="center">输出版本信息</td>
+</tr>
+<tr>
+<td align="center">-?&#x2F;-help</td>
+<td align="center">输出帮助信息</td>
+</tr>
+<tr>
+<td align="center">-cp&#x2F;-classpath</td>
+<td align="center">指定用户类路径</td>
+</tr>
+<tr>
+<td align="center">-Dproperty&#x3D;value</td>
+<td align="center">设置Java系统属性</td>
+</tr>
+<tr>
+<td align="center">-Xms&lt;size&gt;</td>
+<td align="center">设置初始堆空间大小</td>
+</tr>
+<tr>
+<td align="center">-Xmx&lt;size&gt;</td>
+<td align="center">设置最大堆空间大小</td>
+</tr>
+<tr>
+<td align="center">-Xss&lt;size&gt;</td>
+<td align="center">设置线程栈空间大小</td>
+</tr>
+</tbody></table>
+<p>当然,java命令行里提供的选项有很多,这里并不打算全部实现,只是挑几个比较重要的去实现.</p>
+<p>接下来我打算实现以下几种命令:</p>
+<ol>
+<li><code>java -version</code></li>
+<li><code>java -?</code></li>
+<li><code>java -help</code></li>
+<li><code>java -cp your/classpath yourClassName arg1 arg2 ...</code> </li>
+<li><code>java -classpath your/classpath yourClassName arg1 arg2 ...</code></li>
+</ol>
+<h1 id="命令行解析功能编码"><a href="#命令行解析功能编码" class="headerlink" title="命令行解析功能编码"></a>命令行解析功能编码</h1><p>定义<code>Cmd</code>类:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Cmd</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">isRightFmt</span> <span class="operator">=</span> <span class="literal">true</span>;     <span class="comment">//是否是正确的格式;</span></span><br><span class="line">    <span class="type">boolean</span> helpFlag;        <span class="comment">//是否是help 查看帮助</span></span><br><span class="line">    <span class="type">boolean</span> versionFlag;    <span class="comment">//是否是查看版本</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">cpOption</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;  <span class="comment">//classPath 的路径;          java -cp(-classpath) xxx</span></span><br><span class="line">    String clazz;  <span class="comment">//要编译的class 文件;</span></span><br><span class="line">    String[] args; <span class="comment">//执行clazz文件需要的参数</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Cmd</span><span class="params">(String[] strs)</span>&#123;</span><br><span class="line">        parseCmd(strs);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">parseCmd</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (args.length&lt;<span class="number">2</span>)&#123;</span><br><span class="line">            isRightFmt = <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//首先判断开头是不是 java ,如果连这个都不是,直接退出吧,提示正确的使用方法;</span></span><br><span class="line">        <span class="keyword">if</span> (!args[<span class="number">0</span>].equals(<span class="string">&quot;java&quot;</span>)) &#123;</span><br><span class="line">            isRightFmt = <span class="literal">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (args[<span class="number">1</span>].equals(<span class="string">&quot;-help&quot;</span>) || args[<span class="number">1</span>].equals(<span class="string">&quot;-?&quot;</span>)) &#123;</span><br><span class="line">                helpFlag = <span class="literal">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">1</span>].equals(<span class="string">&quot;-version&quot;</span>)) &#123;</span><br><span class="line">                versionFlag = <span class="literal">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">1</span>].equals(<span class="string">&quot;-cp&quot;</span>) || args[<span class="number">1</span>].equals(<span class="string">&quot;classpath&quot;</span>)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (args.length &lt; <span class="number">4</span>) &#123;</span><br><span class="line">                    <span class="comment">//如果走到这一步,那么命令行必定是java -cp aa/bb test 11 22 33 的形式,所以应该至少有4项;</span></span><br><span class="line">                    isRightFmt = <span class="literal">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                index = <span class="number">4</span>;</span><br><span class="line">                <span class="built_in">this</span>.cpOption = args[<span class="number">2</span>];</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (args[<span class="number">1</span>].equals(<span class="string">&quot;-Xjre&quot;</span>)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (args.length &lt; <span class="number">4</span>) &#123;</span><br><span class="line">                 <span class="comment">//如果走到这一步,那么命令行必定是java -Xjre &quot;C:\Program Files\Java\jdk1.8.0_20\jre&quot; java.lang.Object 的形式,所以应该至少有4项;</span></span><br><span class="line">                    isRightFmt = <span class="literal">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                index = <span class="number">4</span>;</span><br><span class="line">                <span class="built_in">this</span>.XjreOption = args[<span class="number">2</span>];</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="built_in">this</span>.clazz = args[index - <span class="number">1</span>];</span><br><span class="line">            <span class="built_in">this</span>.args = <span class="keyword">new</span> <span class="title class_">String</span>[args.length - index];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> index; i &lt; args.length; i++) &#123;</span><br><span class="line">                <span class="built_in">this</span>.args[i - index] = args[i];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//命令行格式错误,输出帮助信息</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">printUsage</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Usage: java [-options] class [args...]\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里定义了要解析的成员变量,注意这里包含了一个我们自己定义的<code>-Xjre</code>的选项,其具体含义见<a href="">下一节</a>,其它选项含义参见注释,主要功能在<code>parseCmd()</code>方法中实现解析参数,根据对应的位置的选项,然后在主函数中去使用.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">Cmd</span> <span class="variable">cmd</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Cmd</span>(args);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!cmd.isRightFmt) &#123;</span><br><span class="line">        cmd.printUsage();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (cmd.versionFlag) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;java version \&quot;1.8.0_20\&quot;\n&quot;</span></span><br><span class="line">                    + <span class="string">&quot;Java(TM) SE Runtime Environment (build 1.8.0_20-b26)\n&quot;</span></span><br><span class="line">                    + <span class="string">&quot;Java HotSpot(TM) 64-Bit Server VM (build 25.20-b23, mixed mode)&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cmd.helpFlag || cmd.args == <span class="literal">null</span>) &#123;</span><br><span class="line">            cmd.printUsage();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            startJVM(cmd);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先检验命令行格式是否正确,如果不正确,输出使用信息,如果是查看版本,输出版本信息,这里暂时提供了一个临时的字符串,此功能待后续实现.如果是查看帮助信息,同样也使出使用信息.其它情况,传递给一个方法<code>startJVM()</code>实现真正的开启虚拟机的逻辑,当然,此方法现在暂时内部是空实现,待后续实现。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JVM/"># JVM</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/08/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-3-%E6%90%9C%E7%B4%A2class%E6%96%87%E4%BB%B6/">手写JVM系列(3)-搜索class文件</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/06/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-1-%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">手写JVM系列(1)-准备工作</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

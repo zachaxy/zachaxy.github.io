@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>字符串匹配--RK算法 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+            <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">字符串匹配--RK算法</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 26, 2017&nbsp;&nbsp;9:32:04&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>Rabin-Karp采用了把字符进行预处理，也就是对每个字符进行对应进制数并取模运算，类似于通过某种哈希函数计算其函数值，比较的是每个字符的函数值。预处理时间O(m)，理论匹配时间是O((n-m+1)m)。这里要乘以m是考虑到对hash值相同的进行一次校验;</p>
+<p>由于hash冲突的存在，当hash值相同的时候，还是需要朴素算法来进行必要的比较,所以时间复杂性为O（m*n）。但是<strong>现实中</strong>hash冲突出现的可能性不是很大，所以相比较而言，复杂性还是比较小的，仅仅为O(m+n)</p>
+</blockquote>
+<h1 id="初始化变量"><a href="#初始化变量" class="headerlink" title="初始化变量"></a>初始化变量</h1><ul>
+<li>待匹配的字符串<code>s</code></li>
+<li>待匹配的子串<code>m</code></li>
+<li><code>m</code>的长度为<code>M</code></li>
+<li><code>R</code>进制:如果字符串中所有的字符都是小写英文字母,那么就是26进制,如果都是数字,那么就是10进制,如果没有说明,那么就以<code>ASCII表</code>256进制来计算</li>
+<li><code>Q</code>随机的大素数,在不溢出的情况下选择一个尽可能大的素数</li>
+<li><code>RM</code>这里并不是<code>R*M</code>而是 $R^{M-1}$%Q</li>
+<li><code>hash()</code>函数,对<code>m</code>进行运算,得到目标hash值</li>
+<li><code>targetHash = hash(m)</code></li>
+</ul>
+<h1 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h1><p>这里以下面参数为例,讲解RK算法的基本思想;</p>
+<ul>
+<li><code>s=3141592653589793</code></li>
+<li><code>m=26535</code></li>
+<li><code>M=5</code></li>
+<li><code>Q=997</code></li>
+<li><code>hash(x) = x % Q</code></li>
+<li><code>targetHash = 26535 % 997 = 613</code></li>
+</ul>
+<p>那么在接下来的匹配中可以得出</p>
+<table>
+<thead>
+<tr>
+<th align="center">i</th>
+<th align="center">0</th>
+<th align="center">1</th>
+<th align="center">2</th>
+<th align="center">3</th>
+<th align="center">4</th>
+<th align="center">5</th>
+<th align="center">6</th>
+<th align="center">7</th>
+<th align="center">8</th>
+<th align="center">9</th>
+<th align="center">10</th>
+<th align="center">11</th>
+<th align="center">12</th>
+<th align="center">13</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">0</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">508</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">201</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">715</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">971</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">442</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">929</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">613  (匹配)</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<ol>
+<li>从<code>s</code>第0位开始,取前<code>M</code>位,用<code>hash()</code>方法计算出其值与<code>targetHash</code>进行对比</li>
+<li>如果相等,那么这<code>M</code>位可能会匹配上,</li>
+<li>如果不相等,那么<code>s</code>后移一位,继续计算相应<code>M</code>为的<code>hash()</code>,进行对比</li>
+</ol>
+<p>以上过程只是对RK算法的一个简单描述,注意到每次也是后移一位,计算<code>hash()</code>值,因为我们的s中都是数字,可以很方便的来计算出<code>hash</code>值,如果是字母的话,计算hash值可能就不是那么容易了,这也是RK算法要解决的核心问题,因为我们大部分情况下面对的都是字符串,我们需要将字符串转换为对应的数值,如何转换呢?那就是接下来用到的散列函数</p>
+<h1 id="计算散列函数"><a href="#计算散列函数" class="headerlink" title="计算散列函数"></a>计算散列函数</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">long</span> <span class="title function_">hash</span><span class="params">(String key, <span class="type">int</span> M)</span> &#123;</span><br><span class="line">    <span class="type">long</span> <span class="variable">h</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; M; i++) &#123;</span><br><span class="line">      	h = (R * h + key.charAt(i)) % Q;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> h;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该函数的目标是计算一次<code>m</code>的<code>targetHash</code>,计算一次<code>s</code>的前<code>M</code>位的<code>hash</code>,仅此两次调用,那么我们不是每次都要将<code>s</code>的游标后移一位,在计算其hash值吗?这就是RK算法巧妙的地方,如果当前不匹配,那么后移一位,其hash值</p>
+<p>**注意: **再次强调<code>Q</code>一定要是一个尽可能大的素数,以减少冲突;</p>
+<h1 id="关键思想"><a href="#关键思想" class="headerlink" title="关键思想"></a>关键思想</h1><p>RK算法的基础是对于所有位置<code>i</code>,不调用hash()方法,高效计算文本中<code>i+1,</code></p>
+<p>我们用 $t_i$表示<code>s.charAt(i)</code>,那么<code>s</code>其实于<code>i</code>,长度为<code>M</code>的数值(注意此处并不是hash值)为:</p>
+<p>$$x_i &#x3D; t_iR^{M-1}+t_{i+1}R^{M-2}+…+t_{i+M-1}R^0$$  			<code>(1)</code></p>
+<p>$h(x_i)&#x3D;x_i mod Q$									<code>(2)</code></p>
+<p>$$x_{i+1}&#x3D;(x_i-t_iR^{M-1})R+t_{i+M}$$					<code>(3)</code></p>
+<p><code>(a + b) % c = ((a % c)+(b % c)) % c</code>				<code>(4)</code></p>
+<p><code>(a - b) % c = ((a % c)-(b % c)) % c</code>				<code>(5)</code></p>
+<p><code>(a * b) % c = ((a % c)*(b % c)) % c</code>				<code>(6)</code></p>
+<p>基于以上公式,可以方便的得到<code>search()</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//返回匹配成功的索引;</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">search</span><span class="params">(String txt)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> txt.length();</span><br><span class="line">    <span class="type">long</span> <span class="variable">txtHash</span> <span class="operator">=</span> hash(txt, M); <span class="comment">//计算txt文本的前M位的hash值</span></span><br><span class="line">    <span class="keyword">if</span> (targetHash == txtHash &amp;&amp; check(<span class="number">0</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>; <span class="comment">//在开始位置处就匹配成功;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> M; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="comment">//+Q并不影响对其本质的区别;因为 Q % Q = 0</span></span><br><span class="line">        txtHash = (txtHash + Q - RM * txt.charAt(i - M) % Q) % Q;  <span class="comment">//是为了防止出现负数吧...</span></span><br><span class="line">        txtHash = (txtHash * R + txt.charAt(i)) % Q;</span><br><span class="line">        <span class="keyword">if</span> (targetHash == txtHash) &#123;</span><br><span class="line">            <span class="keyword">if</span> (check(i - M + <span class="number">1</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> i - M + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h1 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Author: zhangxin</span></span><br><span class="line"><span class="comment"> * Time: 2017/4/12 0012.</span></span><br><span class="line"><span class="comment"> * Desc: 基于指纹的字符匹配算法</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RabinKarp</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> targetHash;  <span class="comment">//模拟字符串的散列值</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> M;          <span class="comment">//模拟字符串的长度;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> Q;          <span class="comment">//大素数</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">R</span> <span class="operator">=</span> <span class="number">256</span>;    <span class="comment">//字母表大小;这里最好设置为可以定制的吧;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> RM;        <span class="comment">//R^(M-1)%Q;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">RabinKarp</span><span class="params">(String pat)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.M = pat.length();</span><br><span class="line">        Q = <span class="number">997</span>; <span class="comment">//或者你自己写一个随机的素数表;</span></span><br><span class="line">        RM = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//注意这里是从1开始,到M-1,[1,M-1],一共M-1个数;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; M; i++) &#123;</span><br><span class="line">            RM = (R * RM) % Q;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        targetHash = hash(pat, M);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> <span class="title function_">hash</span><span class="params">(String key, <span class="type">int</span> M)</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; M; i++) &#123;</span><br><span class="line">            res = (R * res + key.charAt(i)) % Q;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这个方法一般不用,从概率上来说,不用再check,如果你不放心,可以添加上字符逐一对比的代码</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">check</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//返回匹配成功的索引;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">search</span><span class="params">(String txt)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> txt.length();</span><br><span class="line">        <span class="type">long</span> <span class="variable">txtHash</span> <span class="operator">=</span> hash(txt, M); <span class="comment">//计算txt文本的前M位的hash值</span></span><br><span class="line">        <span class="keyword">if</span> (targetHash == txtHash &amp;&amp; check(<span class="number">0</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>; <span class="comment">//在开始位置处就匹配成功;</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> M; i &lt; N; i++) &#123;</span><br><span class="line">            <span class="comment">//+Q并不影响对其本质的区别; Q%Q=0</span></span><br><span class="line">            txtHash = (txtHash + Q - RM * txt.charAt(i - M) % Q) % Q;  <span class="comment">//是为了防止出现负数吧...</span></span><br><span class="line">            txtHash = (txtHash * R + txt.charAt(i)) % Q;</span><br><span class="line">            <span class="keyword">if</span> (targetHash == txtHash) &#123;</span><br><span class="line">                <span class="keyword">if</span> (check(i - M + <span class="number">1</span>)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> i - M + <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h1><p>优点:</p>
+<ol>
+<li>它可以用来检测抄袭，因为它能够处理多模式匹配(多个不同长度的<code>m</code>)；</li>
+<li>虽然在理论上并不比暴力匹配法更优，但在实际应用中它的复杂度仅为O(n+m);</li>
+<li>如果能够选择一个好的哈希函数，它的效率将会很高，而且也易于实现。</li>
+</ol>
+<p>缺点:</p>
+<ol>
+<li>有许多字符串匹配算法的复杂度小于O(n+m)；</li>
+<li>有时候它和暴力匹配法一样慢，并且它需要额外空间。</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%AE%97%E6%B3%95/"># 算法</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/06/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-1-%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C/">手写JVM系列(1)-准备工作</a>
+            
+            
+            <a class="next" rel="next" href="/2017/04/26/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D-KMP%E7%AE%97%E6%B3%95/">字符串匹配--KMP算法</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

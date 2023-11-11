@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Android中的序列化 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Android中的序列化</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 8, 2017&nbsp;&nbsp;11:21:17&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>当我们启动一个新的 Activity,或者创建一个 Fragment 想要携带参数时,尤其是要传递一个对象时,需要将该对象放到 Bundle 中. Bundle 提供的 api 能力,有两种可选项,要么该对象实现了 Serializable 接口,要么该对象实现了 Parcelable. Serializable 是 Java 提供的序列化机制,既然已经有了成熟的序列化机制,为什么 Android 还要额外提供一种序列化机制(Parcelable)呢? 本文将对 Android 中的序列化机制做一个讲解.</p>
+</blockquote>
+<span id="more"></span>
+
+<h1 id="Serializable-的使用"><a href="#Serializable-的使用" class="headerlink" title="Serializable 的使用"></a>Serializable 的使用</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SerializableDeveloper</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    String name;</span><br><span class="line">    <span class="type">int</span> yearsOfExperience;</span><br><span class="line">    List&lt;Skill&gt; skillList;</span><br><span class="line">    <span class="type">float</span> favoriteFloat;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Skill</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">        String name;</span><br><span class="line">        <span class="type">boolean</span> programmingRelated;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Serializable 的使用方法非常简单,你只需要让目标类实现Serializable接口,同时目标类中的成员变量也需要实现Serializable接口.<br>但是随之而来的是一些性能上的问题, Serializable 机制内部会使用反射,这样会降低序列化的效率,同时也会创建很多临时变量,引发频繁的 GC.<br>这种性能的损耗,尤其是在移动设备上是尤为显著的.<br>因此,Android 设计了另一种序列化机制来避免改问题.</p>
+<h1 id="Parcelable"><a href="#Parcelable" class="headerlink" title="Parcelable"></a>Parcelable</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ParcelableDeveloper</span> <span class="keyword">implements</span> <span class="title class_">Parcelable</span> &#123;</span><br><span class="line">    String name;</span><br><span class="line">    <span class="type">int</span> yearsOfExperience;</span><br><span class="line">    List&lt;Skill&gt; skillSet;</span><br><span class="line">    <span class="type">float</span> favoriteFloat;</span><br><span class="line"></span><br><span class="line">    ParcelableDeveloper(Parcel in) &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = in.readString();</span><br><span class="line">        <span class="built_in">this</span>.yearsOfExperience = in.readInt();</span><br><span class="line">        <span class="built_in">this</span>.skillSet = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;Skill&gt;();</span><br><span class="line">        in.readTypedList(skillSet, Skill.CREATOR);</span><br><span class="line">        <span class="built_in">this</span>.favoriteFloat = in.readFloat();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">writeToParcel</span><span class="params">(Parcel dest, <span class="type">int</span> flags)</span> &#123;</span><br><span class="line">        dest.writeString(name);</span><br><span class="line">        dest.writeInt(yearsOfExperience);</span><br><span class="line">        dest.writeTypedList(skillSet);</span><br><span class="line">        dest.writeFloat(favoriteFloat);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="title function_">describeContents</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;ParcelableDeveloper&gt; CREATOR</span><br><span class="line">            = <span class="keyword">new</span> <span class="title class_">Parcelable</span>.Creator&lt;ParcelableDeveloper&gt;() &#123;</span><br><span class="line"></span><br><span class="line">        ParcelableDeveloper <span class="title function_">createFromParcel</span><span class="params">(Parcel in)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ParcelableDeveloper</span>(in);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        ParcelableDeveloper[] newArray(<span class="type">int</span> size) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ParcelableDeveloper</span>[size];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Skill</span> <span class="keyword">implements</span> <span class="title class_">Parcelable</span> &#123;</span><br><span class="line">        String name;</span><br><span class="line">        <span class="type">boolean</span> programmingRelated;</span><br><span class="line"></span><br><span class="line">        Skill(Parcel in) &#123;</span><br><span class="line">            <span class="built_in">this</span>.name = in.readString();</span><br><span class="line">            <span class="built_in">this</span>.programmingRelated = (in.readInt() == <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">void</span> <span class="title function_">writeToParcel</span><span class="params">(Parcel dest, <span class="type">int</span> flags)</span> &#123;</span><br><span class="line">            dest.writeString(name);</span><br><span class="line">            dest.writeInt(programmingRelated ? <span class="number">1</span> : <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;Skill&gt; CREATOR</span><br><span class="line">            = <span class="keyword">new</span> <span class="title class_">Parcelable</span>.Creator&lt;Skill&gt;() &#123;</span><br><span class="line"></span><br><span class="line">            Skill <span class="title function_">createFromParcel</span><span class="params">(Parcel in)</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Skill</span>(in);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            Skill[] newArray(<span class="type">int</span> size) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Skill</span>[size];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="type">int</span> <span class="title function_">describeContents</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Parcelable 的使用方法略微复杂,在实现 Parcelable 的同时,还要实现一些列的模板代码(好在 Android Studio 自带的模板机制可以简化这一流程), Parcelable 的序列化过程没有使用反射,而是在模板代码中由使用者自己定义.</p>
+<h1 id="Serializable-VS-Parcelable-序列化速度对比"><a href="#Serializable-VS-Parcelable-序列化速度对比" class="headerlink" title="Serializable VS Parcelable 序列化速度对比"></a>Serializable VS Parcelable 序列化速度对比</h1><p>测试方法:</p>
+<ol>
+<li>在 Activity 中创建 Bundle, 将序列化的对象分别以 Serializable 和 Parcelable 的方式传入 bundle 中, 再取出来</li>
+<li>执行上述操作 1000 次, 作为一组</li>
+<li>分别执行 10 组,取平均值,记录传输速度,内存占用率,CPU 使用率</li>
+<li>测试对象为上述的: SerializableDeveloper, ParcelableDeveloper</li>
+</ol>
+<p>测试设备:</p>
+<ol>
+<li>LG Nexus 4 - Android 4.2.2 </li>
+<li>Samsung Nexus 10 - Android 4.2.2</li>
+<li>HTC Desire Z - Android 2.3.3</li>
+</ol>
+<p>测试结果:</p>
+<p><img src="https://raw.githubusercontent.com/zachaxy/pic-repository/master/imgparcelable-vs-serializable-e1366334109758.png" alt="速度对比"></p>
+<h1 id="使用-intent-传递数据时的大小限制"><a href="#使用-intent-传递数据时的大小限制" class="headerlink" title="使用 intent 传递数据时的大小限制"></a>使用 intent 传递数据时的大小限制</h1><p>通过 intent 的 bundle 的源码可以看到它们都是实现了 Parcelable ，其实就是通过序列化来实现通信的。Parcelable 的底层使用了 Parcel 机制。其传输过程实际上是使用了 binder 机制，binder 机制会将 Parcel序列化的数据写入到一个<del>共享内存</del>中，读取时也是 binder 从共享内存中读出字节流，然后 Parcel 反序列化后使用。这就是 Intent 或 Bundle 能够在 activity或者跨进程通信的原理。</p>
+<p><img src="https://raw.githubusercontent.com/zachaxy/pic-repository/master/img20210526130417934.png" alt="parcel传输原理"></p>
+<p>简单来说，我们上面提到了 Parcel 机制使用了一个共享内存，这个共享内存就叫 Binder transaction buffer，这块内存有一个大小限制，目前是 1MB，而且共用的，当超过了这个大小就会报错。</p>
+<h1 id="Activity之间传递较大数据的方式"><a href="#Activity之间传递较大数据的方式" class="headerlink" title="Activity之间传递较大数据的方式"></a>Activity之间传递较大数据的方式</h1><ol>
+<li>限制传递数据量</li>
+<li>改变数据传输方式（参见Activity之间传递数据的方式）</li>
+<li>全局变量,外部都能访问到:<ol>
+<li>静态static</li>
+<li>单例</li>
+<li>Application</li>
+<li>使用容器的单例模式</li>
+</ol>
+</li>
+<li>持久化<ol>
+<li>sp</li>
+<li>sqlite</li>
+</ol>
+</li>
+</ol>
+<h1 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u011033906/article/details/89316543">Android 使用 intent 传递数据时的大小限制</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.developerphil.com/parcelable-vs-serializable/">Parcelable vs Serializable</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844904049997774856">解析Serializable原理</a></li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Android-Framework/"># Android Framework</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/10/17/AsyncTask%E8%AF%A6%E8%A7%A3/">AsyncTask详解</a>
+            
+            
+            <a class="next" rel="next" href="/2017/06/05/Objective-C%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/">Objective-C快速上手</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

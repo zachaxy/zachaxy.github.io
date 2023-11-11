@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>hexo搭建改良 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">hexo搭建改良</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 5, 2017&nbsp;&nbsp;19:20:39&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">6.1k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">6 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>hexo 搭建改良<br>之前使用<a href="https://zachaxy.github.io/2017/03/30/hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E8%BF%87%E7%A8%8B%E5%85%A8%E7%BA%AA%E5%BD%95/">hexo 搭建博客过程全纪录</a>已经可以成功的搭建一个 hexo 的博客了，使用了一段时间之后，发现了一个问题，就是博客只能在当前的这台 pc 上发布，但是有时候想在家也写写博客并立即发布，之前的博客只能基于单终端的发布。因此在多个端上进行 hexo 的同步成为当前需要解决的问题，为此，我这里进行了三次改进。通过不断的改良，也使我对 hexo 有了进一步的了解。</p>
+<span id="more"></span>
+
+<h1 id="GitPage-Hexo"><a href="#GitPage-Hexo" class="headerlink" title="GitPage + Hexo"></a>GitPage + Hexo</h1><p>相信大家刚开始用 hexo 搭建博客的时，搜索出现最多的关键词就是 GitPage + Hexo 了<br>这里用大白话说一下二者的基本原理：</p>
+<p>不知道大家想过这个问题没，就是如果我们想做一个博客，还想让外网的其他人也看到，需要哪些准备条件：</p>
+<ol>
+<li>首先，我们肯定需要一个服务器，来保存我们的博客。这样外网才能访问的到。</li>
+<li>其次，我们在浏览器浏览的博客都是 html 的网页，因此我们的博客页面在服务器上必须保存的是 html，css，javascript 等着些文件。</li>
+</ol>
+<p>接下来依次解决上面的问题：</p>
+<p>问题一：有多种解决方法，可以购买阿里云，腾讯云等，来构建自己的博客系统，但是需要付费。那就寻找一个免费的平台，好在 github 提供了类似的功能，我们的代码仓库放在 github 上，外网都可以看到，这不就是一个免费的服务器嘛。但是如果我们直接把博客的 html 代码放到代码仓库，那么 github 会认为你创建的是一个 html 的代码库，这样查看例如 index.html 的文件并不是一个网页，而是代码。因此还需要一个转换器，该转换器的工作是如果我们打开的是例如 index.html 这样的文件，github 不是展示其代码，而是将其渲染成对应的网页展示出来。这一使命由 GitPage 来完成。</p>
+<p>其实要完成上述的需求，还必须遵从 GitPage 规定的两个要求：</p>
+<ul>
+<li>每个人至多有一个这样的代码库，其仓库名必须是 <code>username.github.io</code>。这里的 username 就是你 github 的用户名。这里只是第一步，此时这任然是一个普通的代码库</li>
+<li>该代码库中的文件必须按照一定的要求保存。例如在指定的文件夹中放 html 文件，在指定的文件夹放 css 文件等。</li>
+</ul>
+<p>只要我们按照 GitPage 的要求，将你写好的博客的 html 等文件放到指定的文件夹中。其实你就可以创建博客了。</p>
+<p>问题二：解决了服务器的存储问题，接下来解决博客的网页生成问题了，并不是每个人都会前端的（即使会，我相信他们也不愿意真的用 html 来写博客，效率太低！），如果有这么一个转换器，可以将我写的文档转换成网页，那将极大的提高我们的工作效率。还真有这么一个转换器——Hexo。它可以将 markdown 的文件转换为 html 文件。并且配有多种主题，只需简单的配置，就可以轻松的切换风格不同的网页。而且其转换的文件夹的结构是完全符合 GitPage 的要求的。其对应于 <code>/public</code>文件夹。该文件夹下的所有文件只需要全部上传到<code>username.github.io</code>仓库中，我们就可以通过 <code>https://username.github.io/</code>来访问了。</p>
+<p>这里强调一点：我们所写的博客，<strong>最重要的就是原始的 markdown 文件！</strong> 而不是其对应的 html 文件。因为这些文件随时可以用 hexo 来再次生成。但是如果 markdown 文件丢失了，可能意味着我们要重写写文章了。</p>
+<h1 id="快速搭建"><a href="#快速搭建" class="headerlink" title="快速搭建"></a>快速搭建</h1><p>参考之前写的这篇<a href="https://zachaxy.github.io/2017/03/30/hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E8%BF%87%E7%A8%8B%E5%85%A8%E7%BA%AA%E5%BD%95/">hexo 搭建博客过程全纪录</a>就可以顺利跑通了。可以通过它进行一次练手。其主要是针对单平台的发布。如果你就是在单一的 pc 上写博客并发布，那它很适合你。但是如果你的需求是在 pcA 上写两篇，又在 pcB 上写两篇。那么请往下看。</p>
+<h1 id="探索改进之旅"><a href="#探索改进之旅" class="headerlink" title="探索改进之旅"></a>探索改进之旅</h1><p>这里的改进主要是解决多终端同步问题。</p>
+<h2 id="最原始最简单的方法"><a href="#最原始最简单的方法" class="headerlink" title="最原始最简单的方法"></a>最原始最简单的方法</h2><p>在了解了上面 GitPage 和 Hexo 所做的工作之后，我萌生了一个最简单的方法：在另一台电脑 pcB 上安装 Node.js。然后直接将 pcA 上的执行<code>hexo init</code>的文件夹(例如我的是：<code>E:/blogs</code>)拷贝到另一台 pcB 上，这样就可以直接用了，可以说是无缝连接。</p>
+<p>缺点：如果你两台电脑交互发布文章的太频繁，老是这样将文件夹拷贝来拷贝去，也很麻烦。</p>
+<p>适用情况：如果你之前长期 pcA 上发布文章，后来换了台电脑，以后准备长期在 pcB 上发布文章，那么这种方法最适合不过了。</p>
+<h2 id="两个仓库"><a href="#两个仓库" class="headerlink" title="两个仓库"></a>两个仓库</h2><p>前面也说过博客中最重要的是 markdown 的源文件。而在<code>username.github.io</code>的代码库中保存的是博客文件夹的 public 下的内容。之前也想过用两个分支来解决。但是<a href="https://zachaxy.github.io/2017/03/30/hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E8%BF%87%E7%A8%8B%E5%85%A8%E7%BA%AA%E5%BD%95/">hexo 搭建博客过程全纪录</a>的做法，二者并不在同一目录级别。无法实现用一个仓库再将博客文件夹下的 source 文件进行上传。故采用了两个仓库的做法。即新建一个仓库<code>MyBlogBackup</code>用来保存 markdown 源文件。</p>
+<p>注意：这种解决方案是针对使用<a href="https://zachaxy.github.io/2017/03/30/hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E8%BF%87%E7%A8%8B%E5%85%A8%E7%BA%AA%E5%BD%95/">hexo 搭建博客过程全纪录</a>搭建博客为前提的。其它情况则不适用。这里贴出所写的脚本文件：</p>
+<p>发布文章的脚本：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">this time,we are <span class="keyword">in</span> blogs <span class="built_in">dir</span>,we need <span class="built_in">sync</span> the <span class="built_in">source</span> file</span></span><br><span class="line">git pull</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">generate the new file and the old files from another machine</span></span><br><span class="line">hexo generate</span><br><span class="line">cd .deploy/zachaxy.github.io</span><br><span class="line">git pull</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">copy web pages from public/</span></span><br><span class="line">cp -R ../../public/* .</span><br><span class="line">git add .</span><br><span class="line">git commit -m &quot;update&quot;</span><br><span class="line">git push origin master</span><br><span class="line">cd ../..</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">this time,you are <span class="keyword">in</span> blogs <span class="built_in">dir</span></span></span><br><span class="line">git add .</span><br><span class="line">git commit -m &quot;upload source file&quot;</span><br><span class="line">git push origin master</span><br></pre></td></tr></table></figure>
+
+<p>删除文章的脚本：运行该脚本，必须传入一个参数，指定要删除的文章的名称（要带 md 后缀）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">if [ $# -ne 1 ]</span><br><span class="line">then</span><br><span class="line">	echo &quot;the args count must equal 1,the arg we need is the name of the file you want to delete\n&quot;;</span><br><span class="line">elif [ ! -d &quot;source/_posts/$1&quot; ]</span><br><span class="line">then</span><br><span class="line">	echo &quot;No such file or directory&quot;</span><br><span class="line">	exit 2;</span><br><span class="line">else</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">first <span class="built_in">rm</span> the file <span class="keyword">in</span> both file system and <span class="built_in">local</span> git</span></span><br><span class="line">	rm &quot;source/_posts/$1&quot;</span><br><span class="line">	git add .</span><br><span class="line">	git commit -m &quot;delete file&quot;</span><br><span class="line">	git push origin master</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">second cover the change to GitPage</span></span><br><span class="line">	hexo generate</span><br><span class="line">	cp -R public/* .deploy/zachaxy.github.io</span><br><span class="line">	cd .deploy/zachaxy.github.io</span><br><span class="line">	git add .</span><br><span class="line">	git commit -m  &quot;update&quot;</span><br><span class="line">	git push origin master</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>再次回顾下用到的两个仓库：<code>/MyBlog/.deploy/username.github.io</code>以及<code>MyBlogBackup</code></p>
+<p>简单说一下思路：在新的终端，先用<code>hexo n</code>创建并写文章，然后执行发布脚本，该脚本会先将<code>MyBlogBackup</code>中的 markdown 同步到本地，然后用<code>hexo g</code>生成 html 文件。接下来再进入<code>.deploy</code>下的<code>username.github.io</code>的仓库,将代码 pull 下来，然后将刚刚生成的 public 下的 html 文件将仓库的文件强行覆盖。<br>按说相同的 markdown 文件用相同的主题生成的 html 文件是一样的，但是为了避免平台差异，hexo 版本的差异，这里还是要进行覆盖吧。</p>
+<p>缺点：两个仓库的隔离性很高，而且目前的脚本很难称得上自动化，每次在另一个终端写博客时，都要谨记脚本的执行顺序，这些都需要人工记忆，而无法用代码约束。同时删除文件的维护成本也很高。但是作为一次尝试，它也解决了多终端同步的问题。</p>
+<h2 id="一个仓库，两个分支"><a href="#一个仓库，两个分支" class="headerlink" title="一个仓库，两个分支"></a>一个仓库，两个分支</h2><p>这是我目前使用的解决方案。下面进行详细说明。</p>
+<p>刚开始自己是按照<a href="https://zachaxy.github.io/2017/03/30/hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E8%BF%87%E7%A8%8B%E5%85%A8%E7%BA%AA%E5%BD%95/">hexo 搭建博客过程全纪录</a>来搭建的，也是参考的别人的文章。一切顺利，但是和网上其它的教程有点不一样。不一样的地方在于发布文章的时候，这篇文章的做法并没有使用<code>hexo d</code>,而在博客文件夹下再创建一个 .deploy 的文件夹(当然文件夹的名字随意)，并创建一个 git 仓库，然后把用 hexo 生成的 html 文件(在 public 文件夹下)全部拷贝到.deploy 下，然后将直接把.deploy 下的代码全部 push。</p>
+<p>刚开始我以为这种操作才是正统，后来看文章，发现更多的人用的是 <code>hexo d</code> 。其实这里并没有什么正统不正统，只是经历过这个事情之后，我们可以认定，<code>hexo d</code>干的事情就是把 public 中的文件 push 到远程。<br>在使用两个仓库的方法中，我也想过用两个分支的思路，但是不在同一个目录中，似乎不能作为两个分支。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Blogs</span><br><span class="line">	public</span><br><span class="line">		需要向 username.github.io push 的所有文件</span><br><span class="line">	source</span><br><span class="line">		_post</span><br><span class="line">			*.md</span><br></pre></td></tr></table></figure>
+
+<p>这种目录结构创建两个分支，一个分支保存 _post 下的 md 文件，一个分支保存 public 下的文件。那么在初始化 git 仓库时在那个目录下？<br>这里肯定是要找二者的公共目录 Blogs，但是如果我们直接在 Blogs 下进行 git init，那么在上传 public 下的文件时是不符合 GitPage 的要求的，因为 GitPage 要求 public 下的文件必须作为仓库的一级目录。而我们这样做的话，一级目录就是 public 了。</p>
+<p>后来经过试验，发现了使用多分支进行 hexo 同步的方法。<br>两个分支：一个分支我们可以叫 hexo，该分支主要是保存 markdown 源文件，hexo 配置文件。该分支需要我们手动创建，并把该分支设为默认分支。具体步骤如下：</p>
+<ol>
+<li>在 github 创建<code>username.github.io</code>的仓库</li>
+<li>在本地创建一个同名的文件夹<code>username.github.io</code></li>
+<li>在本地文件夹下执行 <code>git init</code>,<code>git checkout -b hexo</code>；初始化代码库，这里目前是空的，然后创建名为 hexo 的分支，其实这里并不是创建分支，而是把默认的 master 分支改名为 hexo。不信你这时候执行<code>git branch</code>，并不显示任何分支。但是 git 的命令行已经显示当前分支为 hexo 分支了。</li>
+<li>在本地文件夹下执行<code>npm install hexo</code>、<code>hexo init</code>、<code>npm install</code> 和 <code>npm install hexo-deployer-git</code></li>
+<li>因为我使用的主题里有一个搜索功能，所以还要额外执行<code>npm install hexo-generator-search -S</code></li>
+<li>接下来用 hexo n xxx&#96;创建并写文章。</li>
+<li>写好文章后先不着急发布，先添加以下远程代码库 <code>git remote add origin git@github.com:zachaxy/zachaxy.github.io.git</code></li>
+<li>将 markdown 源文件发布上去，具体的 ignore 文件如下。注意发布的远程仓库名 <code>git push -u origin hexo</code>。其实 master 只是默认的主分支，这个名字完全可以修改，而且在刚创建的仓库第一次这样提交时，指明远程的仓库叫 hexo，那么其默认分支就是 hexo</li>
+<li>接下来生成并发布文章，使用<code>hexo g -d</code>，其会按照 _config.yml 中关于 deploy 的配置，自动创建 master 分支，并将 public 下的文件作为一级目录 push 到 master 分支中。</li>
+</ol>
+<blockquote>
+<p>git仓库的创建是不允许嵌套的，也就是在父目录下创建git，然后又在子目录下创建git仓库。如果子目录下也有一个仓库，对子目录是没有影响的，子目录只会维护自己目录下的文件修改，但是回到父目录，执行 <code>git add .</code> 的时候，就会提示当前路径下，包含一个子目录的仓库，无法执行。 那么换一个思路，我们将子目录添加在父目录的 gitignore 文件中，那么就有可以实现同一个仓库，两个分支，其中一个分支记录子目录下的文件变更，而父目录忽略该子目录，记录其他文件即可。猜想 hexo 也是这样做的，在执行 <code>hexo -d</code> 的时候，也是将 <code>hexo g</code> 生成的 public 下的文件，拷贝到 <code>.deploy_git</code> 文件夹下,同时父目录下又忽略该文件夹，即可实现上述操作。</p>
+</blockquote>
+<p>ignore 文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.DS_Store</span><br><span class="line">Thumbs.db</span><br><span class="line">db.json</span><br><span class="line">*.log</span><br><span class="line">node_modules/</span><br><span class="line">public/</span><br><span class="line">.deploy*/</span><br></pre></td></tr></table></figure>
+
+<p> _config.yml 中关于 deploy 的配置，注意这里的 branch 必须为 master。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: git@github.com:zachaxy/zachaxy.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
+
+
+
+<p>以后我们在另一个终端进行发布时,同样创建一个<code>username.github.io</code>文件夹，然后依次执行</p>
+<ol>
+<li>安装 node.js</li>
+<li>git init</li>
+<li>git checkout -b hexo</li>
+<li>git remote add origin <a href="mailto:&#103;&#105;&#116;&#64;&#103;&#x69;&#116;&#104;&#x75;&#x62;&#x2e;&#99;&#111;&#109;">&#103;&#105;&#116;&#64;&#103;&#x69;&#116;&#104;&#x75;&#x62;&#x2e;&#99;&#111;&#109;</a>:zachaxy&#x2F;zachaxy.github.io.git</li>
+<li>npm install -g hexo</li>
+<li>git pull origin hexo</li>
+<li>npm install</li>
+</ol>
+<p>要注意的地方:</p>
+<p>这里并没有像第一次搭建的时候执行 hexo init, 这是反而是用 git pull origin hexo 来替代的,因为这个hexo init 的目的是为了在当前目录下建立一些目录结构,而这些结构我们已经上传到了 github 上.</p>
+<p>既然目录结果一样,为什么一定要选远程仓库的,而不是用新的 hexo init, 这是因为我们的远程仓库上已经有了其它的主题配置,这个一会要用,还有一个重要的文件 <code>package.json</code>,这个文件里包含了我们创建博客时所需的额外的 node 插件,还记得我们在初始搭建环境的时候,安装的 <code>npm install hexo-deployer-git</code>和<code>npm install hexo-generator-search -S</code>吗?</p>
+<p>这些插件的版本,都已经写在了<code>package.json</code>中,接下来我们要执行的 <code>npm install</code>命令就是安装<code>package.json</code>中所指定的插件,这样省的我们在之前另一台电脑上安装了很多插件的情况下,在新电脑上一个一个的再去重新安装.</p>
+<p>同时在执行 npm install hexo 的时候,会生成一个多余的<code>package-lock.json</code>的文件,记得把这个文件添加到<code>.gitignore</code>文件中.</p>
+<p>接下来正常的创建 md，写博客，发布即可。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%B7%A5%E5%85%B7/"># 工具</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/05/Groovy-%E7%9B%B8%E5%AF%B9-Java-%E7%9A%84%E4%B8%80%E4%BA%9B%E6%96%B0%E7%8E%A9%E6%84%8F/">Groovy 相对 Java 的一些新玩意</a>
+            
+            
+            <a class="next" rel="next" href="/2017/11/13/Mac%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/">Mac快速上手</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

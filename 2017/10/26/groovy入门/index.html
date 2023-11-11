@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>groovy入门 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">groovy入门</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 26, 2017&nbsp;&nbsp;22:16:20&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.3k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="变量定义"><a href="#变量定义" class="headerlink" title="变量定义"></a>变量定义</h1><p>groovy 是动态类型的语言，也就是说不需要指定变量的类型，类型是可以值来推导的。</p>
+<ul>
+<li>不指定类型定义变量： <code>i = 10</code></li>
+<li>使用关键字 <code>def</code>，虽不是必须的，但是为了代码清晰，还是建议使用 def 关键字定义变量 <code>def i = 10</code></li>
+</ul>
+<p>这里有个误区：def 关键字的出现时替代变量类型的占位符，如果你已经明确了变量的类型，就没必要使用 def，也就是说 <code>def int i = 10</code> 是没有必要的</p>
+<h1 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h1><ul>
+<li>单引号:单引号中的内容严格对应 Java 中的 String</li>
+<li>双引号:和脚本语言类似，如果字符串中有$符的话，先对 $表达式进行求值</li>
+<li>三引号:针对的是很长的字符串，只要在三引号之间，可以随意换行</li>
+</ul>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> s1 = <span class="string">&#x27;hello&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> s2 = <span class="string">&quot;string append $&#123;version + 1&#125;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> s3 = <span class="string">&#x27;&#x27;&#x27;随意</span></span><br><span class="line"><span class="string">换行</span></span><br><span class="line"><span class="string">打印</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>字符串的长度：<code>s1.size()</code></p>
+<p>字符串的访问：<code>s1[2]</code>   &#x2F;&#x2F;被当做数组来处理；</p>
+<p>或者  <code>s1.getAt(index)</code></p>
+<p>字符串的重复：</p>
+<p><code>s = s1*3</code>  &#x2F;&#x2F; 代表是将 s1 拼接三次</p>
+<h1 id="函数定义"><a href="#函数定义" class="headerlink" title="函数定义"></a>函数定义</h1><ul>
+<li>参数可以不指定类型</li>
+<li>方法体中可以不使用 return 来返回，这样默认的返回值就是最后一行语句的值，但是如果不指定 return，定义函数时必须要使用 def。</li>
+<li>可以指明返回值类型,这样就可以省略 def 关键字；但是如果未指定返回值类型，那么定义函数时必须使用 def 关键字</li>
+<li>默认参数：可以给参数定义默认值，但是要注意的是，如果要定义有默认值的参数，那么该参数必须在参数列表的末尾</li>
+</ul>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> sum(<span class="type">int</span> a,<span class="type">int</span> b = <span class="number">0</span>)&#123;</span><br><span class="line">	<span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sum(<span class="number">1</span>,<span class="number">2</span>)</span><br><span class="line">sum(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="函数调用"><a href="#函数调用" class="headerlink" title="函数调用"></a>函数调用</h1><ul>
+<li>调用时，可以不加括号，但这并不是一个好的习惯，因为如果一个函数是无参的，那么不带括号，很可能被误认为是属性的调用；同时在嵌套函数调用时，也容易出错（将参数设置为另一个方法调用的结果）</li>
+<li>最好的一种形式是：能加括号都加括号；如果该方法只有一个参数，那么调用时加括号，如果有多个参数，则可以省略括号</li>
+<li>特别注意：如果该函数没有参数，那么调用时，必须加括号；同时这个的参数个数要和闭包的参数个数区分开</li>
+</ul>
+<h1 id="Groovy-bean-对象"><a href="#Groovy-bean-对象" class="headerlink" title="Groovy bean 对象"></a>Groovy bean 对象</h1><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span>  <span class="title class_">Bean</span>&#123;</span><br><span class="line">    <span class="type">int</span> version</span><br><span class="line">    String name;</span><br><span class="line"></span><br><span class="line">    Bean(<span class="type">int</span> version,String name)&#123;</span><br><span class="line">        <span class="variable language_">this</span>.version = version;</span><br><span class="line">        <span class="variable language_">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Bean bean1 = <span class="keyword">new</span> Bean(<span class="number">1</span>,<span class="string">&quot;zx&quot;</span>)</span><br><span class="line"></span><br><span class="line">println bean1.name</span><br></pre></td></tr></table></figure>
+
+<p>上面定义的 Bean 对象，在其内部定义了两个成员变量 version 和 name，这样默认就会为我们生成其对应的 getter 和 setter 方法。而在外部访问该成员变量时，其实是调用对应的 getter 和 setter 方法。</p>
+<h1 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h1><p>闭包和函数是类似的，是一个代码片段，可以定义一个引用指向这个闭包，这类似于 C 语言中的函数指针；</p>
+<p>闭包还可以获取外部变量；与 Java 中的内部类不同的是，在闭包内不仅可以获取到外部变量，同时也可以将其修改，修改对外部是可见的。</p>
+<p>与函数定义不同的是，闭包的参数是在方法体内定义的，以 -&gt; 分割，左侧为参数，右侧为方法体</p>
+<p>闭包方法体内，最后一句为返回值。</p>
+<p>闭包的默认参数：如果定义的闭包只有一个参数，那么可以在闭包内直接写方法体，使用 <code>$it</code> 来获取参数。</p>
+<p>如果要定义一个没有参数的闭包，那么闭包内， -&gt; 左侧为空，则代表该闭包没有参数</p>
+<p>Groovy 中的函数，可以用闭包作为参数；</p>
+<blockquote>
+<p>之前在看 groovy 的代码,或者写 groovy 的代码,调用外部定义的闭包,总是不清楚这个闭包到底要传入几个参数. 其实可以根据 IDE 的提示,如果是一个纯的大括号,那么必然是属于只有一个参数的闭包</p>
+</blockquote>
+<h1 id="集合类"><a href="#集合类" class="headerlink" title="集合类"></a>集合类</h1><p>groovy 中的集合包含两种：list 和 map，其使用也很简单</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">list = [<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>]</span><br><span class="line">list &lt;&lt; <span class="number">3</span></span><br><span class="line">println list.size();</span><br><span class="line"></span><br><span class="line">map = [<span class="attr">name:</span><span class="string">&quot;zx&quot;</span>,<span class="attr">age:</span><span class="number">25</span>];</span><br><span class="line">map.merry = <span class="literal">false</span>	<span class="comment">// 向 map 添加键值对</span></span><br><span class="line">println map.size()  <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="运算符"><a href="#运算符" class="headerlink" title="运算符"></a>运算符</h1><ul>
+<li>范围运算符(..)</li>
+</ul>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//range 更像是一个数组，其长度为 6，其为从 5 到 10</span></span><br><span class="line"><span class="keyword">def</span> range = <span class="number">5.</span><span class="number">.10</span></span><br><span class="line"><span class="comment">//通过 get(index)来获取对应的值</span></span><br><span class="line">println range.get(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 其它实例</span></span><br><span class="line"><span class="number">1</span> .. &lt;<span class="number">10</span>    <span class="comment">//  独占范围的示例</span></span><br><span class="line"><span class="string">&#x27;a&#x27;</span>..<span class="string">&#x27;x&#x27;</span>   <span class="comment">// 范围也可以由字符组成</span></span><br><span class="line"><span class="number">10.</span><span class="number">.1</span>     <span class="comment">// 范围也可以按降序排列</span></span><br><span class="line"><span class="string">&#x27;x&#x27;</span>..<span class="string">&#x27;a&#x27;</span> <span class="comment">// 范围也可以由字符组成并按降序排列。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 由此就有如下 foreach 的写法</span></span><br><span class="line"><span class="keyword">for</span>(<span class="type">int</span> i <span class="keyword">in</span> <span class="number">1.</span><span class="number">.5</span>) &#123;</span><br><span class="line">	println(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>三目运算符(?:)</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 假设有这样一个需求，如果 name 不为 null，那么就输出 name 的值，否则输出 Anonymous</span><br><span class="line">// 下面的三目运算符的写法，未免有些啰嗦</span><br><span class="line">displayName = name ? name : &#x27;Anonymous&#x27;</span><br><span class="line"></span><br><span class="line">// 下面是 groovy 中支持三目运算符的写法</span><br><span class="line">displayName = name ?: &#x27;Anonymous&#x27;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>展开操作符(*.)</li>
+</ul>
+<p>应用于实现了 iterator 的对象中，一般是数组，集合，是 foreach 的缩写</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> technologies = [<span class="string">&#x27;Groovy&#x27;</span>,<span class="string">&#x27;Grails&#x27;</span>,<span class="string">&#x27;Gradle&#x27;</span>]</span><br><span class="line">technologies*.toUpperCase() <span class="comment">// = to technologies.collect &#123; it?.toUpperCase() &#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安全操作符(?.)</li>
+</ul>
+<p>可以有效的避免空指针</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// eg：get(1)返回的结果是 null，此时如果调用 user.username 会产生空指针异常</span></span><br><span class="line"><span class="comment">//而是用 ?. 如果 user 为空,那么 username 也为 空，不会产生空指针异常</span></span><br><span class="line"><span class="keyword">def</span> user = User.get(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">def</span> username = user?.username</span><br></pre></td></tr></table></figure>
+
+<h1 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h1><p>groovy 提供了比 Java 更为便捷的方法来操作文件，其<a target="_blank" rel="noopener" href="http://www.groovy-lang.org/gdk.html">API 文档参考</a></p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">File file = <span class="keyword">new</span> File(<span class="string">&quot;E:/hello.txt&quot;</span>)</span><br><span class="line"><span class="comment">//按行读文件 </span></span><br><span class="line">file.eachLine &#123;  </span><br><span class="line">   line -&gt; println <span class="string">&quot;line : $line&quot;</span>; </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">//读取文件的整个内容，是用 text 属性</span></span><br><span class="line">println  file.text</span><br><span class="line"></span><br><span class="line"><span class="comment">//获取文件内同的大小，单位是字节</span></span><br><span class="line">println file.length()</span><br><span class="line"></span><br><span class="line"><span class="comment">// 写入文件,内容为 hello world</span></span><br><span class="line">file.withWriter(<span class="string">&#x27;utf-8&#x27;</span>) &#123; </span><br><span class="line">	writer -&gt; writer.writeLine <span class="string">&#x27;Hello World&#x27;</span> </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//复制文件</span></span><br><span class="line"><span class="keyword">def</span> src = <span class="keyword">new</span> File(<span class="string">&quot;E:/hello.txt&quot;</span>)</span><br><span class="line"><span class="keyword">def</span> dst = <span class="keyword">new</span> File(<span class="string">&quot;E:/hello1.txt&quot;</span>)</span><br><span class="line">dst &lt;&lt; src.text</span><br><span class="line"></span><br><span class="line"><span class="comment">//递归显示目录及其子目录中的所有文件</span></span><br><span class="line">file.eachFileRecurse() &#123;</span><br><span class="line">	file -&gt; println file.getAbsolutePath()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="http://groovy-lang.org/documentation.html">官方手册</a><br><a target="_blank" rel="noopener" href="https://learnxinyminutes.com/docs/groovy/">Learn groovy in Y minutes</a><br><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/ba55dc163dfd">使用 Groovy 开发之新特性</a><br><a target="_blank" rel="noopener" href="http://blog.csdn.net/dabaoonline/article/details/50477090">日积月累–Groovy 语言规范之操作符</a><br><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/2c17a50ff7f1">Groovy 学习之-运行时元编程</a><br><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/education/java/j-groovy/j-groovy.html#N1036D">精通 Groovy</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Groovy/"># Groovy</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/11/07/%E5%8D%A1%E7%89%B9%E5%85%B0%E6%95%B0%E7%AE%80%E4%BB%8B/">卡特兰数简介</a>
+            
+            
+            <a class="next" rel="next" href="/2017/10/20/Maven%E7%AE%80%E4%BB%8B/">Maven简介</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

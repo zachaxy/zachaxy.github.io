@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Java泛型 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Java泛型</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">September 23, 2018&nbsp;&nbsp;19:55:57&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.1k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>Java 泛型（generics）是 JDK 5 中引入的一个新特性, 泛型提供了编译时类型安全检测机制，该机制允许程序员在编译时检测到非法的类型。泛型的本质是参数化类型，也就是说所操作的数据类型被指定为一个参数。</p>
+</blockquote>
+<span id="more"></span>
+
+
+<p><code>Java 中泛型的设计思想是：在编译阶段提前发现问题，而不是运行时。只要我们以这种思想去看到 Java 泛型的各种语法限制，就会感觉明朗很多。</code></p>
+<h1 id="泛型在JVM-中的实现"><a href="#泛型在JVM-中的实现" class="headerlink" title="泛型在JVM 中的实现"></a>泛型在JVM 中的实现</h1><p>其本质是<code>类型擦除</code></p>
+<p>具体可以参考<a href="https://zachaxy.github.io/2017/05/09/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-6-%E5%88%86%E6%9E%90class%E6%96%87%E4%BB%B6-%E5%B1%9E%E6%80%A7%E8%A1%A8/#%E6%A1%A5%E6%8E%A5%E6%96%B9%E6%B3%95">手写JVM系列-桥接方法</a></p>
+<h1 id="泛型中的一些语法限制"><a href="#泛型中的一些语法限制" class="headerlink" title="泛型中的一些语法限制"></a>泛型中的一些语法限制</h1><h2 id="1-静态成员变量不能使用泛型"><a href="#1-静态成员变量不能使用泛型" class="headerlink" title="1. 静态成员变量不能使用泛型"></a>1. 静态成员变量不能使用泛型</h2><p>这个很好理解，静态成员变量在类加载的时候就初始化了，此时具体的泛型类型还未确定，因此定义静态成员变量无法定义。</p>
+<h2 id="2-基本类型不能使用泛型，需要用对应的包装类型"><a href="#2-基本类型不能使用泛型，需要用对应的包装类型" class="headerlink" title="2. 基本类型不能使用泛型，需要用对应的包装类型"></a>2. 基本类型不能使用泛型，需要用对应的包装类型</h2><p>像 int，double 等基本类型，在使用泛型时，需要转换为对应的包装类 Integer，Double 等。因为泛型参数在编译后都会替换成 Object，因此需要转换为对应的包装类，而不能是基本类型。这也引发了一个 Java 泛型设计的吐槽：对于基本类型，在泛型使用过程中，会频繁的装箱，拆箱操作，有一定的性能影响，开发者在使用时应多注意。</p>
+<h2 id="3-无法用-instanceof-获取到-T-的类型"><a href="#3-无法用-instanceof-获取到-T-的类型" class="headerlink" title="3. 无法用 instanceof 获取到 T 的类型"></a>3. 无法用 instanceof 获取到 T 的类型</h2><p>由于JVM 类型擦除的原因，在运行时，无法使用 instanceof 来判断 T 的类型，但是可以通过反射等方法来获取。</p>
+<h2 id="4-可以定义泛型数组，但是不能创建泛型数组"><a href="#4-可以定义泛型数组，但是不能创建泛型数组" class="headerlink" title="4. 可以定义泛型数组，但是不能创建泛型数组"></a>4. 可以定义泛型数组，但是不能创建泛型数组</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Foo&lt;String&gt;[] foos;  <span class="comment">//  可以这么生命</span></span><br><span class="line">Foo&lt;String&gt;[] foos = <span class="keyword">new</span> <span class="title class_">Foo</span>&lt;String&gt;[<span class="number">10</span>]; <span class="comment">// 创建则报错</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 但是也有例外，这样可以用，但是也失去了泛型的意义，强烈建议：不要这么用！</span></span><br><span class="line">Foo&lt;?&gt;[] fooArray = <span class="keyword">new</span> <span class="title class_">GenericType</span>[<span class="number">10</span>];</span><br><span class="line">fooArray[<span class="number">0</span>] = <span class="keyword">new</span> <span class="title class_">Foo</span>&lt;Integer&gt;();</span><br><span class="line">fooArray[<span class="number">1</span>] = <span class="keyword">new</span> <span class="title class_">Foo</span>&lt;String&gt;();</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-泛型类不能继承-Throwable-及其子类"><a href="#5-泛型类不能继承-Throwable-及其子类" class="headerlink" title="5. 泛型类不能继承 Throwable 及其子类"></a>5. 泛型类不能继承 Throwable 及其子类</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这也定义会报错</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CustomException</span>&lt;T&gt; <span class="keyword">extends</span> <span class="title class_">Throwable</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>考虑如下场景：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    xxx</span><br><span class="line">&#125; <span class="keyword">catch</span> (CustomException&lt;Integer&gt; e1) &#123;</span><br><span class="line"></span><br><span class="line">&#125; <span class="keyword">catch</span> (CustomException&lt;String&gt; e2) &#123;</span><br><span class="line"></span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e3) &#123;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>由于 JVM 类型擦除的原因，e1 和 e2 其实无法区分的，因此泛型类继承 Throwable 没有实际意义，将在编译器阻断这一行为。</p>
+<h1 id="令人迷惑的通配符类型"><a href="#令人迷惑的通配符类型" class="headerlink" title="令人迷惑的通配符类型"></a>令人迷惑的通配符类型</h1><p>首先定义如下类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GenericType</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> T t;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setData</span><span class="params">(T t)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.t = t;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">getData</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">A</span>&#123;&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">B</span> <span class="keyword">extends</span> <span class="title class_">A</span>&#123;&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">C</span> <span class="keyword">extends</span> <span class="title class_">B</span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="extends-B"><a href="#extends-B" class="headerlink" title="? extends B"></a>? extends B</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GenericType&lt;? <span class="keyword">extends</span> <span class="title class_">B</span>&gt; b = <span class="keyword">new</span> <span class="title class_">GenericType</span>&lt;&gt;();</span><br><span class="line"><span class="comment">// 下面的 set 方法都是不能用的</span></span><br><span class="line"><span class="comment">//        a.setData(new A());</span></span><br><span class="line"><span class="comment">//        a.setData(new B());</span></span><br><span class="line"><span class="comment">//        a.setData(new C());</span></span><br><span class="line"><span class="type">B</span> <span class="variable">b1</span> <span class="operator">=</span> b.getData();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">foo</span><span class="params">(List&lt;? extends B&gt; list)</span> &#123;</span><br><span class="line">    <span class="comment">//  list.add(new B());  // 无法添加</span></span><br><span class="line">    <span class="comment">//  list.add(new C());  // 无法添加</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; list.size(); i++) &#123;</span><br><span class="line">        <span class="type">B</span> <span class="variable">b</span> <span class="operator">=</span> list.get(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在使用了 <code>? extends B</code> 通配符，变量或者集合就失去了写的能力，只能读。<br>这里的 <code>? extends B</code> 表示的意思是：GenericType 里面持有的数据类型被限定在 B 或者其子类，A 当然是不可以的。但是至于具体是 B 的哪个子类，不确定也不关心。但也不能随意的往里面加 B 的子类，因为 <code>? extends B</code> 是明确的某一种类型。</p>
+<p>如果想实现添加 B 的任意子类，可以定义为 GenericType<B> 或者 List<B></p>
+<h2 id="super-B"><a href="#super-B" class="headerlink" title="? super B"></a>? super B</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GenericType&lt;? <span class="built_in">super</span> B&gt; b = <span class="keyword">new</span> <span class="title class_">GenericType</span>&lt;&gt;();</span><br><span class="line"><span class="comment">// a.setData(new A()); 不允许</span></span><br><span class="line">a.setData(<span class="keyword">new</span> <span class="title class_">B</span>());</span><br><span class="line">a.setData(<span class="keyword">new</span> <span class="title class_">C</span>());</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">foo</span><span class="params">(List&lt;? <span class="built_in">super</span> B&gt; list)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; list.size(); i++) &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">object</span> <span class="operator">=</span> list.get(i); <span class="comment">// 其实已经不能读了,只能是 object</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// list.add(new A()); 不允许</span></span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">B</span>());</span><br><span class="line">    list.add(<span class="keyword">new</span> <span class="title class_">C</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里的 <code>? super B</code> 和上面的 <code>? extends B</code> 反过来了，可以写，但是不能读（读到的是 Object 类型，等同于失去了读的能力）。<br>但是令人疑惑的点是在写的时候，为什么不能写 B 的父类，反到是 B 的子类都可以写？</p>
+<p>这里有一个误区：<br><del>认为使用了 <code>? super B</code> 就可以写 B 的父类</del></p>
+<p>这里要整体来看 <code>GenericType&lt;? super B&gt;</code>  决定的依然是 GenericType f泛型的上界，只是上界具体是什么不清楚，起码 B 是安全的，B 的子类是安全。A 是 B 的父类，但是不一定安全。</p>
+<h1 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h1><p>PECS 原则: <code>Producer Extends, Consumer Super</code></p>
+<ul>
+<li><p>Producer extends: 如果我们需要一个 List 提供类型为 T 的数据(即希望从 List 中读取 T 类型的数据), 那么我们需要使用 ? extends T, 例如 List&lt;? extends Integer&gt;. 但是我们不能向这个 List 添加数据.</p>
+</li>
+<li><p>Consumer Super: 如果我们需要一个 List 来消费 T 类型的数据(即希望将 T 类型的数据写入 List 中), 那么我们需要使用 ? super T, 例如 List&lt;? super Integer&gt;. 但是这个 List 不能保证从它读取的数据的类型.</p>
+</li>
+</ul>
+<p>如果我们既希望读取, 也希望写入, 那么我们就必须明确地声明泛型参数的类型, 例如 List<Integer>.</p>
+<p>例子:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="keyword">void</span> <span class="title function_">copy</span><span class="params">(List&lt;? <span class="built_in">super</span> T&gt; dest, List&lt;? extends T&gt; src)</span> &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">0</span>; i&lt;src.size(); i++) </span><br><span class="line">        dest.set(i,src.get(i)); </span><br><span class="line">  &#125; </span><br></pre></td></tr></table></figure>
+<p>上面的例子是一个拷贝数据的代码, src 是 List&lt;? extends T&gt; 类型的, 因此它可以读取出 T 类型的数据(读取的数据类型是 T 或是 T 的子类, 但是我们不能确切的知道它是什么类型, 唯一能确定的是读取的类型 is instance of T), dest 是 List&lt;? super T&gt; 类型的, 因此它可以写入 T 类型或其子类的数据.</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Java-in-Deep/"># Java in Deep</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/09/25/Java%E6%B3%A8%E8%A7%A3/">Java注解</a>
+            
+            
+            <a class="next" rel="next" href="/2018/06/02/JVM%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">JVM内存管理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

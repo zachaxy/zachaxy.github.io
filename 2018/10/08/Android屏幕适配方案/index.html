@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Android屏幕适配方案 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Android屏幕适配方案</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 8, 2018&nbsp;&nbsp;14:57:27&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">1.4k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">1 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>为什么Android需要进行屏幕适配?<br>由于Android系统的开放性，任何用户、开发者、OEM厂商、运营商都可以对Android进行定制，修改成他们想要的样子。<br>但是这种“碎片化”到底到达什么程度呢？<br>在2012年，OpenSignalMaps（以下简称OSM）发布了第一份Android碎片化报告，统计数据表明，<br>2012年，支持Android的设备共有3997种。<br>2013年，支持Android的设备共有11868种。<br>2014年，支持Android的设备共有18796种。<br>……<br>市场上Android手机的屏幕尺寸繁多，甚至宽高比例也不一样。而设计师给出的视觉稿，只是针对一种屏幕尺寸给出的，如何移植到不同分辨率的设别上，同时使的视觉效果一致呢？</p>
+</blockquote>
+<h1 id="需要解决的问题"><a href="#需要解决的问题" class="headerlink" title="需要解决的问题"></a>需要解决的问题</h1><p>需要解决的核心问题是什么？</p>
+<ul>
+<li>让不同分辨率，不同尺寸的手机。打开同一个应用,看到的内容是一样多的。</li>
+</ul>
+<p>我买了大屏手机，就是要看更多的内容，这样我的大屏手机还有什么用呢？</p>
+<ul>
+<li>是的，你必须接受。如果更大的屏幕可以看到更多的内容，那无疑对开发者带来巨大的工作量。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/zachaxy/pic-repository/master/imgAndroid%E5%B1%8F%E5%B9%95%E7%A2%8E%E7%89%87%E5%8C%96.webp" alt="Android屏幕碎片化现状"></p>
+<p>真的是所有手机看到的内容完全一样多吗？</p>
+<ul>
+<li>不是的，主流应用会让不同手机在宽这个维度上看到的内容一样多；而在高这个维度上，则是能放多少方多少。</li>
+</ul>
+<h1 id="屏幕适配所需要了解的基本概念"><a href="#屏幕适配所需要了解的基本概念" class="headerlink" title="屏幕适配所需要了解的基本概念"></a>屏幕适配所需要了解的基本概念</h1><ul>
+<li>px: 像素数,没什么好说的</li>
+<li>ppi: 买手机的时候,经常会听到这个词。其在手机屏幕中指的是像素密度,是物理上的概念，它是客观存在的不会改变。</li>
+<li>dpi: 像素密度，指的是在系统软件上指定的单位尺寸的像素数量，一般都取整数。它往往是写在系统出厂配置文件的一个固定值。dpi 是参考了 ppi 后，人为指定的一个值，用来保证某一个区间内的 ppi 在软件上都使用同一个 dpi 值。这样会有利于我们的UI适配。</li>
+<li>dp: 设备独立像素,是 Android 中的概念。</li>
+<li>density: 代表 1dp 占当前设备多少像素。计算方式： density &#x3D; dpi&#x2F;160，用作 px 与 dp 的转换。</li>
+</ul>
+<p>转换公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">density = dpi / 160</span><br><span class="line">px = density * dp</span><br><span class="line">px = dpi / 160 * dp</span><br><span class="line">px = dp * (dpi/160)</span><br></pre></td></tr></table></figure>
+
+
+<p>比如，几部相同分辨率不同尺寸的手机的ppi可能分别是是430,440,450,那么在Android系统中，可能dpi会全部指定为480.这样的话，dpi&#x2F;160就会是一个相对固定的数值，这样就能保证相同分辨率下不同尺寸的手机表现一致。</p>
+<h1 id="适配方案进化史"><a href="#适配方案进化史" class="headerlink" title="适配方案进化史"></a>适配方案进化史</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/hongyangAndroid/AndroidAutoLayout">hongyang-AndroidAutoLayout</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a4b8e4c5d9b0">Android 目前最稳定和高效的UI适配方案</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/d9QCoBP6kV9VSWvVldVVwA">一种极低成本的Android屏幕适配方式</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/55e0fca23b4f">骚年你的屏幕适配方式该升级了</a></li>
+</ol>
+<p>方案一：在manifest文件中指定设计原型图的长宽，然后在view onMeasure 的时候，根据设备具体的宽高和原型图的宽高等比缩放，侵入型太强，对于一些自定义View的支持不是很好，而且宽高都缩放，很容易变形。</p>
+<p>方案二：smallestWidth适配，只适配宽度，适配性极好，但是会引入包大小问题，因为要兼容的机型太多了，同时侵入性也有点高，各处都需要引用dp值，不能直接写具体数据，一旦切换方案，也在可接受范围。</p>
+<p>方案三：指定设计原型图大小，依然是按照设计图上的px写dp值，但是不是有一个 <code>px = density * dp</code> 的公式嘛，修改系统的 density 值就好了，侵入性小，应该是目前最好的一种方案。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Android-Framework/"># Android Framework</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2019/09/07/introduce-Java8-lambda/">函数式编程的理解(Java语言)</a>
+            
+            
+            <a class="next" rel="next" href="/2018/10/02/Java%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">Java动态代理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

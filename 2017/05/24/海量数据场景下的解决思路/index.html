@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>海量数据场景下的解决思路 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">海量数据场景下的解决思路</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 24, 2017&nbsp;&nbsp;14:59:38&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">2.8k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p><strong>1.海量日志数据，提取出现次数最多的一条(IP)</strong><br>注意,这里说的是 IP,那么<strong>IP 是有大小范围的</strong>,是 32 位的<br>首先把海量数据放在一个文件中,接下来对已每个 IP 都进行<strong>mod(1000)</strong>,那么这样的话就会产生 1000 个小文件,将海量数据进行了分散,针对这 1000 个文件中的每个小文件,使用 hashMap 进行统计,其中将 IP 作为 key,该条 IP 出现的次数作为 value。这样统计出每个小文件中出现最多的 IP,这样就取到了 1000 个 IP,然后从这 1000 个 IP 中找到出现次数最大的一个。</p>
+<p><strong>2.海量字符串(基于搜索热度),提取出现搜索词最多的十条记录</strong><br>注意,这些海量搜索词中很多是重复的,所以字符串的种类其实并不多,可能只有原来的一半的样子,这时我们使用一个 hashMap 来保存每个字符串的引用和出现次数,内存是可以放的下的,所求是出现次数最多的,然后使用堆排序中的大根堆,找到最大的 10 个。</p>
+<p><strong>3.一个 1G 大小的一个文件，里面每一行是一个词，词的大小不超过 16 字节，内存限制大小是 1M。返回频数最高的 100 个词</strong></p>
+<p>这个题目就没有前一个题目那么幸运了,也许没有很多重复的单词，我们无法将全部内容都读取到内存中,所以需要<strong>分成小文件</strong>;</p>
+<p>1G 大小，每个单词 16 字节，那么一共有 <code>1G/16byte = 2^26</code>个单词</p>
+<p>顺序读取该大文件，对于每个词 x，取 hash(x)%5000，然后按照该值存到 5000 个小文件（记为 x0,x1,…x4999）中(平均每个文件大约 20w 个单词)。这样每个文件大概是 200k 左右(如果单词比较随机的话)。<br>对于每个文件,使用 HashMap 统计每个文件中出现的词以及相应的频率,然后取出每个文件中出现频率最高的 100 个词(用最大堆排好序),这样就得到了 5000*100 个词,放到一个数组中,进行归并排序即可;</p>
+<p><strong>4.有 10 个文件，每个文件 1G，每个文件的每一行存放的都是用户的 query，每个文件的 query 都可能重复。要求按照 query 的频度排序。</strong><br>顺序读取 10 个文件，按照 hash(query)%10 的结果将 query 写入到另外 10 个文件（记为）中。这样新生成的文件每个的大小大约也 1G（假设 hash 函数是随机的）。</p>
+<p>分好这 10 个文件之后,就需要进行着 10 个文件,进行快速&#x2F;堆&#x2F;归并排序按照出现次数进行排序,然后这 10 个文件时排好序的,在对这 10 个文件进行归并排序;<br>​<br>找一台内存在 2G 左右的机器，依次对用 hashMap(query,queryCount)来统计每个 query 出现的次数。利用快速&#x2F;堆&#x2F;归并排序按照出现次数进行排序。将排序好的 query 和对应的 queryCout 输出到文件中。这样得到了 10 个排好序的文件。</p>
+<p><strong>5.给定 a、b 两个文件，各存放 50 亿个 url，每个 url 各占 64 字节，内存限制是 4G，让你找出 a、b 文件共同的 url？</strong><br>遍历文件 a，对每个 url 求取 hash(url)%1000，然后根据所取得的值将 url 分别存储到 1000 个小文件（记为 a0,a1,…,a999）中。这样每个小文件的大约为 300M。</p>
+<p>遍历文件 b，对每个 url 求取 hash(url)%1000，然后根据所取得的值将 url 分别存储到 1000 个小文件（记为 b0,b1,…,b999）中。这样每个小文件的大约为 300M。</p>
+<p>那么接下来针对每一个 ax VS bx 文件（这时可以保证每个如果是相同的 url，都在相同的 ax 或 bx 中）,可以把其中一个小文件的 url 存储到 hashSet 中。然后遍历另一个小文件的每个 url，看其是否在刚才构建的 hashSet 中，如果是，那么就是共同的 url，存到文件里面就可以了。</p>
+<p><strong>6.在 2.5 亿个整数中找出不重复的整数的个数</strong><br>既然是整数,那么整数最多也就是 2^32 个,定义一个 2bit 的标志,00 没有出现过,01,出现一次;10,出现多次;11,无意义;那么整个 2^32<em>2bit 是完全可以在内存中放得下的<br>接下来遍历一次 2.5 亿个数,然后映射到 2bit 中,然后再遍历一次 2^32</em>2bit 的内存空间,只找 01 标志位的;</p>
+<p><strong>7.给 40 亿个不重复的 unsigned int 的整数，没排过序的，然后再给一个数，如何快速判断这个数是否在那 40 亿个数当中？</strong><br>同 6 一样,将这 40 亿个数映射到一个 1bit 的内存中,如果是 0 则没出现过,如果是 1 则出现过;</p>
+<p>方案 2:将这 40 亿个数按照每一位的 0 或 1 来分开：</p>
+<p>2^32 为 40 亿多，所以给定一个数可能在，也可能不在其中；这里我们把 40 亿个数中的每一个用 32 位的二进制来表示假设这 40 亿个数开始放在一个文件中。</p>
+<p>然后将这 40 亿个数分成两类:<br>1.最高位为 0<br>2.最高位为 1<br>并将这两类分别写入到两个文件中，其中一个文件中数的个数&lt;&#x3D;20 亿，而另一个&gt;&#x3D;20 亿（这相当于折半了）；</p>
+<p>与要查找的数的最高位比较并接着进入相应的文件再查找</p>
+<p>再然后把这个文件为又分成两类:<br>1.次最高位为 0<br>2.次最高位为 1<br>​<br>并将这两类分别写入到两个文件中，其中一个文件中数的个数&lt;&#x3D;10 亿，而另一个&gt;&#x3D;10 亿（这相当于折半了）；<br>与要查找的数的次最高位比较并接着进入相应的文件再查找。<br>…….<br>以此类推，就可以找到了,而且时间复杂度为 O(logn)。</p>
+<p><strong>8.海量数据中找出重复次数最多的一个</strong><br>先做 hash，然后<strong>求模映射为小文件</strong>，求出每个小文件中重复次数最多的一个，并记录重复次数。然后找出上一步求出的数据中重复次数最多的一个就是所求（具体参考前面的题）。</p>
+<p> <strong>9.海量数据中找出重复次数最多的 N 个</strong><br>首先还是用 hash 进行分类,假设分成 1k 个组,对这 1k 个组中,分别进行堆排序,找出前 N 个,现在就有 1K*N 个数据,那么接下来就是对这 1K 个组进行归并或者堆排序。</p>
+<p><strong>10.一个文本文件，大约有一万行，每行一个词，要求统计出其中最频繁出现的前 10 个词，请给出思想，给出时间复杂度分析。</strong></p>
+<p>方案 1：这题是考虑时间效率。用<strong>trie 树</strong>统计每个词出现的次数，时间复杂度是<code>O(n*le)</code>（le 表示单词的平均长度）。然后是找出出现最频繁的前 10 个词，可以用堆来实现，前面的题中已经讲到了，时间复杂度是<code>O(n*lg10)</code>。所以总的时间复杂度，是<code>O(n*le)</code>与 O<code>(n*lg10)</code>中较大的哪一个。</p>
+<p>方案 2：先将这 1w 个单词进行 hash（eg：mod 10），分成 1000 个组，每组创建最大堆，维持 10 个元素，然后在对着 1000 个组中的 top10 进行归并，找到前 10 个即停止。</p>
+<p><strong>11.100w 个数中找出最大的 100 个数。</strong><br>在前面的题中，我们已经提到了，用一个含 100 个元素的最大堆完成。复杂度为<code>O(100w*lg100)</code>。或者先分组（组内用堆排序），然后归并，找到前 100 即停止。</p>
+<p>参考：<br><a target="_blank" rel="noopener" href="http://blog.csdn.net/v_july_v/article/details/6279498">十道海量数据处理面试题与十个方法大总结</a><br><a target="_blank" rel="noopener" href="http://taop.marchtea.com/06.02.html">分而治之</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E7%AE%97%E6%B3%95/"># 算法</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/24/Volley%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-%E7%BD%91%E7%BB%9C/">Volley源码解析-网络</a>
+            
+            
+            <a class="next" rel="next" href="/2017/05/23/Volley%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-%E7%BC%93%E5%AD%98/">Volley源码解析-缓存</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

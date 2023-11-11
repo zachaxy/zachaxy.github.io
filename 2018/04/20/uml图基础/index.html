@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>uml图基础 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">uml图基础</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 20, 2018&nbsp;&nbsp;19:36:11&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">659&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">1 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="类"><a href="#类" class="headerlink" title="类"></a>类</h1><ul>
+<li>类名</li>
+<li>属性名</li>
+<li>方法名</li>
+</ul>
+<blockquote>
+<p>属性或方法前面的符号，<code>+</code> 表示public；<code>-</code> 表示private； <code>#</code> 表示protected; <code>~</code> 表示 default,只有同一个包中的类才能访问<br>静态方法或者静态属性用下划线</p>
+</blockquote>
+<h1 id="抽象类"><a href="#抽象类" class="headerlink" title="抽象类"></a>抽象类</h1><p>同 类 的格式是一样的,只不过类名需要用斜体,抽象方法也用斜体</p>
+<h1 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h1><ul>
+<li>接口名</li>
+<li>方法名</li>
+</ul>
+<blockquote>
+<p>其中接口名要用两行,首行固定为<code>&lt;&lt;interface&gt;&gt;</code>,第二行为接口名</p>
+</blockquote>
+<h1 id="类与类之间的继承关系"><a href="#类与类之间的继承关系" class="headerlink" title="类与类之间的继承关系"></a>类与类之间的继承关系</h1><ul>
+<li>空心三角实线,指向父类</li>
+</ul>
+<h1 id="类与接口的实现关系"><a href="#类与接口的实现关系" class="headerlink" title="类与接口的实现关系"></a>类与接口的实现关系</h1><ul>
+<li>空心三角虚线,指向接口</li>
+</ul>
+<h1 id="聚合"><a href="#聚合" class="headerlink" title="聚合"></a>聚合</h1><blockquote>
+<p>聚合(Aggregation)表示一种弱的拥有关系，体现的是A对象可以包含B对象，但B对象不是A对象的一部分。</p>
+</blockquote>
+<ul>
+<li>空心的菱形实线箭头,指向A</li>
+</ul>
+<h1 id="关联"><a href="#关联" class="headerlink" title="关联"></a>关联</h1><blockquote>
+<p>当类A知道另一个类B时，可以用关联(association),是一种拥有的关系;eg:A 中使用了 B; A 中生成了 B; A 向 B 发送消息等都算关联</p>
+</blockquote>
+<ul>
+<li>实线箭头,指向B</li>
+</ul>
+<p>比较常见的一种UML 图中,经常是聚合与关联同时有的,A 和 B 之间,空心菱形指向 A,实线箭头指向 B</p>
+<h1 id="组合"><a href="#组合" class="headerlink" title="组合"></a>组合</h1><blockquote>
+<p> 组合(Composition)是一种强的拥有关系，体现了严格的部分B和整体A的关系，部分B和整体A的生命周期一样。</p>
+</blockquote>
+<ul>
+<li>实心的菱形实线箭头,指向A</li>
+</ul>
+<h1 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h1><blockquote>
+<p>依赖关系(Dependency)，是一种使用关系。多用于局部变量，方法的参数或者对静态方法的调用。要避免双向依赖。</p>
+</blockquote>
+<ul>
+<li>虚线箭头，指向所依赖的类</li>
+</ul>
+<h1 id="连接线的注释说明"><a href="#连接线的注释说明" class="headerlink" title="连接线的注释说明"></a>连接线的注释说明</h1><blockquote>
+<p>有时候在一个类图中光有上面的元素,依然无法清楚的说明类之间的关系,因此可以在连接线上,再伸出一根虚线到旁边,并附带一个折掉右上角的矩形,在该矩形中,添加相关说明</p>
+</blockquote>
+<ul>
+<li>虚线 + 折掉右上角的矩形</li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%B7%A5%E5%85%B7/"># 工具</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/06/02/JVM%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">JVM内存管理</a>
+            
+            
+            <a class="next" rel="next" href="/2018/01/23/TestMusic/">TestMusic</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>如何阅读一本书 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">如何阅读一本书</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">February 11, 2023&nbsp;&nbsp;21:18:56&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">468&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">1 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>相较于之前很随意的读书，读完之后过段时间又忘了，或者没有很好的吸收。我想可能是哪里出了问题。而本书则针对如何阅读提供了方法论，值得一试。多读书，多思考！</p>
+</blockquote>
+<h1 id="阅读的好处"><a href="#阅读的好处" class="headerlink" title="阅读的好处"></a>阅读的好处</h1><ul>
+<li>提升思考力</li>
+<li>延缓心智衰老</li>
+</ul>
+<h1 id="阅读的目的"><a href="#阅读的目的" class="headerlink" title="阅读的目的"></a>阅读的目的</h1><ul>
+<li>娱乐消遣</li>
+<li>获取资讯</li>
+<li>增进理解力⭐️<ul>
+<li>进入学习状态</li>
+</ul>
+</li>
+</ul>
+<h1 id="阅读的技巧"><a href="#阅读的技巧" class="headerlink" title="阅读的技巧"></a>阅读的技巧</h1><h2 id="读书前的四个问题"><a href="#读书前的四个问题" class="headerlink" title="读书前的四个问题"></a>读书前的四个问题</h2><ul>
+<li>整体来说，这本书到底在谈些什么？</li>
+<li>书中的细节，作者是怎么谈的？</li>
+<li>这本书说的有道理吗？是全部的都有道理还是部分有道理？</li>
+<li>这本书跟你自己有什么关系?</li>
+</ul>
+<h2 id="阅读的四个层次"><a href="#阅读的四个层次" class="headerlink" title="阅读的四个层次"></a>阅读的四个层次</h2><h3 id="基础阅读"><a href="#基础阅读" class="headerlink" title="基础阅读"></a>基础阅读</h3><h3 id="检视阅读：粗读"><a href="#检视阅读：粗读" class="headerlink" title="检视阅读：粗读"></a>检视阅读：粗读</h3><ul>
+<li>目的：提高阅读速度</li>
+<li>原则：不是每本书每个章节都值得阅读</li>
+<li>系统略读<ul>
+<li>1.书名、序言和副标题</li>
+<li>2.目录和索引</li>
+<li>3.作者简介</li>
+</ul>
+</li>
+<li>快速通读<ol>
+<li>略读感兴趣或者和书名主题相关的篇章</li>
+<li>头到尾翻一遍，不求甚解</li>
+</ol>
+</li>
+</ul>
+<h3 id="分析阅读：精读"><a href="#分析阅读：精读" class="headerlink" title="分析阅读：精读"></a>分析阅读：精读</h3><ul>
+<li>方式<ul>
+<li>为这本书写一句话梗概或摘要</li>
+<li>使用思维导图做结构笔记或者重拟目录</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li><p>了解范围</p>
+<ol>
+<li>确定本书主题和分类</li>
+<li>叙述整本书内容，罗列重点章节</li>
+<li>明确本书结构</li>
+</ol>
+</li>
+<li><p>理解内容</p>
+<ol>
+<li>书中反复出现的关键词，做标记，主动思考作者的表述框架</li>
+</ol>
+</li>
+<li><p>评价本书</p>
+<ol>
+<li>有评论，有态度</li>
+<li>不同意作者看法，总结原因</li>
+</ol>
+</li>
+</ol>
+<h3 id="主题阅读"><a href="#主题阅读" class="headerlink" title="主题阅读"></a>主题阅读</h3><ul>
+<li>主动设立目标，为解决具体问题主动读书</li>
+<li>针对该主题构建出相对完备的知识体系</li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"># 读书笔记</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2022/12/24/%E4%BB%8E%E8%B5%84%E6%B7%B1%E5%B7%A5%E7%A8%8B%E5%B8%88%E8%BA%AB%E4%B8%8A%E5%AD%A6%E4%B9%A0%E7%9A%84%E8%BF%9B%E9%98%B6%E6%96%B9%E6%B3%95%E8%AE%BA/">从资深工程师身上学习的进阶方法论</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

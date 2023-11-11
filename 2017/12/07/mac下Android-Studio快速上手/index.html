@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>mac下Android Studio快速上手 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">mac下Android Studio快速上手</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 7, 2017&nbsp;&nbsp;16:05:15&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">2.1k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">2 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="常用快捷键"><a href="#常用快捷键" class="headerlink" title="常用快捷键"></a>常用快捷键</h1><table>
+<thead>
+<tr>
+<th>功能</th>
+<th>快捷键</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>深度搜索</td>
+<td>shift + shift</td>
+</tr>
+<tr>
+<td>查找类</td>
+<td>cmd + o</td>
+</tr>
+<tr>
+<td>查找当前方法</td>
+<td>cmd + fn + f12</td>
+</tr>
+<tr>
+<td>查找当前单词</td>
+<td>cmd + f</td>
+</tr>
+<tr>
+<td>全局搜索</td>
+<td>cmd + shift + f</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>格式化代码</td>
+<td>cmd + opt + l</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>快速插入下一行</td>
+<td>shift + enter</td>
+</tr>
+<tr>
+<td>快速补全行末分号</td>
+<td>cmd + shift + enter</td>
+</tr>
+<tr>
+<td>基础代码补全</td>
+<td>ctl + space</td>
+</tr>
+<tr>
+<td>万能键(导入包，自动修改等)</td>
+<td>alt + enter</td>
+</tr>
+<tr>
+<td>删除不用的 import 包</td>
+<td>ctl + opt + o</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>快速移动一行</td>
+<td>cmd + shift + 上下方向键</td>
+</tr>
+<tr>
+<td>选中单词</td>
+<td>opt + 方向键上</td>
+</tr>
+<tr>
+<td>列编辑</td>
+<td>opt + 鼠标选择</td>
+</tr>
+<tr>
+<td>快速移动到错误处</td>
+<td>fn + f2</td>
+</tr>
+<tr>
+<td>快速回到上一个浏览界面</td>
+<td>cmd + opt + &lt;-&#x2F;-&gt;</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>重写方法</td>
+<td>ctl + o</td>
+</tr>
+<tr>
+<td>创建构造方法</td>
+<td>cmd + n</td>
+</tr>
+<tr>
+<td>显示当前类的层次结构</td>
+<td>crl + h</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>翻译(需要安装ECTranslation插件)</td>
+<td>ctl + l</td>
+</tr>
+</tbody></table>
+<p><a target="_blank" rel="noopener" href="http://blog.csdn.net/qq_35246620/article/details/53992312">win 和 mac 在 idea 中快捷键的对比</a></p>
+<h1 id="书签功能"><a href="#书签功能" class="headerlink" title="书签功能"></a>书签功能</h1><p>每当我们查看工程较大的源码时,难免会在数十个个文件中跳来跳去,一会就跳晕了,好在 Android Studio 提供了书签功能,相信熟练了该用法后,肯定就离不开了.</p>
+<p>两种书签：</p>
+<ul>
+<li>匿名书签：无限个</li>
+<li>具名书签：署签名为0<del>9或者A</del>Z间的一个字符作为助记符，因此数量有限</li>
+</ul>
+<h2 id="win-环境"><a href="#win-环境" class="headerlink" title="win 环境"></a>win 环境</h2><p><strong>添加书签</strong>: 鼠标所在行，按 <code>F11</code>，则添加一个匿名书签，在按<code>F11</code>，取消；如果想添加具名书签，则在光标所在行按<code> ctrl + F11</code>，然后会弹出<code>0~9</code>或者<code>A~Z</code>的<strong>助记符</strong>选项，点击即可</p>
+<p><strong>显示所有书签</strong>:<code>shift + F11</code></p>
+<p><strong>书签之间的切换</strong>:</p>
+<p>如果是匿名书签，只能点 <code>shift + F11</code> 查看所有书签，然后选择</p>
+<p>如果是具名书签，那么只需要 <code>ctrl + 助记符</code>则直接跳转到对应书签</p>
+<h2 id="mac-环境"><a href="#mac-环境" class="headerlink" title="mac 环境"></a>mac 环境</h2><p><strong>添加书签</strong>：鼠标所在行，按 <code>Fn + F3</code>，则添加一个匿名书签，再按<code>Fn + F3</code>，取消；如果想添加具名书签，则在光标所在行按 <code>opt + Fn + F3</code>，然后会弹出<code>0~9</code>或者<code>A~Z</code>的<strong>助记符</strong>选项，点击即可</p>
+<p><strong>显示所有书签</strong>:<code>cmd + Fn + F3</code></p>
+<p><strong>书签之间的切换</strong>:</p>
+<p>如果是匿名书签，只能点 <code>cmd + Fn + F3</code> 查看所有书签，然后选择</p>
+<p>如果是具名书签，那么只需要 <code>ctrl + 助记符</code>则直接跳转到对应书签</p>
+<h1 id="新建文件时的注释模板配置"><a href="#新建文件时的注释模板配置" class="headerlink" title="新建文件时的注释模板配置"></a>新建文件时的注释模板配置</h1><p><code>File–&gt;Settings–&gt;Editor–&gt;File and code Template</code></p>
+<p>选择右侧的 include 标签 ,打开 File Header , 按照提示添加对应的注释.</p>
+<p>上面只是为新建的 Java 文件添加头部的注释,关于作者,创建时间, copyright 等,还有一种使用场景是新添加方法时的注释.可以参考<a target="_blank" rel="noopener" href="http://www.jianshu.com/p/a85062562cd7">Android Studio 配置系列（一）：自定义代码注释</a></p>
+<h1 id="常用的几个插件"><a href="#常用的几个插件" class="headerlink" title="常用的几个插件"></a>常用的几个插件</h1><ul>
+<li>Alibaba Java Coding Guidelines:代码规范检查</li>
+<li>CodeGlance: 右侧显示代码大纲</li>
+<li>ECTranslation: 取词翻译,安装后建议在快捷键设置中搜索 translation, 然后修改快捷键,mac 中使用的是 <code>ctr + l</code></li>
+</ul>
+<h1 id="关闭-instance-run"><a href="#关闭-instance-run" class="headerlink" title="关闭 instance run"></a>关闭 instance run</h1><p>貌似目前问题还比较多,在  <code>preference -&gt; Build,Execution -&gt; instance run</code> 下关闭即可.</p>
+<h1 id="mac-连接真机调试"><a href="#mac-连接真机调试" class="headerlink" title="mac 连接真机调试"></a>mac 连接真机调试</h1><ol>
+<li>配置 adb 环境变量，找到 Android SDK 的位置，一般在：<code>~/Library/Android/sdk/</code><br>  将下面两个路径添加到当前 shell 的配置文件的末尾，因为我将当前的 shell 换成了 zsh，因此我的配置文件时 ~&#x2F;.zshrc</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export PATH=$&#123;PATH&#125;:~/Library/Android/sdk/platform-tools</span><br><span class="line">export PATH=$&#123;PATH&#125;:~/Library/Android/sdk/tools</span><br></pre></td></tr></table></figure>
+
+<p>记得 source ~&#x2F;.zshrc<br>然后通过 adb version 命名查看是否配置成功！</p>
+<ol start="2">
+<li><p>将手机连接到 mac 上，在终端输入 <code>system_profiler SPUSBDataType</code>，查看手机的信息；<br>  对应的输出可能有很多，我们只需要找包含 <code>Serial Number</code> 的那一组数据，找到该组数据的 <code>Product ID</code>对应的16进制数。<br>  然后打开 <code>~/.android/adb_usb.ini</code>，如果没有，则先创建该文件，并将<code>Product ID</code>对应的16进制数据写入该文件即可。</p>
+</li>
+<li><p>重启 adb<br>  <code>adbkill-server</code></p>
+</li>
+<li><p>重新连接手机即可使用</p>
+</li>
+<li><p>经过以上配置，以后如果还想调试其它手机，那么只需要将该手机的 <code>Product ID</code> 写入到 adb_usb.ini 文件中即可。</p>
+</li>
+</ol>
+<h1 id="adb-server无法启动"><a href="#adb-server无法启动" class="headerlink" title="adb server无法启动"></a>adb server无法启动</h1><p>在使用<code>adb shell</code>命令时，可能会遇到端口占用，无法启动adb server的问题。adb server使用的端口是5037，所以这时候可以列出使用5.07端口的进程，，然后杀掉占用5037端口的进程，再重新启动adb server</p>
+<ol>
+<li><code>netstat -ano | findstr &quot;5037&quot;  </code>,eg:找到的端口号是xxxx</li>
+<li><code>TASKLIST | findstr &quot;xxxx&quot;</code></li>
+<li><code>adb shell</code></li>
+</ol>
+<p>目前已知会占用5037的服务有：金山毒霸，酷狗音乐，qq音乐等，这些软件有一个共同的特点：手机连接上电脑时，这些软件都会监听到。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%B7%A5%E5%85%B7/"># 工具</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/08/Groovy%E5%AF%B9%E8%B1%A1%E5%92%8CMOP/">Groovy对象和MOP</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/06/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E9%97%AD%E5%8C%85%E4%B8%AD%E7%9A%84%E5%A7%94%E6%89%98/">深入理解闭包中的委托</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

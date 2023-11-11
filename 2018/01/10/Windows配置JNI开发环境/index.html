@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Windows配置JNI开发环境 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Windows配置JNI开发环境</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 10, 2018&nbsp;&nbsp;20:06:54&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">1.7k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">2 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="JNI-简介"><a href="#JNI-简介" class="headerlink" title="JNI 简介"></a>JNI 简介</h1><p>JNI：Java Native Interface。<br>当 JDK 所提供的 API 无法满足当前应用的需求时,就要调用 native interface。我们知道 Java 程序跨平台是有前提的，其并不是直接运行时操作系统上的，而是运行在 Java 虚拟机上的，我们平时调用的 JDK 中的 api 是基于 JVM 实现的,但是有一些情况下,这些 api 不能满足我们对性能的要求，那么就需要调用更为底层的语言来解决效率问题。所谓底层语言，一般是说 c&#x2F;c++，这类语言是可以直接和操作系统的内存做交互的，所以在效率上更加高效。</p>
+<span id="more"></span>
+
+<p>为了能都调用 c&#x2F;c++这些底层的语言的接口，Java 提供了 JNI 机制,用来调用动态链接库。我们只需要在对应平台上将 c&#x2F;c++打包成动态链接库，上层的 Java 就可以通过 JNI 调用动态链接库中的接口了。<br>不同操作系统上，动态链接库的表现形式也是不同的，</p>
+<ul>
+<li>window：dll 文件</li>
+<li>linux：so 文件</li>
+<li>mac：framework 文件</li>
+</ul>
+<p>原始的 c 文件都是相同的，只不过由于平台不同，其打包成的动态链接库文件的格式也是不同的。</p>
+<p>我们的目的是尽快熟悉 JNI 开发流程，而并不关心动态链接库的内部，同时，我们也不想花大把时间在配置上，所以在 window 平台上，下面所提供的方法是最简单省事的，记住我们的目标学习 JNI，不要在其它事情上花费太多时间。其实在 linux 平台上，都不需要搭建这些环境的。</p>
+<h1 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h1><p>前提是你的电脑必须是 windows-64bit，否则下面的配置并不适合你！（现在应该没有开发还用 32bit 了吧）</p>
+<h2 id="下载所需的软件"><a href="#下载所需的软件" class="headerlink" title="下载所需的软件"></a>下载所需的软件</h2><ol>
+<li><a target="_blank" rel="noopener" href="http://www.codeblocks.org/downloads/26">codeblocks-16.01mingw-setup.exe</a>，版本号无所谓，但是一定要带 mingw 版本的，因为这样就不用我们自己配置编译器了</li>
+<li><a target="_blank" rel="noopener" href="https://sourceforge.net/projects/mingw-w64/">mingw64</a></li>
+</ol>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>对于 codeblocks，一路 next 安装即可。<br>对于 mingw64，在安装时则需要特别注意，弹出安装界面后，会有一个设置界面：</p>
+<table>
+<thead>
+<tr>
+<th>Settings</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Version</td>
+<td>…</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td>X86_64</td>
+</tr>
+<tr>
+<td>Thread</td>
+<td>posix</td>
+</tr>
+<tr>
+<td>Exception</td>
+<td>seh</td>
+</tr>
+<tr>
+<td>Build version</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<p>注意这里的 Architecture 一定要选 X86_64，其它默认就好。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>打开 codeblocks，点击菜单中 settings-&gt;compiler，在这个窗口中，选择 toolchain excutables，在 compiler’s installation directory 一栏选择前面 mingw64 的安装路径。下面的 program files 的选择依照图示即可。</p>
+<p><img src="http://img.blog.csdn.net/20180105175637924?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvWmFjaGF4eQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="codeblocks 配置 compiler"></p>
+<p>图示的配置是一种可行的方法，同时可以尝试如下配置：</p>
+<table>
+<thead>
+<tr>
+<th>program files</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C compiler</td>
+<td>x86_64-w64-mingw32-gcc.exe</td>
+</tr>
+<tr>
+<td>C++ compiler</td>
+<td>x86_64-w64-mingw32-g++.exe</td>
+</tr>
+<tr>
+<td>Linker for dynamic libs</td>
+<td>x86_64-w64-mingw32-g++.exe</td>
+</tr>
+<tr>
+<td>Linker for static libs</td>
+<td>x86_64-w64-mingw32-gcc-ar.exe</td>
+</tr>
+<tr>
+<td>Debuger</td>
+<td>default</td>
+</tr>
+<tr>
+<td>Resource compile</td>
+<td>windres.exe</td>
+</tr>
+<tr>
+<td>make programe</td>
+<td>mingw32-maker.exe</td>
+</tr>
+</tbody></table>
+<h2 id="设置调试器"><a href="#设置调试器" class="headerlink" title="设置调试器"></a>设置调试器</h2><p>这一步并不是必须的，但是如果你写的 c 代码出了问题，那么就需要调试了。</p>
+<p>打开 codeblocks，点击菜单中 settings-&gt;debugger，点击窗口左边的 gdb&#x2F;cdb debugger，然后选择 create congfig，新建一个 mingw64 的 debugger ，这个 debugger 是我们自定义的，自己取个名字好了，同时将 debugger type 设置为 GDB，并指定该 debugger 的路径，将 executable path 设置到上面安装的 mingw64 的 bin 目录里的 gdb.exe 。点 OK 然后回到 compiler 设置菜单里，把 debugger 设置为新建的 gdb 。</p>
+<p>至此，window 下 JNI 的开发环境就搭建成功了。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/JNI/"># JNI</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2018/01/10/JNI%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B/">JNI开发流程</a>
+            
+            
+            <a class="next" rel="next" href="/2018/01/04/%E6%89%8B%E5%86%99JVM%E7%B3%BB%E5%88%97-13-%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E6%9C%BA%E5%88%B6/">手写JVM系列(13)-方法调用机制</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

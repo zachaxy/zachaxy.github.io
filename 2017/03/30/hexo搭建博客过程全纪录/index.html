@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>hexo搭建博客过程全纪录 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+            <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">hexo搭建博客过程全纪录</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 30, 2017&nbsp;&nbsp;17:30:53&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><ol>
+<li><p>安装<a target="_blank" rel="noopener" href="https://nodejs.org/en/download/">Node.js</a>一路next即可</p>
+</li>
+<li><p>安装<a target="_blank" rel="noopener" href="http://git-scm.com/download/">git</a>,一路next即可</p>
+</li>
+<li><p>注册github账号,这个步骤就不说了吧…</p>
+</li>
+<li><p>生成ssh key(这一步非必须)</p>
+<ol>
+<li><p>检测之前是否有生成过ssh没</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd  ~/.ssh   //注意 ~/.ssh之间没有空格</span><br></pre></td></tr></table></figure>
+
+<p>如果提示：<code>No such file or directory</code> 说明你还未生成<code>ssh key</code></p>
+</li>
+<li><p>生成新的ssh key</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ssh-keygen -t rsa -C &quot;邮件地址@youremail.com&quot;  //这个邮箱地址就是你注册github使用的邮箱</span><br><span class="line">Generating public/private rsa key pair.</span><br><span class="line">Enter file in which to save the key (/c/Users/xxx/.ssh/id_rsa):</span><br></pre></td></tr></table></figure>
+
+<p>第三行是在询问你将生成的ssh key放在哪里默认是你的用户目录,这里直接回车就好</p>
+</li>
+<li><p>接下来或让你创建一个密码,并再次确认</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Created directory &#x27;/c/Users/zhangxin/.ssh&#x27;.</span><br><span class="line">Enter passphrase (empty for no passphrase):</span><br><span class="line">Enter same passphrase again:</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>添加 ssh key 到 github</p>
+<p>打开本地<code>/c/Users/zhangxin/.ssh</code>,你的肯定不是我这个文件,改成你在是第二步保存的文件位置,将<code>id_rsa.pub</code>文件用记事本打开,将此文件里面内容为刚才生成人密钥。如果看不到这个文件，你需要设置显示隐藏文件。复制这个文件的内容,登陆你的github,点击右上角头像处的下拉列表 <code>Settings—&gt;SSH and GPG keys —&gt; 右上角 New SSH key</code>,把你本地生成的密钥复制到里面（key文本框中）， 点击<code>add key</code>就 ok 了.同时你也可以设置title用来为这个 key 做一个标示,因为我们很可能在多台电脑上都写博客并推送,不同的电脑需要按照相同的步骤,当然生成的ssh key是不同的,如果你需要同时在另一台电脑上工作,就需要把另一台电脑的ssh key 也添加到你的github中,title所以,你自己可以区分开就好,比如单位的,用一个<code>work</code>,在家的用一个<code>home</code>,随你喜欢.</p>
+</li>
+<li><p>测试 ssh 是否正确设置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ ssh -T git@github.com</span><br><span class="line"></span><br><span class="line">The authenticity of host &#x27;github.com (207.97.227.239)&#x27; can&#x27;t be established.</span><br><span class="line">RSA key fingerprint is 16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48.</span><br><span class="line">Are you sure you want to continue connecting (yes/no)?</span><br><span class="line"></span><br><span class="line">//这一步输入yes</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">Hi cnfeat! You&#x27;ve successfully authenticated, but GitHub does not provide shell access.</span><br></pre></td></tr></table></figure>
+
+<p>如果正常的话,就是显示这些内容了.</p>
+</li>
+</ol>
+</li>
+<li><p>设置用户信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git config --global user.name &quot;userName&quot;             //你的用户名,要加双引号的啊</span><br><span class="line">$ git config --global user.email  &quot;userName@xxx.com&quot;  //填写自己的邮箱 ,也要加双引号的啊</span><br></pre></td></tr></table></figure>
+
+<p>查看用户设置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git config --list</span><br></pre></td></tr></table></figure>
+
+<p>​</p>
+</li>
+</ol>
+<h1 id="建立博客"><a href="#建立博客" class="headerlink" title="建立博客"></a>建立博客</h1><ol>
+<li><p>登陆 github ,创建一个新的仓库,名字叫做 <code>xxx.github.io</code>,这里xxx要换成你的 github 的用户名,点击「Create Repository」 完成创建。</p>
+</li>
+<li><p>创建一个文件夹来保存你写的博客,例如在 E 盘下创建文件夹 <code>blogs</code></p>
+</li>
+<li><p>进入该文件夹,鼠标右键,打开<code>git bash</code></p>
+</li>
+<li><p>安装<code>hexo</code>,在bash中输入<code>npm install -g hexo</code></p>
+</li>
+<li><p><code>bash</code>中进入<code>bolgs</code>文件夹下,<code>cd E:/blogs</code></p>
+</li>
+<li><p>输入<code>hexo init</code></p>
+</li>
+<li><p>现在已经搭建起来一个本地博客了 , 输入以下命令验证</p>
+<p><code>$ hexo g</code> -生成</p>
+<p><code>$ hexo s</code> -启动服务本地预览 </p>
+<p>然后到浏览器输入localhost:4000进行预览(ctrl + c 停止本地预览)</p>
+<p>​</p>
+<p>​</p>
+</li>
+</ol>
+<h1 id="更换主题"><a href="#更换主题" class="headerlink" title="更换主题"></a>更换主题</h1><p>   目前使用的是<code>hexo</code>默认的主题,其实也很好看的,如果你不喜欢,可以更换主题,这里推荐<code>jacman</code>,</p>
+<ol>
+<li><p>下载主题</p>
+<p>将主题下载到<code>blogs/theme</code>目录下在<code>bash</code>中执行<code> git clone https://github.com/wuchong/jacman.git E:/blogs/themes/jacman</code></p>
+</li>
+<li><p>更换主题</p>
+<p>修改<code>blogs</code>目录下的config.yml配置文件中的theme属性，将其设置为jacman</p>
+</li>
+<li><p>启用主题</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hexo clean --因为主题换了 你需要clean以下老主题生成的缓存</span><br><span class="line">cd themes/jacman</span><br><span class="line">git pull</span><br><span class="line">hexo g   --生成</span><br><span class="line">hexo s   --启动本地预览</span><br></pre></td></tr></table></figure>
+
+<p>​</p>
+</li>
+</ol>
+<h1 id="上传博客"><a href="#上传博客" class="headerlink" title="上传博客"></a>上传博客</h1><p>经过上面的步骤之后,就可以开始写博客并上传到github上了,步骤如下:</p>
+<ol>
+<li>进入到<code>blogs</code>文件加下,运行<code>hexo n &quot;博客文件名&quot;</code></li>
+<li>找到<code>blogs/source/_posts/xxx</code>其中xxx是第一步新键的博客文件名,默认为<code>.md文件</code></li>
+<li>打开该文件,书写博客,保存</li>
+<li><code>执行 ./ok.sh</code>,中间可能会遇到让你输入用户名和密码的情况,输入即可.（关于ok.sh，请看下面的快捷部署）</li>
+</ol>
+<h1 id="快捷部署"><a href="#快捷部署" class="headerlink" title="快捷部署"></a>快捷部署</h1><ol>
+<li><p>进入之前创建的 blogs 的根目录 接着操作以下命令</p>
+<p><code>$ cd blogs</code></p>
+<p>注意 1：现在我们需要clone我们自己的GitHub仓库了</p>
+<p>注意 2：切记下面是<strong>你自己的仓库名</strong> , 把名字都改过来 , 下面我用的是我的仓库名字</p>
+<p><code>$ git clone https://github.com/zachaxy/zachaxy.github.io.git .deploy/zachaxy.github.io</code></p>
+<p>翻译下这条命令的意思</p>
+<p>将我们之前创建的GitHub 仓库克隆到本地 , 命令会新建一个目录叫做.deploy用于存放克隆的代码。</p>
+<p>然后会在.deploy文件夹下生成一个 <strong>你的名字.github.io</strong> 的文件夹用于存放文件</p>
+</li>
+<li><p>接着在 Hexo <strong>根目录</strong>下创建一个 .txt 文件 , 把下面的命令复制进去</p>
+</li>
+<li><p>注意 ：<strong>你的GitHub名字</strong>是什么就<strong>把你的名字全部改到下面</strong> , 细心点。稍微解释一下下面的命令，在部署文章之前，我们肯定已经使用 <code>hexo n &quot;xxx&quot; </code>产生了一个xxx.md的文件，并书写完博客了，那么接下来这个第一行就是生成博客对应的html文件等，这些文件都放在 <code>hexo/public</code> 路径下；第二条指令是将 <code>public</code> 下的所有文件 拷贝到 本地的<code>.deploy/zachaxy.github.io</code> 路径下（相同文件会覆盖）；第三条指令，进入<code>.deploy/zachaxy.github.io</code>路径；接下来第四条到第六条指令，就是普通的提交命令，不在解释。</p>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">hexo generate</span><br><span class="line">cp -R public/* .deploy/zachaxy.github.io</span><br><span class="line">cd .deploy/zachaxy.github.io</span><br><span class="line">git add .</span><br><span class="line">git commit -m  &quot;update&quot;</span><br><span class="line">git push origin master</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>将这个 <strong>.txt 文件的后缀改成 .sh</strong> , 它就变成了脚本文件 , 我们就将文件改成 <strong>ok.sh</strong> 。</li>
+<li>从此以后需要部署本地博客到 GitHub , 在 hexo 根目录下，直接<code>./ok.sh</code> , 会弹出提示 , 需要输入 GitHub 的用户名跟密码 , 按提示输入自己的用户名和密码即可</li>
+</ol>
+<h1 id="jacman配置"><a href="#jacman配置" class="headerlink" title="jacman配置"></a>jacman配置</h1><p><a target="_blank" rel="noopener" href="https://smartbeng.github.io/2017/03/26/blogFinish/">最适合新手的 GitHub + Hexo 「大话」博客搭建教程</a></p>
+<p><a target="_blank" rel="noopener" href="http://whatbeg.com/2017/04/13/hexosomeopt.html">Hexo新的一些优化</a></p>
+<p> [<a target="_blank" rel="noopener" href="http://kubicode.me/2016/03/18/Hexo/The-Trick-about-Hexo-Support-MutliLine-Equation-using-Mathjax/">小技巧]让Hexo在使用Mathjax时支持多行公式</a></p>
+<p><a target="_blank" rel="noopener" href="http://kubicode.me/2016/03/16/Hexo/Fix-Hexo-Bug-In-Mathjax/">修复Hexo写Mathjax公式多个下标失效的问题</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/6c1196f12302">用 Hexo 搭建个人博客-02：进阶试验</a></p>
+<p> <a target="_blank" rel="noopener" href="http://whatbeg.com/2016/09/17/hexo-migrate.html">Hexo部署环境迁移–多台电脑搭建Hexo环境</a></p>
+<p> <a target="_blank" rel="noopener" href="http://lowrank.science/Hexo-Migration/">多机更新 Hexo 博客</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%B7%A5%E5%85%B7/"># 工具</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/03/31/%E5%AE%8C%E5%85%A8%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">完全背包问题</a>
+            
+            
+            <a class="next" rel="next" href="/2017/03/30/01%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98/">01背包问题</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

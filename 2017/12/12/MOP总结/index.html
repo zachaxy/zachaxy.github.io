@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>MOP总结 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">MOP总结</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 12, 2017&nbsp;&nbsp;8:57:42&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">2 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>之前介绍了基于 MOP的技术：</p>
+<ul>
+<li><a href="https://zachaxy.github.io/2017/12/09/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%8B%A6%E6%88%AA/">MOP——方法拦截</a></li>
+<li><a href="https://zachaxy.github.io/2017/12/10/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%B3%A8%E5%85%A5/">MOP——方法注入</a></li>
+<li><a href="https://zachaxy.github.io/2017/12/11/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E5%90%88%E6%88%90/">MOP——方法合成</a></li>
+</ul>
+<p>接下来对 MOP 的这三种技术的使用做一个汇总</p>
+<span id="more"></span>
+
+
+<h1 id="在运行时创建类。"><a href="#在运行时创建类。" class="headerlink" title="在运行时创建类。"></a>在运行时创建类。</h1><p>经过之前的讲解，我们可以发现，正是 MOP 的出现，使得 Groovy 变得非常灵活，可以改变已有类的结构，拦截或添加方法等，这为我们的开发工作提供了极大的便利性。既然可以扩展已有的类，那么我们也可以借助 MOP 来动态的创建一个类。这里需要借助 MOP 为我们提供的而一个类——Expando 类。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">man = <span class="keyword">new</span> Expando()</span><br><span class="line">man.name = <span class="string">&#x27;zx&#x27;</span></span><br><span class="line">man.age = <span class="number">18</span></span><br><span class="line">man.work = &#123; <span class="string">&quot;working&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line">println man</span><br><span class="line">println man.work()</span><br></pre></td></tr></table></figure>
+
+<p>Expando 像是一个可以容纳任何属性的类，我们可以为其添加任意的属性，任意的方法(以闭包的形式)，其实无论是属性，还是闭包，都被保存在 Expand 中的 Map 中，key 对应属性\闭包名，value 对应属性值，或者闭包体</p>
+<h1 id="关于拦截-注入-合成"><a href="#关于拦截-注入-合成" class="headerlink" title="关于拦截&#x2F;注入&#x2F;合成"></a>关于拦截&#x2F;注入&#x2F;合成</h1><p>经过之前三篇的学习，我们了解到，无论是拦截，注入，还是合成。每种技术都有若干实现方式。但是都不可避免的用到 MetaClass 这个类。拦截时，向其中注入了 invokeMethod 方法；合成时，向其中注入了 methodMissing 方法。注入的都是闭包，但是调用时如果找不到对应的方法，那么就会从闭包中找对应的名字，同时闭包的参数要和对应的方法相同。</p>
+<ul>
+<li>对于拦截，如果我们能修改类，就实现 GroovyInterceptable 接口，并实现 invokeMethod 方法；否则就在 ClassName.metaClass 上注入 invokeMethod</li>
+<li>对于合成，如果我们能修改类，就在类中重写 methodMissing 方法；否则就在 ClassName.metaClass 上注入 methodMissing</li>
+<li>对于注入，如果注入的方法在之前的类中已经实现过了，同时又在 ClassName.metaClass 上进行了注入，那么 metaClass 上的方法会优先执行。</li>
+</ul>
+<p>相信到这里在看这幅图应该更容易理解：<br><img src="http://docs.groovy-lang.org/next/html/documentation/assets/img/xGroovyInterceptions.png.pagespeed.ic.lQZRl0FSbC.webp" alt="Groovy interception mechanism"></p>
+<h1 id="一个综合应用"><a href="#一个综合应用" class="headerlink" title="一个综合应用"></a>一个综合应用</h1><p>之前将的 MOP 的三大技术是分开来讲的，现在把这三个技术融合起来，实现这样一个场景，对于一个类，我们调用其方法，如果存在，就执行其本身的方法，如果不存在就进行方法合成。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Man</span> &#123;</span><br><span class="line">	<span class="keyword">def</span> work()&#123;</span><br><span class="line">		<span class="string">&quot;I can work&quot;</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Man.metaClass.invokeMethod = &#123;</span><br><span class="line">	String name,args -&gt;</span><br><span class="line">		<span class="keyword">def</span> method = Man.metaClass.getMetaClass(name,args)</span><br><span class="line">		<span class="keyword">if</span>(method)&#123;</span><br><span class="line">			method.invoke(delegate,args)</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">			Man.metaClass.invokeMissingMethod(delegate,name,args)</span><br><span class="line">			<span class="comment">//或者执行下面的方法，metaClass 中如果没有 invokeMethod 方法，那么会调用 metaClass 中的 methodMissing 方法，但是不如上面直接调用来的直观</span></span><br><span class="line">			<span class="comment">//Man.metaClass.invokeMethod(delegate,name,args)</span></span><br><span class="line">		&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Man.metaClass.methodMissing = &#123;</span><br><span class="line">	String name,args -&gt;</span><br><span class="line">    <span class="keyword">def</span> skills = [<span class="string">&quot;run&quot;</span>,<span class="string">&quot;sing&quot;</span>,<span class="string">&quot;dance&quot;</span>,<span class="string">&quot;talk&quot;</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (skills.contains(name))&#123;</span><br><span class="line">    	<span class="keyword">def</span> impl = &#123;</span><br><span class="line">    		Object[] vars -&gt;</span><br><span class="line">         <span class="string">&quot;I can &quot;</span> + name</span><br><span class="line">    	&#125;</span><br><span class="line"></span><br><span class="line">    	Man.metaClass.<span class="string">&quot;$name&quot;</span> = impl</span><br><span class="line"></span><br><span class="line">    	impl(args)</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    	<span class="keyword">throw</span> <span class="keyword">new</span> MissingMethodException(name,Man.<span class="keyword">class</span>,args)</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，首先使用拦截技术，将所有的方法调用拦截住(MetaClass 注入 invokeMethod 方法)，然后分析本类是否可以执行该方法，如果可以路由给原本的方法，如果不可以那么执行合成(MetaClass 注入 methodMissing 方法)。</p>
+<p>这里注意到一个细节：我们在方法合成之后，先将合成的方法注入到 MetaClass 中，这样在第二次调用的时候，就不会在此合成了，而是直接调用，大大提高的执行效率</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Groovy/"># Groovy</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/13/Groovy%E4%B8%8EDSL/">Groovy与DSL</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/11/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E5%90%88%E6%88%90/">MOP——方法合成</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

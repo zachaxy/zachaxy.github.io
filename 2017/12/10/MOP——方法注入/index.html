@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>MOP——方法注入 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">MOP——方法注入</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 10, 2017&nbsp;&nbsp;11:45:09&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">4.1k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">4 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>前面<a href="https://zachaxy.github.io/2017/12/09/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%8B%A6%E6%88%AA/">MOP——方法拦截</a>介绍了利用 MOP 对方法的调用进行拦截，接下来要介绍利用 MOP 实现方法的注入。</p>
+<h1 id="方法拦截和方法注入的区别"><a href="#方法拦截和方法注入的区别" class="headerlink" title="方法拦截和方法注入的区别"></a>方法拦截和方法注入的区别</h1><p>拦截：侧重对于<strong>已有的方法</strong>的调用进行拦截<br>注入：对一个已有的类<strong>添加新方法</strong>，以拓展该类的功能。</p>
+<p>eg：Java 中提供了 String 的类，如果我们想扩展该类，为其提供一个字符串加密方法。在 Java 中，最常见的做法是提供一个接口，内有 encrypt() 方法，让目标类实现该接口；或者继承该类，然后添加一个 encrypt() 方法。但是这里存在的问题是：我们未必可以修改想要扩展的类，就像 String，还是 final 的，只能用，不能改。</p>
+<p>不过使用 Groovy，就可以方便的为任何类扩展方法，同时在使用起来，给人的感觉就好像注入的类是该类本身就有的。</p>
+<p>MOP 的注入有四种实现方式：</p>
+<ol>
+<li>分类(Category)</li>
+<li>ExpandoMetaClass</li>
+<li>Minxin</li>
+<li>trait</li>
+</ol>
+<span id="more"></span>
+
+<h1 id="使用分类进行方法注入"><a href="#使用分类进行方法注入" class="headerlink" title="使用分类进行方法注入"></a>使用分类进行方法注入</h1><p>第一次接触 Category 的概念是在学习 Objective-C 的时候，只要自定义一个和目标类相同的类，然后在自定义类中添加方法，那么在方法调用时，会先从自定义的类中查找，找不到后再去原本的类中查找。这样一来不仅可以扩展类的方法，同时还可以覆盖原有类的方法。Objective-C 中 Category 感觉是最优雅的方式了。而 Groovy 中的 Category 就逊色的多，接下来看一下 Groovy 中 Category 的使用方法，这里以向 String 中添加一个 encrypt 方法为例。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">StringUtils</span> &#123;</span><br><span class="line">    <span class="keyword">def</span> <span class="keyword">static</span> encrypt(String self) &#123;</span><br><span class="line">        <span class="type">byte</span>[] arr = self.bytes;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            arr[i] = (<span class="number">127</span> - arr[i])</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> String(arr)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">IntegerUtils</span>&#123;</span><br><span class="line">    <span class="keyword">def</span> <span class="keyword">static</span> add(Integer a, <span class="type">int</span> b) &#123;</span><br><span class="line">        a + b</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">use(StringUtils,IntegerUtils) &#123;</span><br><span class="line">    String str = <span class="string">&quot;hello&quot;</span></span><br><span class="line">    s = str.encrypt()</span><br><span class="line">    println <span class="number">1.</span>add(<span class="number">2</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里先定义了一个的类，其中定义了一个方法 encrypt(),要想要该类成为 String 的分类，需要注意以下几点：</p>
+<ol>
+<li>其内部定义的方法必须为 <code>static</code></li>
+<li>方法的第一个参数必须定位为目标类的类型(eg：这里定义的 String，当然你可以不写类型，这样就有可能让多个类都是用该方法了),如果该方法还需要参数，那么就从第二个形参开始声明。</li>
+<li>第一个参数如果声明类型，必须为包装类的类型，eg：如果我们想为整数提供方法，即使用到了 <code>1.add(2)</code> 这样的调用方式，但这是 groovy 提供的语法糖，其本质任为 Integer，因此在定义分类的方法时，第一个参数必须是包装类型</li>
+</ol>
+<p>在使用时，其必须在 use 所定义的代码块中，出了代码块就无法使用分类中的方法了，否则报找不到方法的错误。在 use 后面必须注明要注入的方法所在的类，eg：use(StringUtils)，use 中可以注入多个类，如果多个分类中有重复的方法定义，那么以最后一个分类中方法为准。</p>
+<h1 id="使用-ExpandoMetaClass-进行方法注入"><a href="#使用-ExpandoMetaClass-进行方法注入" class="headerlink" title="使用 ExpandoMetaClass 进行方法注入"></a>使用 ExpandoMetaClass 进行方法注入</h1><h2 id="注入概述"><a href="#注入概述" class="headerlink" title="注入概述"></a>注入概述</h2><p>之前其实我们已经见到过使用 ExpandoMetaClass 注入方法的示例了，就是使用<a href="">MetaClass 进行方法拦截</a>，这本质就是方法的注入，只不过注入的方法名(invokeMethod)比较特殊，成为了方法拦截。同样，我们也可以用 ExpandoMetaClass 对类进行其它方法的注入，还拿上面 Integer 的加法的例子：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Integer.metaClass.add = &#123;</span><br><span class="line">    <span class="type">int</span> i -&gt;</span><br><span class="line">        delegate + i</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">println <span class="number">1.</span>add(<span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="注入的种类"><a href="#注入的种类" class="headerlink" title="注入的种类"></a>注入的种类</h2><p>使用 ExpandoMetaClass 方法注入，可以对以下三种方法进行注入：</p>
+<ul>
+<li>非静态方法</li>
+<li>静态方法</li>
+<li>构造器</li>
+<li>属性</li>
+</ul>
+<p>接下来一一介绍如何注入：</p>
+<ol>
+<li>非静态方法注入<br>  这在前面已经见到过了，也是最常用的注入，使用方法：  <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Foo.metaClass.bar = &#123;&#125;</span><br><span class="line">foo.bar()</span><br></pre></td></tr></table></figure>
+  Groovy 的设计理念就是让程序的编写更加流程，因此在 DSL 中，可能更常见的一种形式是在调用方法时不写括号，即<code>foo.bar</code>但是没有括号调用时，会将方法的调用当成属性，所以需要对之前的注入进行修改。  <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Foo.metaClass.getBar = &#123;&#125;</span><br><span class="line">foo.bar</span><br></pre></td></tr></table></figure>
+  这样的调用方式是否更加优雅呢，在后面的 DSL 中，还会进一步讲解 groovy 的语法糖，让编程更加优雅。</li>
+<li>静态方法注入<br>  需要使用 <code>&#39;static&#39;</code> 的特殊字面量注入静态方法  <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Foo.metaClass.<span class="string">&#x27;static&#x27;</span>.bar = &#123;&#125;</span><br><span class="line">Foo.bar()</span><br></pre></td></tr></table></figure></li>
+<li>注入构造器<br>  使用 <code>constructor</code> 属性注入构造器<br>  添加一个构造器 &lt;&lt;<br>  替换一个构造器 &#x3D;  <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Foo.metaClass.constructor &lt;&lt; &#123; </span><br><span class="line">	<span class="type">int</span> i -&gt; </span><br><span class="line">	Foo foo = <span class="keyword">new</span> Foo();</span><br><span class="line">	foo.i = i</span><br><span class="line">	foo</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  构造方法注入特别要注意的是，要确保没有递归调用自身，否则栈溢出。因为我们是想定义构造器，肯定会借助现有的构造器，然后进行属性的改造，但是不要产生递归。如果是想覆盖构造器的话，那么只能在内部使用反射</li>
+<li>注入属性<br>  类似以闭包的方式注入方法，属性注入也是支持的，只要在后面 &#x3D; 具体值 即可。  <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Foo.metaClass.bar = <span class="number">1</span></span><br><span class="line">println foo.bar</span><br></pre></td></tr></table></figure></li>
+<li>一次注入多个方法<br>  Groovy 提供了使用<code>ClassName.metaClass.method = &#123; ... &#125;</code>这样的语法向 metaClass 中添加，既简单又方便，但如果想添加一堆方法，这样的声明就会感觉很费劲。groovy 提供了更简洁的语法，用来减少噪音！！这种方式也是在 DSL 中常见到的。  <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Foo.metaClass = &#123;</span><br><span class="line">	bar1 = &#123;&#125;</span><br><span class="line">	bar2 = &#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="string">&#x27;static&#x27;</span>&#123;</span><br><span class="line">		bar3 = &#123;&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//针对于不管是覆盖还是注入，在这种语法环境下，都应该使用 = </span></span><br><span class="line">	constructor = &#123;</span><br><span class="line">		<span class="type">int</span> i - &gt;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	constructor = &#123;</span><br><span class="line">		<span class="type">int</span> i,<span class="type">int</span> j -&gt;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p><strong>再次重申：使用 ExpandoMetaClass 注入的闭包中，delegate 指的是调用该方法的对象，在此基础上，闭包中使用类原本的成员变量，或者方法也是可以的。</strong></p>
+<h2 id="向单个实例中注入方法"><a href="#向单个实例中注入方法" class="headerlink" title="向单个实例中注入方法"></a>向单个实例中注入方法</h2><p>前面介绍的是向整个类中注入方法，那么基于该类的所有对象都可以使用闭包中的方法。如果只是想扩展该类的某一个对象的方法，而不影响该类的其它对象，该如何处理呢？<br>其实不单是 Class，每个具体的对象也包含一个 metaClass，我们可将创建一个具体的 ExpandoMetaClass 实例，并将制定方法加入其中，然后将其赋给对应的具体对象，也可以将方法直接注入到具体的对象的 metaClass 上。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//方式 1</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Man</span>&#123;</span><br><span class="line">	<span class="keyword">def</span> talk()&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">def</span> emc = <span class="keyword">new</span> ExpandoMetaClass(Man)</span><br><span class="line">emc.sing = &#123; -&gt; ... &#125;</span><br><span class="line">emc.initialize()</span><br><span class="line"><span class="keyword">def</span> mike = <span class="keyword">new</span> Man()</span><br><span class="line">mile.metaClass = emc</span><br><span class="line">mike.sing()</span><br><span class="line"></span><br><span class="line"><span class="comment">//方式 2</span></span><br><span class="line">mike.metaClass.dance = &#123; -&gt; ...&#125;</span><br><span class="line">mike.dance()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//卸载之前注入的方法</span></span><br><span class="line">mike.metaClass = <span class="literal">null</span></span><br></pre></td></tr></table></figure>
+<p>很明显方式 2 是最为优雅的，因此推荐使用方式 2。同时，当我们为一个对象注入了方法，在使用了一段时间不想使用后，那么很方便的卸载之前注入的方法。</p>
+<h2 id="ExpandoMetaClass-小结"><a href="#ExpandoMetaClass-小结" class="headerlink" title="ExpandoMetaClass 小结"></a>ExpandoMetaClass 小结</h2><p>使用 ExpandoMetaClass，无论是注入方法，还是调用方法，都比 Category 要优雅的多。因此推荐使用该方法。<br>但是要注意的是，如果对象想使用注入的方法，必须要先进行注入。如果在已经有对象产生之后再向类中注入方法，那么该对象无法调用注入的方法！！<br>因此使用 ExpandoMetaClass 进行注入，最好是在整个应用初始化时进行。</p>
+<p>同时方法注入具有继承性。如果向 Object 注入了方法，那么所有的类都可以使用该方法。</p>
+<h1 id="使用-Minxin，trait-进行方法注入"><a href="#使用-Minxin，trait-进行方法注入" class="headerlink" title="使用 Minxin，trait 进行方法注入"></a>使用 Minxin，trait 进行方法注入</h1><p>这两种方式更像是开头提到的定义接口的实现方式。<br>个人感觉最为强大的方式是 Mixin 的方式。可以为类注入多个 Mixin，就好想让类实现了多个接口，同时接口中相同的方法，以后面加入的为准。<br>这里不再重点展开了。<br><a target="_blank" rel="noopener" href="http://blog.csdn.net/chennai1101/article/details/56282305">Groovy Mixin 注入</a><br><a target="_blank" rel="noopener" href="https://www.mscharhag.com/groovy/groovy-introduces-traits">Groovy 2.3 introduces traits</a><br><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/library/j-jn8/index.html">Mixins and traits</a></p>
+<h1 id="实现方式的优劣对比"><a href="#实现方式的优劣对比" class="headerlink" title="实现方式的优劣对比"></a>实现方式的优劣对比</h1><ul>
+<li><p>Category 存在的问题:其作用被限定在 use()块内，所以也就限定于当前执行的线程。进入该 use()块内的代码会在当前线程创建一个栈帧，并压入到当前线程的栈上，而当 use 代码块结束后，当前线程的栈会将刚刚压入的栈帧弹栈。但是如果频繁的调用 use 代码块，势必会对性能造成一定的影响。</p>
+<p>凡事都有两面性，Categoty 的使用 use 块，提供了更好的隔离性，我们可以再不同的地方，使用不同的分类，这也为类的扩展提供了灵活性。</p>
+</li>
+<li><p>trait：缺点是在有类的修改权的情况下才能使用，类似接口。</p>
+</li>
+<li><p>Mixin：其实是最强大的方式，但需要对其有进一步的了解，以防走火。。</p>
+</li>
+</ul>
+<p>这里推荐使用 <strong>ExpandoMetaClass。</strong></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Groovy/"># Groovy</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/12/11/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E5%90%88%E6%88%90/">MOP——方法合成</a>
+            
+            
+            <a class="next" rel="next" href="/2017/12/09/MOP%E2%80%94%E2%80%94%E6%96%B9%E6%B3%95%E6%8B%A6%E6%88%AA/">MOP——方法拦截</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
