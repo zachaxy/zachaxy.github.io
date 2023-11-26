@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Zachaxy">
+
+
+
+
+
+<title>Linux进程基础知识 | Hexo</title>
+
+
+
+    <link rel="icon" href="/image/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Zachaxy&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Zachaxy&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Linux进程基础知识</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Zachaxy&nbsp;&#124;&nbsp;</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">November 26, 2020&nbsp;&nbsp;22:20:01&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-count">
+                        Words: <a href="#">3.2k&nbsp;&#124;&nbsp;</a>
+                        </span>
+                    
+
+                    
+                        <span class="post-readtime">
+                        About: <a href="#">3 mins.</a>
+                        </span>
+                    
+
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="进程的概念"><a href="#进程的概念" class="headerlink" title="进程的概念"></a>进程的概念</h1><ul>
+<li>进程是一个程序的一次执行的过程，同时也是资源分配的最小单元。</li>
+<li>进程和程序是有本质区别的，程序是静态的，它是一些保存在磁盘上的指令的有序集合，没有任何执行的概念；</li>
+<li>进程是一个动态的概念，它是程序执行的过程，包括了动态创建、调度和消亡的整个过程。</li>
+</ul>
+<p>进程的状态:</p>
+<ul>
+<li>执行态：该进程正在运行，即进程正在占用CPU。</li>
+<li>就绪态：进程已经具备执行的一切条件，正在等待分配CPU的处理时间片。</li>
+<li>等待态：进程不能使用CPU，若等待事件发生（等待的资源分配到）则可将其唤醒。</li>
+</ul>
+<p>进程中的内存分布：</p>
+<ul>
+<li>代码段：存放的是程序代码的数据。</li>
+<li>数据段：存放的是全局变量、常数以及动态数据分配的数据空间，根据存放的数据，数据段又可以分成普通数据段（包括可读可写&#x2F;只读数据段，存放静态初始化的全局变量或常量）、BSS数据段（存放未初始化的全局变量）以及堆（存放动态分配的数据）。</li>
+<li>堆栈段：存放的是子程序的返回地址、子程序的参数以及程序的局部变量等。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/zachaxy/pic-repository/main/process_memory.jpeg" alt="进程内存分布"></p>
+<h1 id="进程的创建"><a href="#进程的创建" class="headerlink" title="进程的创建"></a>进程的创建</h1><ul>
+<li>fork()函数用于从已存在的进程中创建一个新进程。新进程称为子进程，而原进程称为父进程。</li>
+<li>使用fork()函数得到的子进程是父进程的一个复制品，它从父进程处继承了整个进程的地址空间，包括进程上下文、代码段、进程堆栈、内存信息、打开的文件描述符、信号控制设定、进程优先级、进程组号、当前工作目录、根目录、资源限制和控制终端等。</li>
+<li>子进程所独有的只有它的进程号、资源使用和计时器等。</li>
+<li>fork()函数的系统开销比较大，而且执行速度也不是很快。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">pid_t</span> result;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*调用fork函数，其返回值为result*/</span></span><br><span class="line">	result = fork();</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*通过result的值来判断fork函数的返回情况，首先进行出错处理*/</span></span><br><span class="line">	<span class="keyword">if</span>(result ==  <span class="number">-1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;Fork error\n&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (result == <span class="number">0</span>) <span class="comment">/*返回值为0代表子进程*/</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;The return value is %d\nIn child process!!\nMy PID is %d\n&quot;</span>,result,getpid());</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> <span class="comment">/*返回值大于0代表父进程*/</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;The return value is %d\nIn father process!!\nMy PID is %d\n&quot;</span>,result,getpid());</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<p>写时拷贝技术（copy_on_write）：由于 fork 完整的复制了父进程的整个空间，因此执行速度比较慢。为了加快执行速度，有些unix 系统创建了 vfork 方法。 vfork 也能创建进程，但是不会产生父进程的副本，而是通过内存映射的方式，让子进程和父进程访问相同的物理内存，从而伪装了对父进程空间的拷贝。当子进程真正要改变内存中的数据时，才会真正的复制父进程的内存空间。</p>
+</blockquote>
+<h1 id="进程的回收"><a href="#进程的回收" class="headerlink" title="进程的回收"></a>进程的回收</h1><h2 id="僵尸进程"><a href="#僵尸进程" class="headerlink" title="僵尸进程"></a>僵尸进程</h2><ul>
+<li>进程执行结束后，如果不做任何处理，进程不会消失，而是留下一个僵尸进程。</li>
+<li>几乎已经放弃了所有的内存空间，无可执行代码，不用被调度。但是会在进程列表中保存一个记录，记录该进程退出状态等信息。</li>
+<li>僵尸进程如果不及时回收，也会积少成多，占用内存资源。因此子进程结束后需要由父进程进行回收。</li>
+<li>子进程回收方式：在父进程中执行 wait&#x2F;waitpid 函数</li>
+</ul>
+<blockquote>
+<p>注意：kill -9 的方式杀掉进程，不会有僵尸进程。</p>
+</blockquote>
+<h1 id="exec-函数族"><a href="#exec-函数族" class="headerlink" title="exec 函数族"></a>exec 函数族</h1><p>exec 函数可以执行任何的程序。同时，进程当前的内存空间，被 exec 指定的程序替换。<br>也就是说在程序中 exec 函数调用后，接下来的代码其实是无法执行的。</p>
+<p>在 shell 中开启程序，用 ps 命令看到该进程的父进程就是 shell，这是如何实现的？<br>答案是 shell 利用 fork 函数，创建子进程，用调用 exec 执行shell命令行中的程序。</p>
+<p>回想之前 fork 创建子进程后，其执行逻辑和父进程还是同一个程序，只是开发人员通过 pid 判断的方式，做了人为的分割。<strong>exec 方法的作用是让父子进程执行不同的程序</strong></p>
+<h1 id="守护进程"><a href="#守护进程" class="headerlink" title="守护进程"></a>守护进程</h1><ul>
+<li>守护进程也称为后台服务进程，它是一个生存期较长的进程，通常独立于控制终端并且周期性地执行某种任务或等待处理某些发生的事件。Linux大多数系统服务都是通过守护进程实现的。</li>
+</ul>
+<blockquote>
+<p>由于在Linux中，每一个系统与用户进行交流的界面称为终端，每一个从此终端开始运行的进程都会依附于这个终端，这个终端就称为这些进程的控制终端，当控制终端被关闭时，相应的进程都会自动关闭。但是守护进程却能够突破这种限制，它从被执行开始运转，直到整个系统关闭时才会退出。如果想让某个进程不因为用户、终端或者其他的变化而受到影响，那么就必须把这个进程变成一个守护进程。</p>
+</blockquote>
+<h2 id="进程组"><a href="#进程组" class="headerlink" title="进程组"></a>进程组</h2><ul>
+<li>进程组是多个进程的集合。每个进程组都有一个组长，一般组长是父进程，由该进程 fork 出的子孙进程，都属于该进程组。</li>
+<li>进程组号：组长进程 pid，且不会因为组长进程退出，改变进程组号。</li>
+</ul>
+<h2 id="会话组"><a href="#会话组" class="headerlink" title="会话组"></a>会话组</h2><ul>
+<li>会话组是一个进程组或多个进程组的集合。</li>
+<li>始于用户登录，终止与用户退出。此期间所有进程都属于该会话组。</li>
+<li>setsid 作用：让当前进程摆脱原有会话组，进程组，控制终端的控制。</li>
+</ul>
+<h2 id="守护进程编写步骤："><a href="#守护进程编写步骤：" class="headerlink" title="守护进程编写步骤："></a>守护进程编写步骤：</h2><ol>
+<li>fork 进程，父进程关闭。此时子进程被pid 为 1 的 init 进程托管。</li>
+<li>setsid，设置单独的 session 组</li>
+<li>chdir(“&#x2F;“) 按照程序自身要求，设置单独的 dir，这样子进程在获取 pwd 的时候，即为设置的路径。【非必须】</li>
+<li>umask(0) 按照程序自身要求，设置掩码【非必须】</li>
+<li>关闭之前已打开的文件，否则依然会消耗系统资源，也可能导致文件系统无法卸载。至少要关闭系统为每个程序默认打开的 stdin(0)，stdout(1)，stderr(2)，因为后台无法使用到。写日志可使用 syslog。</li>
+</ol>
+<blockquote>
+<p>umask函数设置掩码：权限掩码由三位数字表示，每位数字对应于对应权限的掩码值。其中，第一位数字表示所有者（owner）的权限掩码值，第二位数字表示同组用户（group）的权限掩码值，第三位数字表示其他用户（others）的权限掩码值。每个数字的取值范围为0到7，其中0表示完全授权，7表示完全禁止。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;syslog.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">pid_t</span> child;</span><br><span class="line">	<span class="type">int</span> i;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*创建子进程1*/</span></span><br><span class="line">	child = fork();</span><br><span class="line">		</span><br><span class="line">	<span class="keyword">if</span> (child ==  <span class="number">1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		perror(<span class="string">&quot;child1 fork&quot;</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (child1 &gt; <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*打开日志服务*/</span></span><br><span class="line">	openlog(<span class="string">&quot;daemon_proc_info&quot;</span>, LOG_PID, LOG_DAEMON);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*以下几步是编写守护进程的常规步骤*/</span></span><br><span class="line">	setsid();</span><br><span class="line">	chdir(<span class="string">&quot;/&quot;</span>);</span><br><span class="line">	umask(<span class="number">0</span>);</span><br><span class="line">	<span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; getdtablesize(); i++)</span><br><span class="line">	&#123;</span><br><span class="line">		close(i);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>本文作者:</span>
+                        <span>Zachaxy</span>
+                    </p>
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>版权声明:</span>
+                        <span>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Linux/"># Linux</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/04/18/go%E8%AF%AD%E8%A8%80%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B/">go语言快速上手</a>
+            
+            
+            <a class="next" rel="next" href="/2020/11/22/%E6%91%84%E5%BD%B1%E4%B8%AD%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">摄影中的基本概念</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Zachaxy | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

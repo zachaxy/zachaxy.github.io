@@ -13,7 +13,7 @@
 
 
 
-<title>kotlin-Nothing关键字 | Hexo</title>
+<title>高效决策 | Hexo</title>
 
 
 
@@ -127,11 +127,76 @@
                 <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">kotlin-Nothing关键字</h1>
+            <h1 class="post-title">高效决策</h1>
             
                 <div class="post-meta">
                     
@@ -140,13 +205,13 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">November 11, 2023&nbsp;&nbsp;15:42:22&nbsp;&#124;&nbsp;</a>
+                        Date: <a href="#">November 25, 2023&nbsp;&nbsp;19:06:55&nbsp;&#124;&nbsp;</a>
                         </span>
                     
 
                     
                         <span class="post-count">
-                        Words: <a href="#">181&nbsp;&#124;&nbsp;</a>
+                        Words: <a href="#">381&nbsp;&#124;&nbsp;</a>
                         </span>
                     
 
@@ -162,20 +227,23 @@
         </header>
 
         <div class="post-content">
-            <p>是所有类的子类，</p>
-<p>编译后还是 Void</p>
-<p>kotlin 集合和 java 集合的关系</p>
-<p>java 使用不可变集合： unmodify， 1.9 之后， list.of</p>
-<p>为什么引入不可变集合</p>
-<ul>
-<li>防止其它使用方修改集合数据</li>
-<li>多线程条件下，无线程安全问题</li>
-<li>不存在扩容问题，节省内存消耗</li>
+            <p>目标：正确决策、采取快速行动。</p>
+<h1 id="零、定义问题"><a href="#零、定义问题" class="headerlink" title="零、定义问题"></a>零、定义问题</h1><blockquote>
+<p>问题一旦阐释清晰，就解决了一半！</p>
+</blockquote>
+<p>很多人遇到问题会马上进入解决问题模式，但是定义问题很重要，这也是大部分人忽略的环节。提出问题本身就是解决问题的重要环节。</p>
+<h2 id="问题是什么？"><a href="#问题是什么？" class="headerlink" title="问题是什么？"></a>问题是什么？</h2><ul>
+<li>问题并非简单存在，而是我们主动选择与描述的。</li>
+<li>问一问谁受益会有助于我们理解选择与提出问题背后的利益动机与机制。</li>
+<li>问题从来都不会单独存在，仔细想想解决问题所引发的第二层级效应。有时搁置一旁，反而会是更好的处理方式。</li>
+<li>不是所有问题都需要解决。如果问题无法解决，将会发生什么？</li>
+<li>不是所有问题都需要立刻解决。紧迫性效应：相较于重要的事务，人们的思维会更聚焦于紧急的问题。但是真正重要的事很少紧急，紧急的事很少真正重要。</li>
+<li>不是所有的问题都需要自己解决。</li>
 </ul>
-<p>互操作存在的问题</p>
-<p>操作符，会创建新的列表；</p>
-<p>list.map.filter</p>
-<p>list.asSequence.map.filter</p>
+<h2 id="重新描述问题，避免陷入局部最优解。"><a href="#重新描述问题，避免陷入局部最优解。" class="headerlink" title="重新描述问题，避免陷入局部最优解。"></a>重新描述问题，避免陷入局部最优解。</h2><ul>
+<li>不断调整，找到合适的问题描述。</li>
+<li>寻找表现症状与根本原因。（eg：公司环境差的问题如何解决？）</li>
+</ul>
 
         </div>
 
@@ -204,9 +272,7 @@
                 <span class="tag">
                     
                     
-                        <a href="/tags/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/"># 编程语言</a>
-                    
-                        <a href="/tags/kotlin/"># kotlin</a>
+                        <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"># 读书笔记</a>
                     
                         
                 </span>
@@ -219,10 +285,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2023/11/25/%E9%AB%98%E6%95%88%E5%86%B3%E7%AD%96/">高效决策</a>
             
-            
-            <a class="next" rel="next" href="/2023/02/11/how-to-read-book/">如何阅读一本书</a>
+            <a class="next" rel="next" href="/2023/11/11/kotlin-Nothing%E5%85%B3%E9%94%AE%E5%AD%97/">kotlin-Nothing关键字</a>
             
         </section>
 
