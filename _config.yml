@@ -103,7 +103,8 @@ theme: Chic
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: https://github.com/zachaxy/zachaxy.github.io
+  repo: git@github.com:zachaxy/zachaxy.github.io.git
+  # example, https://github.com/hexojs/hexojs.github.io
   branch: gh-pages
 
 symbols_count_time:
