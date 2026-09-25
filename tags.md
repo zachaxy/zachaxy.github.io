@@ -5,6 +5,7 @@ permalink: /tags/
 ---
 
 <h1>标签</h1>
+<p id="all-tags-link" hidden><a href="{{ '/tags/' | relative_url }}">查看全部标签</a></p>
 
 {% assign sorted_tags = site.tags | sort %}
 {% for tag in sorted_tags %}
@@ -17,3 +18,16 @@ permalink: /tags/
     </ul>
 </section>
 {% endfor %}
+
+<script>
+    function showSelectedTag() {
+        const groups = Array.from(document.querySelectorAll('.tag-group'));
+        const selectedId = decodeURIComponent(window.location.hash.slice(1));
+        const selected = groups.find(group => group.id === selectedId);
+        groups.forEach(group => { group.hidden = Boolean(selected) && group !== selected; });
+        document.getElementById('all-tags-link').hidden = !selected;
+    }
+
+    window.addEventListener('hashchange', showSelectedTag);
+    showSelectedTag();
+</script>
