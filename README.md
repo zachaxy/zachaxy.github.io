@@ -14,8 +14,11 @@ layout: post
 title: "文章标题"
 date: 2026-03-31 10:00:00 +0800
 categories: 分类
+tags: [JVM, Java]
 ---
 ```
+
+`tags` 可填写一个或多个标签；文章页和首页会显示标签，所有标签可在 `/tags/` 查看。
 
 ## 本地预览
 

@@ -24,6 +24,10 @@ header p {
     margin-top: 10px;
 }
 
+header nav {
+    margin-top: 12px;
+}
+
 .post {
     margin-bottom: 40px;
     padding-bottom: 20px;
@@ -46,7 +50,25 @@ header p {
 .date {
     color: #999;
     font-size: 0.9em;
+    margin-bottom: 8px;
+}
+
+.tags {
+    color: #666;
+    font-size: 0.9em;
     margin-bottom: 15px;
+}
+
+.tags a {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 1px 8px;
+    border-radius: 12px;
+    background: #eef5fc;
+}
+
+.tag-group {
+    margin-bottom: 32px;
 }
 
 .post-content {
