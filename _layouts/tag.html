@@ -1,0 +1,15 @@
+---
+layout: default
+---
+
+<h1>标签：{{ page.tag | escape }}</h1>
+<p><a href="{{ '/tags/' | relative_url }}">所有标签</a></p>
+
+{% assign tagged_posts = site.tags[page.tag] %}
+{% if tagged_posts.size > 0 %}
+<ul>
+{% for post in tagged_posts %}
+    <li><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a> <span class="date">{{ post.date | date: "%Y-%m-%d" }}</span></li>
+{% endfor %}
+</ul>
+{% endif %}
